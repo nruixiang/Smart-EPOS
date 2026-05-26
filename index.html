@@ -274,7 +274,6 @@
     .empty-order i { font-size: 36px; }
     .empty-order p { font-size: 13px; }
     .order-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 0.5px solid var(--border); border-radius: var(--radius-md); background: var(--bg-primary); }
-    .item-emoji { font-size: 20px; width: 32px; text-align: center; flex-shrink: 0; }
     .item-details { flex: 1; min-width: 0; }
     .item-name { font-size: 12px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-price { font-size: 11px; color: var(--text-secondary); }
@@ -993,7 +992,6 @@
     }
     container.innerHTML = items.map(item => `
       <div class="order-item">
-        <span class="item-emoji">${item.emoji}</span>
         <div class="item-details">
           <div class="item-name">${item.name}</div>
           <div class="item-price">$${item.price.toFixed(2)} each</div>
