@@ -119,8 +119,9 @@
     .card-admin-btn.edit:hover { opacity: 0.85; }
     .card-admin-btn.delete { background: #dc2626; color: white; }
     .card-admin-btn.delete:hover { opacity: 0.85; }
-    .card-info-btn { position: absolute; bottom: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg-primary); color: var(--text-tertiary); font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: border-color 0.15s, color 0.15s, background 0.15s; font-family: var(--font); }
+    .card-info-btn { flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg-primary); color: var(--text-tertiary); font-size: 9px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s, background 0.15s; font-family: var(--font); }
     .card-info-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); background: var(--bg-secondary); }
+    .product-name-row { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
 
     /* PRODUCT INFO MODAL */
     .pinfo-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -847,17 +848,17 @@
   // ── Product image URLs ──
   const PRODUCT_IMGS = {
     'Espresso':          'https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?w=300&q=80',
-    'Americano':         'https://images.unsplash.com/photo-1436491911682-72ab1d398f59?w=300&q=80',
-    'Latte':             'https://images.pexels.com/photos/1000433/pexels-photo-1000433.jpeg?w=300&h=300&fit=crop',
+    'Americano':         'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=300&q=80',
+    'Latte':             'https://images.unsplash.com/photo-1561047029-3000c68339ca?w=300&q=80',
     'Cappuccino':        'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=300&q=80',
     'Flat White':        'https://images.unsplash.com/photo-1577968897966-3d4325b36b61?w=300&q=80',
     'Mocha':             'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300&q=80',
     'Green Tea':         'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300&q=80',
     'Earl Grey':         'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=300&q=80',
     'Chamomile':         'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=300&q=80',
-    'Sakura Latte':      'https://images.pexels.com/photos/14050805/pexels-photo-14050805.jpeg?w=300&h=300&fit=crop',
-    'Ube Matcha':        'https://images.pexels.com/photos/2227126/pexels-photo-2227126.jpeg?w=300&h=300&fit=crop',
-    'Rose Espresso':     'https://images.pexels.com/photos/5722911/pexels-photo-5722911.jpeg?w=300&h=300&fit=crop',
+    'Sakura Latte':      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80',
+    'Ube Matcha':        'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=300&q=80',
+    'Rose Espresso':     'https://images.unsplash.com/photo-1485808191679-5f86510bd9d4?w=300&q=80',
     'Iced Latte':        'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=300&q=80',
     'Cold Brew':         'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=300&q=80',
     'Iced Matcha':       'https://images.unsplash.com/photo-1608889335941-32ac5f2041b9?w=300&q=80',
@@ -944,10 +945,11 @@
         + '</div>'
         + '<div class="product-img">' + imgHtml + '</div>'
         + '<div class="product-info">'
-        + '<div class="product-name">' + p.name + '</div>'
+        + '<div class="product-name-row"><div class="product-name">' + p.name + '</div>'
+        + (isAdmin ? '' : '<button class="card-info-btn" onclick="event.stopPropagation();openPinfo(\'' + safeName + '\')">i</button>')
+        + '</div>'
         + '<div class="product-price">$' + p.price.toFixed(2) + '</div>'
         + '</div>'
-        + (isAdmin ? '' : '<button class="card-info-btn" onclick="event.stopPropagation();openPinfo(\'' + safeName + '\')">i</button>')
         + '</div>';
     }).join('');
   }
@@ -1264,7 +1266,7 @@
   }
 
   // ── Clock In / Staff ──
-  let currentStaffId = '0000';
+  let currentStaffId = '';
   let currentStaffRole = 'Administrator';
   let numpadTarget = null; // 'staffId' | 'password'
   let numpadValue = '';
@@ -1521,14 +1523,42 @@
 
   // ── Edit Product ──
   let editTarget = null;
+  let editTargetCat = null; // which top-level category the item lives in
+
   function openEdit(name) {
     const p = findProduct(name);
     if (!p) return;
     editTarget = p;
+
+    // Find which top-level category this item belongs to
+    editTargetCat = null;
+    for (const [cat, val] of Object.entries(PRODUCTS)) {
+      if (val.All.find(x => x.name === name)) { editTargetCat = cat; break; }
+    }
+
+    // Title
+    document.getElementById('editModalTitle').textContent = 'Edit Item';
+    document.getElementById('editModalSubtitle').textContent = editTargetCat || '';
+
+    // Appears In — mark current category active
+    document.querySelectorAll('.edit-cat-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.cat === editTargetCat);
+    });
+
+    // Fields
     document.getElementById('editName').value = p.name;
     document.getElementById('editPrice').value = p.price.toFixed(2);
+    document.getElementById('editCategoryTag').value = p.sub || '';
+    document.getElementById('editValidFrom').value = p.validFrom || '';
+    document.getElementById('editValidTo').value = p.validTo || '';
     document.getElementById('editDesc').value = p.desc || '';
+
     document.getElementById('editOverlay').classList.add('show');
+  }
+
+  function toggleEditCat(btn) {
+    document.querySelectorAll('.edit-cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
   }
 
   function closeEdit() { document.getElementById('editOverlay').classList.remove('show'); editTarget = null; }
@@ -1539,10 +1569,38 @@
     const newName = document.getElementById('editName').value.trim();
     const newPrice = parseFloat(document.getElementById('editPrice').value);
     const newDesc = document.getElementById('editDesc').value.trim();
-    if (!newName || isNaN(newPrice)) { return; }
-    editTarget.name = newName;
-    editTarget.price = newPrice;
-    editTarget.desc = newDesc;
+    const newSub = document.getElementById('editCategoryTag').value.trim();
+    const newValidFrom = document.getElementById('editValidFrom').value;
+    const newValidTo = document.getElementById('editValidTo').value;
+    const activeBtn = document.querySelector('.edit-cat-btn.active');
+    const newCat = activeBtn ? activeBtn.dataset.cat : editTargetCat;
+
+    if (!newName || isNaN(newPrice)) { showToast('Name and price are required'); return; }
+
+    // If category changed, move the item
+    if (newCat && newCat !== editTargetCat && PRODUCTS[newCat]) {
+      // Remove from old
+      for (const cat of Object.values(PRODUCTS)) {
+        const idx = cat.All.findIndex(x => x === editTarget);
+        if (idx !== -1) { cat.All.splice(idx, 1); break; }
+      }
+      // Add to new
+      editTarget.name = newName;
+      editTarget.price = newPrice;
+      editTarget.desc = newDesc;
+      editTarget.sub = newSub || editTarget.sub;
+      editTarget.validFrom = newValidFrom;
+      editTarget.validTo = newValidTo;
+      PRODUCTS[newCat].All.push(editTarget);
+    } else {
+      editTarget.name = newName;
+      editTarget.price = newPrice;
+      editTarget.desc = newDesc;
+      if (newSub) editTarget.sub = newSub;
+      editTarget.validFrom = newValidFrom;
+      editTarget.validTo = newValidTo;
+    }
+
     closeEdit();
     renderProducts();
     showToast('Item updated');
@@ -1617,29 +1675,93 @@
 </div>
 
 <!-- Edit Product Modal -->
+<style>
+  .edit-modal { background: var(--bg-primary); border-radius: 16px; width: 480px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+  .edit-modal-header { padding: 18px 20px 14px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+  .edit-modal-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  .edit-modal-subtitle { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+  .edit-modal-body { overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .edit-field-label { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 7px; }
+  .edit-field-label .required { color: var(--red); margin-left: 1px; }
+  .edit-input { width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); outline: none; font-family: var(--font); transition: border-color 0.15s; }
+  .edit-input:focus { border-color: var(--blue); }
+  .edit-input::placeholder { color: var(--text-tertiary); }
+  .edit-appears-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .edit-cat-btn { display: flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 24px; border: 1.5px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); transition: all 0.15s; white-space: nowrap; }
+  .edit-cat-btn.active { background: #111; color: white; border-color: #111; }
+  [data-theme="dark"] .edit-cat-btn.active { background: #f2f2f7; color: #1c1c1e; border-color: #f2f2f7; }
+  .edit-cat-btn .cat-emoji { font-size: 15px; }
+  .edit-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .edit-modal-footer { padding: 14px 20px; border-top: 0.5px solid var(--border); display: flex; gap: 10px; flex-shrink: 0; }
+  .edit-modal-footer button { flex: 1; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+  .edit-btn-cancel { border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary); }
+  .edit-btn-cancel:hover { opacity: 0.75; }
+  .edit-btn-save { border: none; background: #2563eb; color: white; }
+  .edit-btn-save:hover { opacity: 0.88; }
+</style>
 <div class="pinfo-overlay" id="editOverlay" onclick="closeEditIfBg(event)">
-  <div class="pinfo-modal" style="max-width:400px;">
-    <div style="padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Edit Item</div>
-      <button class="pinfo-close" style="position:static;background:var(--bg-tertiary);color:var(--text-primary);width:28px;height:28px;" onclick="closeEdit()"><i class="ti ti-x"></i></button>
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <div>
+        <div class="edit-modal-title" id="editModalTitle">Edit Item</div>
+        <div class="edit-modal-subtitle" id="editModalSubtitle"></div>
+      </div>
+      <button class="pinfo-close" style="position:static;background:var(--bg-tertiary);color:var(--text-primary);width:28px;height:28px;flex-shrink:0;margin-top:2px;" onclick="closeEdit()"><i class="ti ti-x"></i></button>
     </div>
-    <div class="pinfo-body" style="gap:14px;">
+    <div class="edit-modal-body">
+
+      <!-- Appears In -->
       <div>
-        <div class="pinfo-section-label" style="margin-bottom:6px;">Name</div>
-        <input id="editName" style="width:100%;padding:9px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);outline:none;font-family:var(--font);" />
+        <div class="edit-field-label">Appears In <span class="required">*</span></div>
+        <div class="edit-appears-grid" id="editAppearsIn">
+          <button type="button" class="edit-cat-btn" data-cat="Hot Drinks" onclick="toggleEditCat(this)"><span class="cat-emoji">☕</span> Hot Drinks</button>
+          <button type="button" class="edit-cat-btn" data-cat="Cold Drinks" onclick="toggleEditCat(this)"><span class="cat-emoji">🧊</span> Cold Drinks</button>
+          <button type="button" class="edit-cat-btn" data-cat="Pastries" onclick="toggleEditCat(this)"><span class="cat-emoji">🥐</span> Pastries</button>
+          <button type="button" class="edit-cat-btn" data-cat="Merch" onclick="toggleEditCat(this)"><span class="cat-emoji">🛍</span> Merch</button>
+          <button type="button" class="edit-cat-btn" data-cat="Bundles" onclick="toggleEditCat(this)"><span class="cat-emoji">🎁</span> Bundles</button>
+        </div>
       </div>
+
+      <!-- Item Name -->
       <div>
-        <div class="pinfo-section-label" style="margin-bottom:6px;">Price ($)</div>
-        <input id="editPrice" type="number" step="0.01" style="width:100%;padding:9px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);outline:none;font-family:var(--font);" />
+        <div class="edit-field-label">Item Name <span class="required">*</span></div>
+        <input id="editName" class="edit-input" placeholder="e.g. Pumpkin Spice Latte" />
       </div>
+
+      <!-- Price + Category Tag -->
+      <div class="edit-row-2">
+        <div>
+          <div class="edit-field-label">Price ($) <span class="required">*</span></div>
+          <input id="editPrice" type="number" step="0.01" class="edit-input" placeholder="5.50" />
+        </div>
+        <div>
+          <div class="edit-field-label">Category Tag</div>
+          <input id="editCategoryTag" class="edit-input" placeholder="e.g. Coffee" />
+        </div>
+      </div>
+
+      <!-- Valid From + Valid To -->
+      <div class="edit-row-2">
+        <div>
+          <div class="edit-field-label">Valid From <span class="required">*</span></div>
+          <input id="editValidFrom" type="date" class="edit-input" />
+        </div>
+        <div>
+          <div class="edit-field-label">Valid To <span class="required">*</span></div>
+          <input id="editValidTo" type="date" class="edit-input" />
+        </div>
+      </div>
+
+      <!-- Description -->
       <div>
-        <div class="pinfo-section-label" style="margin-bottom:6px;">Description</div>
-        <textarea id="editDesc" rows="3" style="width:100%;padding:9px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);outline:none;font-family:var(--font);resize:vertical;line-height:1.5;"></textarea>
+        <div class="edit-field-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
+        <textarea id="editDesc" rows="3" class="edit-input" placeholder="Short description shown on receipt" style="resize:vertical;line-height:1.5;"></textarea>
       </div>
-      <div style="display:flex;gap:8px;padding-bottom:4px;">
-        <button onclick="closeEdit()" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">Cancel</button>
-        <button onclick="saveEdit()" style="flex:1;padding:10px;border-radius:8px;border:none;background:#2563eb;color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">Save Changes</button>
-      </div>
+
+    </div>
+    <div class="edit-modal-footer">
+      <button class="edit-btn-cancel" onclick="closeEdit()">Cancel</button>
+      <button class="edit-btn-save" onclick="saveEdit()">Save Changes</button>
     </div>
   </div>
 </div>
