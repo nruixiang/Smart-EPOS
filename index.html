@@ -56,16 +56,59 @@
       --border-hover: rgba(0,0,0,0.22);
     }
 
-    /* THEME TOGGLE */
-    .theme-toggle { display: none; align-items: center; margin-left: 10px; }
-    .theme-toggle.visible { display: flex; }
-    .toggle-track { width: 36px; height: 20px; border-radius: 10px; background: var(--bg-tertiary); border: 1.5px solid var(--border); cursor: pointer; position: relative; transition: background 0.25s; flex-shrink: 0; }
-    .toggle-track.on { background: #111; border-color: #111; }
-    [data-theme="dark"] .toggle-track.on { background: #f2f2f7; border-color: #f2f2f7; }
-    .toggle-thumb { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--text-tertiary); transition: transform 0.25s, background 0.25s; }
-    .toggle-track.on .toggle-thumb { transform: translateX(16px); background: white; }
-    [data-theme="dark"] .toggle-track.on .toggle-thumb { background: #1c1c1e; }
-    .toggle-icon { font-size: 13px; color: var(--text-tertiary); }
+    /* SUPERVISOR PIN MODAL */
+    .pin-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .pin-overlay.show { opacity: 1; pointer-events: all; }
+    .pin-modal { background: var(--bg-primary); border-radius: 20px; width: 340px; overflow: hidden; }
+    .pin-modal-top { background: #1a1a1a; padding: 28px 24px 22px; text-align: center; }
+    .pin-shield { width: 44px; height: 44px; border-radius: 50%; background: rgba(239,68,68,0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
+    .pin-shield i { font-size: 22px; color: #ef4444; }
+    .pin-modal-title { font-size: 18px; font-weight: 700; color: white; margin-bottom: 4px; }
+    .pin-modal-sub { font-size: 13px; color: rgba(255,255,255,0.5); }
+    .pin-modal-body { background: var(--bg-primary); padding: 24px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+    .pin-dots { display: flex; gap: 12px; }
+    .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; transition: background 0.15s, border-color 0.15s; }
+    .pin-dot.filled { background: #1a1a1a; border-color: #1a1a1a; }
+    [data-theme="dark"] .pin-dot.filled { background: #f2f2f7; border-color: #f2f2f7; }
+    .pin-error { font-size: 12px; color: #ef4444; min-height: 16px; text-align: center; }
+    .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+    .pin-key { padding: 16px 0; border-radius: 12px; border: none; background: var(--bg-secondary); font-size: 22px; font-weight: 500; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.1s; }
+    .pin-key:active { background: var(--bg-tertiary); transform: scale(0.95); }
+    .pin-key.pin-cancel { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+    .pin-key.pin-del { font-size: 18px; }
+    .pin-key.pin-empty { background: transparent; cursor: default; }
+
+    /* ADMIN PANEL MODAL */
+    .admin-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .admin-overlay.show { opacity: 1; pointer-events: all; }
+    .admin-modal { background: var(--bg-primary); border-radius: 16px; width: 660px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; border: 0.5px solid var(--border); }
+    .admin-modal-header { padding: 18px 20px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .admin-modal-title { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: var(--text-primary); }
+    .admin-title-icon { width: 32px; height: 32px; border-radius: 50%; background: #111; display: flex; align-items: center; justify-content: center; }
+    .admin-title-icon i { font-size: 16px; color: white; }
+    .admin-close { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 20px; display: flex; align-items: center; }
+    .admin-close:hover { color: var(--text-primary); }
+    .admin-tabs { display: flex; gap: 0; padding: 0 20px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+    .admin-tab { padding: 12px 16px; font-size: 13px; font-weight: 500; color: var(--text-secondary); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; font-family: var(--font); display: flex; align-items: center; gap: 6px; transition: color 0.15s; margin-bottom: -0.5px; }
+    .admin-tab.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+    .admin-tab i { font-size: 15px; }
+    .admin-body { flex: 1; overflow-y: auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 24px; }
+    .admin-section-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: -8px; }
+    .admin-setting-row { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--bg-primary); }
+    .admin-setting-left { display: flex; align-items: center; gap: 12px; }
+    .admin-setting-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-secondary); flex-shrink: 0; }
+    .admin-setting-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .admin-setting-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .seg-control { display: flex; border: 0.5px solid var(--border); border-radius: 20px; overflow: hidden; background: var(--bg-secondary); }
+    .seg-btn { padding: 6px 14px; font-size: 12px; font-weight: 500; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-family: var(--font); display: flex; align-items: center; gap: 5px; transition: all 0.15s; white-space: nowrap; }
+    .seg-btn.active { background: var(--bg-primary); color: var(--text-primary); border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .cashier-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-md); border: 0.5px solid var(--border); }
+    .cashier-avatar { width: 36px; height: 36px; border-radius: 50%; background: #fef3c7; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #d97706; flex-shrink: 0; }
+    .cashier-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .cashier-badge { font-size: 11px; color: #d97706; display: flex; align-items: center; gap: 3px; margin-top: 2px; }
+    .revoke-btn { margin-left: auto; padding: 6px 14px; border-radius: 20px; border: none; background: #fef3c7; color: #d97706; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font); }
+    .revoke-btn:hover { background: #fde68a; }
+    .admin-section-note { font-size: 12px; color: var(--text-secondary); margin-top: -12px; }
     html, body { height: 100vh; overflow: hidden; }
     body { font-family: var(--font); background: var(--bg-tertiary); display: flex; flex-direction: column; }
     header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
@@ -366,17 +409,10 @@
       <div class="brand-name">Smart EPOS</div>
       <div class="header-meta">Orchard · T1</div>
     </div>
-    <div class="theme-toggle" id="themeToggle">
-      <i class="ti ti-sun toggle-icon" id="toggleIconLeft"></i>
-      <div class="toggle-track" id="toggleTrack" onclick="toggleTheme()">
-        <div class="toggle-thumb"></div>
-      </div>
-      <i class="ti ti-moon toggle-icon" id="toggleIconRight"></i>
-    </div>
   </div>
   <div class="header-right">
     <div class="header-pill"><i class="ti ti-clock" style="font-size:13px;"></i><span id="clock"></span></div>
-    <div class="header-pill"><i class="ti ti-shield" style="font-size:13px;"></i><span id="headerRole">Admin</span></div>
+    <div class="header-pill header-pill-btn" id="adminPill" onclick="openAdminPinModal()"><i class="ti ti-shield" style="font-size:13px;"></i><span id="headerRole">Admin</span></div>
     <div class="header-pill header-pill-btn" onclick="openClockIn()" id="staffPill"><i class="ti ti-user" style="font-size:13px;"></i><span id="headerStaffId">0000 · Administrator</span></div>
     <div class="badge" id="headerBadge">0</div>
   </div>
@@ -599,6 +635,105 @@
     <div class="receipt-footer">
       <button class="btn-close-receipt" onclick="closeReceipt()">Close</button>
       <button class="btn-print" onclick="window.print()"><i class="ti ti-printer"></i> Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- Supervisor PIN Modal -->
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-modal">
+    <div class="pin-modal-top">
+      <div class="pin-shield"><i class="ti ti-shield-check"></i></div>
+      <div class="pin-modal-title">Supervisor Access</div>
+      <div class="pin-modal-sub">Enter your PIN to continue</div>
+    </div>
+    <div class="pin-modal-body">
+      <div class="pin-dots" id="pinDots">
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+      </div>
+      <div class="pin-error" id="pinError"></div>
+      <div class="pin-grid">
+        <button class="pin-key" onclick="pinPress('1')">1</button>
+        <button class="pin-key" onclick="pinPress('2')">2</button>
+        <button class="pin-key" onclick="pinPress('3')">3</button>
+        <button class="pin-key" onclick="pinPress('4')">4</button>
+        <button class="pin-key" onclick="pinPress('5')">5</button>
+        <button class="pin-key" onclick="pinPress('6')">6</button>
+        <button class="pin-key" onclick="pinPress('7')">7</button>
+        <button class="pin-key" onclick="pinPress('8')">8</button>
+        <button class="pin-key" onclick="pinPress('9')">9</button>
+        <button class="pin-key pin-cancel" onclick="closePinModal()">Cancel</button>
+        <button class="pin-key" onclick="pinPress('0')">0</button>
+        <button class="pin-key pin-del" onclick="pinDel()"><i class="ti ti-backspace"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Panel Modal -->
+<div class="admin-overlay" id="adminOverlay">
+  <div class="admin-modal">
+    <div class="admin-modal-header">
+      <div class="admin-modal-title">
+        <div class="admin-title-icon"><i class="ti ti-shield-check"></i></div>
+        Admin Panel
+      </div>
+      <button class="admin-close" onclick="closeAdminPanel()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="admin-tabs">
+      <button class="admin-tab" id="adminTabMenu" onclick="switchAdminTab('menu')"><i class="ti ti-calendar"></i>Menu Items</button>
+      <button class="admin-tab active" id="adminTabSettings" onclick="switchAdminTab('settings')"><i class="ti ti-settings"></i>Settings</button>
+    </div>
+    <div class="admin-body" id="adminBody">
+      <!-- Settings tab (default) -->
+      <div id="adminSettingsContent">
+        <div class="admin-section-label">Appearance</div>
+        <div class="admin-setting-row">
+          <div class="admin-setting-left">
+            <div class="admin-setting-icon"><i class="ti ti-sun"></i></div>
+            <div>
+              <div class="admin-setting-name">Display Mode</div>
+              <div class="admin-setting-desc" id="displayModeDesc">Light mode is on</div>
+            </div>
+          </div>
+          <div class="seg-control">
+            <button class="seg-btn active" id="segLight" onclick="setTheme('light')"><i class="ti ti-sun" style="font-size:13px;"></i> Light</button>
+            <button class="seg-btn" id="segDark" onclick="setTheme('dark')"><i class="ti ti-moon" style="font-size:13px;"></i> Dark</button>
+          </div>
+        </div>
+        <div class="admin-setting-row">
+          <div class="admin-setting-left">
+            <div class="admin-setting-icon"><i class="ti ti-typography"></i></div>
+            <div>
+              <div class="admin-setting-name">Text Size</div>
+              <div class="admin-setting-desc" id="textSizeDesc">Medium — default</div>
+            </div>
+          </div>
+          <div class="seg-control">
+            <button class="seg-btn" id="segS" onclick="setTextSize('S')">S</button>
+            <button class="seg-btn active" id="segM" onclick="setTextSize('M')">M</button>
+            <button class="seg-btn" id="segL" onclick="setTextSize('L')">L</button>
+          </div>
+        </div>
+        <div class="admin-section-label">Cashier Admin Access</div>
+        <div class="admin-section-note">Only cashiers marked as Admin can enter the Admin Panel.</div>
+        <div class="cashier-row">
+          <div class="cashier-avatar">O</div>
+          <div>
+            <div class="cashier-name">0000</div>
+            <div class="cashier-badge"><i class="ti ti-shield-check" style="font-size:11px;"></i> Admin</div>
+          </div>
+          <button class="revoke-btn">Revoke Admin</button>
+        </div>
+      </div>
+      <div id="adminMenuContent" style="display:none;">
+        <p style="font-size:13px;color:var(--text-secondary);">Menu item management coming soon.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -1106,25 +1241,100 @@
     document.querySelector('.main').classList.toggle('left-collapsed', leftPanelCollapsed);
   }
 
-  // ── Theme Toggle ──
+  // ── Theme ──
   let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
   function applyTheme() {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    document.getElementById('toggleTrack').classList.toggle('on', isDark);
+    document.getElementById('segLight')?.classList.toggle('active', !isDark);
+    document.getElementById('segDark')?.classList.toggle('active', isDark);
+    document.getElementById('displayModeDesc').textContent = isDark ? 'Dark mode is on' : 'Light mode is on';
   }
   applyTheme();
 
-  function toggleTheme() {
-    isDark = !isDark;
+  function setTheme(mode) {
+    isDark = (mode === 'dark');
     applyTheme();
   }
 
-  function updateThemeToggleVisibility() {
-    const isAdmin = currentStaffId === '0000';
-    document.getElementById('themeToggle').classList.toggle('visible', isAdmin);
+  // ── Text Size ──
+  const textSizeMap = { S: '11px', M: '13px', L: '15px' };
+  const textSizeLabel = { S: 'Small', M: 'Medium — default', L: 'Large' };
+  let currentTextSize = 'M';
+  function setTextSize(size) {
+    currentTextSize = size;
+    document.documentElement.style.fontSize = textSizeMap[size];
+    document.getElementById('textSizeDesc').textContent = textSizeLabel[size];
+    ['S','M','L'].forEach(s => document.getElementById('seg'+s).classList.toggle('active', s === size));
   }
-  updateThemeToggleVisibility();
+
+  // ── Admin Tab Switch ──
+  function switchAdminTab(tab) {
+    document.getElementById('adminTabMenu').classList.toggle('active', tab === 'menu');
+    document.getElementById('adminTabSettings').classList.toggle('active', tab === 'settings');
+    document.getElementById('adminSettingsContent').style.display = tab === 'settings' ? 'flex' : 'none';
+    document.getElementById('adminMenuContent').style.display = tab === 'menu' ? 'block' : 'none';
+    if (tab === 'settings') document.getElementById('adminSettingsContent').style.flexDirection = 'column';
+    if (tab === 'settings') document.getElementById('adminSettingsContent').style.gap = '12px';
+  }
+
+  // ── Supervisor PIN Modal ──
+  const ADMIN_PIN = '123456';
+  let pinValue = '';
+
+  function openAdminPinModal() {
+    if (currentStaffId !== '0000') return; // only admin
+    pinValue = '';
+    updatePinDots();
+    document.getElementById('pinError').textContent = '';
+    document.getElementById('pinOverlay').classList.add('show');
+  }
+
+  function closePinModal() {
+    document.getElementById('pinOverlay').classList.remove('show');
+    pinValue = '';
+  }
+
+  function pinPress(val) {
+    if (pinValue.length >= 6) return;
+    pinValue += val;
+    updatePinDots();
+    if (pinValue.length === 6) {
+      setTimeout(() => {
+        if (pinValue === ADMIN_PIN) {
+          closePinModal();
+          openAdminPanel();
+        } else {
+          document.getElementById('pinError').textContent = 'Incorrect PIN. Please try again.';
+          pinValue = '';
+          updatePinDots();
+        }
+      }, 120);
+    }
+  }
+
+  function pinDel() {
+    pinValue = pinValue.slice(0, -1);
+    updatePinDots();
+    document.getElementById('pinError').textContent = '';
+  }
+
+  function updatePinDots() {
+    document.querySelectorAll('.pin-dot').forEach((dot, i) => {
+      dot.classList.toggle('filled', i < pinValue.length);
+    });
+  }
+
+  // ── Admin Panel ──
+  function openAdminPanel() {
+    applyTheme();
+    document.getElementById('adminOverlay').classList.add('show');
+  }
+
+  function closeAdminPanel() {
+    document.getElementById('adminOverlay').classList.remove('show');
+  }
+
+  function updateThemeToggleVisibility() { /* no-op, replaced by admin panel */ }
 
   function submitClockIn() {
     if (!clockinStaffId || !clockinPassword) return;
@@ -1133,6 +1343,14 @@
     const roleLabel = currentStaffId === '0000' ? 'Admin' : 'Staff';
     document.getElementById('headerStaffId').textContent = currentStaffId + ' · ' + currentStaffRole;
     document.getElementById('headerRole').textContent = roleLabel;
+    const adminPill = document.getElementById('adminPill');
+    if (currentStaffId === '0000') {
+      adminPill.classList.add('header-pill-btn');
+      adminPill.style.cursor = 'pointer';
+    } else {
+      adminPill.classList.remove('header-pill-btn');
+      adminPill.style.cursor = 'default';
+    }
     updateThemeToggleVisibility();
     closeClockIn();
     showToast('Clocked in as ' + currentStaffId + ' · ' + currentStaffRole);
