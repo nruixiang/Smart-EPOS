@@ -109,6 +109,38 @@
     .revoke-btn { margin-left: auto; padding: 6px 14px; border-radius: 20px; border: none; background: #fef3c7; color: #d97706; font-size: 0.857rem; font-weight: 600; cursor: pointer; font-family: var(--font); }
     .revoke-btn:hover { background: #fde68a; }
     .admin-section-note { font-size: 0.857rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 12px; }
+
+    /* PRODUCT CARD ADMIN OVERLAYS */
+    .product-card { position: relative; }
+    .card-admin-btns { position: absolute; top: 5px; left: 5px; display: none; gap: 4px; z-index: 10; }
+    .product-card.admin-mode .card-admin-btns { display: flex; }
+    .card-admin-btn { padding: 3px 9px; border-radius: 5px; border: none; font-size: 10px; font-weight: 600; cursor: pointer; font-family: var(--font); line-height: 1.6; transition: opacity 0.15s; }
+    .card-admin-btn.edit { background: #2563eb; color: white; }
+    .card-admin-btn.edit:hover { opacity: 0.85; }
+    .card-admin-btn.delete { background: #dc2626; color: white; }
+    .card-admin-btn.delete:hover { opacity: 0.85; }
+    .card-info-btn { position: absolute; bottom: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg-primary); color: var(--text-tertiary); font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: border-color 0.15s, color 0.15s, background 0.15s; font-family: var(--font); }
+    .card-info-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); background: var(--bg-secondary); }
+
+    /* PRODUCT INFO MODAL */
+    .pinfo-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .pinfo-overlay.show { opacity: 1; pointer-events: all; }
+    .pinfo-modal { background: var(--bg-primary); border-radius: 16px; width: 400px; max-height: 88vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+    .pinfo-hero { position: relative; height: 200px; background: linear-gradient(160deg, #2c2c2e 0%, #1a1a1a 100%); display: flex; align-items: flex-end; overflow: hidden; flex-shrink: 0; }
+    .pinfo-hero-emoji { position: absolute; inset: 0; overflow: hidden; } .pinfo-hero-emoji img { width: 100%; height: 100%; object-fit: cover; opacity: 0.55; }
+    .pinfo-hero-text { position: relative; padding: 16px 20px; }
+    .pinfo-hero-name { font-size: 22px; font-weight: 800; color: white; line-height: 1.2; }
+    .pinfo-hero-price { font-size: 17px; font-weight: 700; color: var(--green); margin-top: 4px; }
+    .pinfo-close { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; color: white; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    .pinfo-close:hover { background: rgba(255,255,255,0.25); }
+    .pinfo-body { overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+    .pinfo-section-label { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
+    .pinfo-section-label i { font-size: 12px; }
+    .pinfo-desc { font-size: 14px; color: var(--text-primary); line-height: 1.6; }
+    .pinfo-allergen-pill { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; font-size: 13px; font-weight: 500; width: 100%; }
+    .pinfo-allergen-pill i { font-size: 15px; }
+    [data-theme="dark"] .pinfo-allergen-pill { background: rgba(22,163,74,0.15); border-color: rgba(22,163,74,0.3); }
+    .pinfo-ingredients { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
     html, body { height: 100vh; overflow: hidden; font-size: 14px; }
     body { font-family: var(--font); background: var(--bg-tertiary); display: flex; flex-direction: column; }
     header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
@@ -218,11 +250,11 @@
     .search-bar input { width: 100%; padding: 8px 12px; font-size: 13px; border: 0.5px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); outline: none; font-family: var(--font); }
     .search-bar input:focus { border-color: var(--blue); }
     .products-grid { flex: 1; overflow-y: auto; padding: 0 14px 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-content: start; min-height: 0; }
-    .products-grid .product-card { height: 120px; }
-    .product-card { border: 0.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; cursor: pointer; transition: all 0.15s; background: var(--bg-primary); display: flex; flex-direction: column; }
+    .products-grid .product-card { height: 155px; }
+    .product-card { border: 0.5px solid var(--border); border-radius: var(--radius-md); overflow: visible; cursor: pointer; transition: all 0.15s; background: var(--bg-primary); display: flex; flex-direction: column; }
     .product-card:hover { border-color: var(--border-hover); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .product-card:active { transform: scale(0.97); }
-    .product-img { width: 100%; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; background: var(--bg-secondary); }
+    .product-img { width: 100%; height: 100px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; background: var(--bg-secondary); border-radius: var(--radius-md) var(--radius-md) 0 0; overflow: hidden; }
     .product-info { padding: 8px; flex-shrink: 0; }
     .product-name { font-size: 12px; font-weight: 500; color: var(--text-primary); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .product-price { font-size: 13px; font-weight: 600; color: var(--green); }    .mid-actions { border-top: 0.5px solid var(--border); padding: 10px 14px; display: flex; gap: 6px; justify-content: center; flex-shrink: 0; flex-wrap: wrap; }
@@ -813,44 +845,77 @@
   if (apiKey) document.getElementById('apiModal').style.display = 'none';
 
   // ── Products ──
+  // ── Product image URLs ──
+  const PRODUCT_IMGS = {
+    'Espresso':          'https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?w=300&q=80',
+    'Americano':         'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=300&q=80',
+    'Latte':             'https://images.unsplash.com/photo-1561047029-3000c68339ca?w=300&q=80',
+    'Cappuccino':        'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=300&q=80',
+    'Flat White':        'https://images.unsplash.com/photo-1577968897966-3d4325b36b61?w=300&q=80',
+    'Mocha':             'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300&q=80',
+    'Green Tea':         'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300&q=80',
+    'Earl Grey':         'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=300&q=80',
+    'Chamomile':         'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=300&q=80',
+    'Sakura Latte':      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80',
+    'Ube Matcha':        'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=300&q=80',
+    'Rose Espresso':     'https://images.unsplash.com/photo-1485808191679-5f86510bd9d4?w=300&q=80',
+    'Iced Latte':        'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=300&q=80',
+    'Cold Brew':         'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=300&q=80',
+    'Iced Matcha':       'https://images.unsplash.com/photo-1608889335941-32ac5f2041b9?w=300&q=80',
+    'Lemonade':          'https://images.unsplash.com/photo-1523677011781-c91d1bbe2f9e?w=300&q=80',
+    'Sparkling Water':   'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&q=80',
+    'Croissant':         'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=300&q=80',
+    'Muffin':            'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=300&q=80',
+    'Cinnamon Roll':     'https://images.unsplash.com/photo-1509365465985-25d11c17e812?w=300&q=80',
+    'Banana Bread':      'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=300&q=80',
+    'Brownie':           'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=300&q=80',
+    'Tote Bag':          'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=300&q=80',
+    'Travel Mug':        'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=300&q=80',
+    'Coffee Beans 250g': 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=300&q=80',
+    'Breakfast Set':     'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=300&q=80',
+    'Arvo Pick-Me-Up':   'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300&q=80',
+    'Gift Bundle':       'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=300&q=80',
+  };
+
+  // ── Products ──
   const PRODUCTS = {
     "Hot Drinks": { All: [
-      {name:"Espresso",price:3.00,emoji:"☕",sub:"Coffee"},
-      {name:"Americano",price:3.50,emoji:"☕",sub:"Coffee"},
-      {name:"Latte",price:4.50,emoji:"🍵",sub:"Coffee"},
-      {name:"Cappuccino",price:4.50,emoji:"☕",sub:"Coffee"},
-      {name:"Flat White",price:4.50,emoji:"☕",sub:"Coffee"},
-      {name:"Mocha",price:5.00,emoji:"🍫",sub:"Coffee"},
-      {name:"Green Tea",price:3.50,emoji:"🍵",sub:"Tea"},
-      {name:"Earl Grey",price:3.50,emoji:"🫖",sub:"Tea"},
-      {name:"Chamomile",price:3.00,emoji:"🌼",sub:"Tea"},
-      {name:"Sakura Latte",price:5.50,emoji:"🌸",sub:"Special Edition"},
-      {name:"Ube Matcha",price:5.50,emoji:"💜",sub:"Special Edition"},
-      {name:"Rose Espresso",price:5.50,emoji:"🌹",sub:"Special Edition"},
+      {name:"Espresso",price:3.00,sub:"Coffee",desc:"A concentrated shot of espresso with a rich, bold crema. Intense and full-bodied.",allergens:"No common allergens",ingredients:"Espresso"},
+      {name:"Americano",price:3.50,sub:"Coffee",desc:"Espresso diluted with hot water for a smooth, lighter brew. Clean and balanced.",allergens:"No common allergens",ingredients:"Espresso • Hot Water"},
+      {name:"Latte",price:4.50,sub:"Coffee",desc:"Espresso with lots of steamed milk and a small amount of foam. Creamy and mild.",allergens:"Contains dairy (milk)",ingredients:"Espresso • Steamed Milk • Milk Foam"},
+      {name:"Cappuccino",price:4.50,sub:"Coffee",desc:"Equal parts espresso, steamed milk, and thick foam. Bold with a velvety finish.",allergens:"Contains dairy (milk)",ingredients:"Espresso • Steamed Milk • Foam"},
+      {name:"Flat White",price:4.50,sub:"Coffee",desc:"Ristretto shots with silky microfoam. Stronger than a latte, smoother than a cappuccino.",allergens:"Contains dairy (milk)",ingredients:"Ristretto • Steamed Milk"},
+      {name:"Mocha",price:5.00,sub:"Coffee",desc:"Espresso blended with rich chocolate and steamed milk. Sweet and indulgent.",allergens:"Contains dairy (milk), may contain gluten",ingredients:"Espresso • Chocolate Sauce • Steamed Milk • Whipped Cream"},
+      {name:"Green Tea",price:3.50,sub:"Tea",desc:"Premium Japanese sencha brewed at the perfect temperature. Fresh and gently sweet.",allergens:"No common allergens",ingredients:"Green Tea Leaves • Hot Water"},
+      {name:"Earl Grey",price:3.50,sub:"Tea",desc:"Classic black tea infused with bergamot oil. Floral, citrusy, and aromatic.",allergens:"No common allergens",ingredients:"Black Tea • Bergamot Oil"},
+      {name:"Chamomile",price:3.00,sub:"Tea",desc:"Caffeine-free herbal infusion with gentle honey-like sweetness. Perfect for winding down.",allergens:"No common allergens",ingredients:"Chamomile Flowers • Hot Water"},
+      {name:"Sakura Latte",price:5.50,sub:"Special Edition",desc:"Espresso with cherry blossom syrup and steamed milk. Floral and lightly sweet.",allergens:"Contains dairy (milk)",ingredients:"Espresso • Sakura Syrup • Steamed Milk • Rose Petals"},
+      {name:"Ube Matcha",price:5.50,sub:"Special Edition",desc:"Vibrant ube and ceremonial matcha swirled with oat milk. Earthy, sweet, and stunning.",allergens:"No common allergens",ingredients:"Ceremonial Matcha • Ube Paste • Oat Milk"},
+      {name:"Rose Espresso",price:5.50,sub:"Special Edition",desc:"Double espresso with rose water and a hint of cardamom. Romantic and aromatic.",allergens:"No common allergens",ingredients:"Double Espresso • Rose Water • Cardamom"},
     ]},
     "Cold Drinks": { All: [
-      {name:"Iced Latte",price:5.00,emoji:"🧊",sub:"Coffee"},
-      {name:"Cold Brew",price:5.50,emoji:"🥤",sub:"Coffee"},
-      {name:"Iced Matcha",price:5.00,emoji:"🍵",sub:"Tea"},
-      {name:"Lemonade",price:4.00,emoji:"🍋",sub:"Special Edition"},
-      {name:"Sparkling Water",price:2.50,emoji:"💧",sub:"Special Edition"},
+      {name:"Iced Latte",price:5.00,sub:"Coffee",desc:"Espresso over ice topped with cold milk. Smooth, refreshing, and endlessly drinkable.",allergens:"Contains dairy (milk)",ingredients:"Espresso • Cold Milk • Ice"},
+      {name:"Cold Brew",price:5.50,sub:"Coffee",desc:"Steeped for 18 hours in cold water. Ultra-smooth, low acidity, and naturally sweet.",allergens:"No common allergens",ingredients:"Coarse Ground Coffee • Cold Water"},
+      {name:"Iced Matcha",price:5.00,sub:"Tea",desc:"Ceremonial matcha shaken with milk over ice. Vibrant, earthy, and creamy.",allergens:"Contains dairy (milk)",ingredients:"Ceremonial Matcha • Milk • Ice"},
+      {name:"Lemonade",price:4.00,sub:"Special Edition",desc:"Freshly squeezed lemons with a touch of honey syrup. Bright and refreshing.",allergens:"No common allergens",ingredients:"Fresh Lemon Juice • Honey Syrup • Sparkling Water"},
+      {name:"Sparkling Water",price:2.50,sub:"Special Edition",desc:"Premium sparkling mineral water served chilled. Clean, crisp, and refreshing.",allergens:"No common allergens",ingredients:"Sparkling Mineral Water"},
     ]},
     "Pastries": { All: [
-      {name:"Croissant",price:3.50,emoji:"🥐",sub:"Coffee"},
-      {name:"Muffin",price:3.00,emoji:"🧁",sub:"Coffee"},
-      {name:"Cinnamon Roll",price:4.00,emoji:"🌀",sub:"Special Edition"},
-      {name:"Banana Bread",price:3.50,emoji:"🍌",sub:"Coffee"},
-      {name:"Brownie",price:3.50,emoji:"🍫",sub:"Special Edition"},
+      {name:"Croissant",price:3.50,sub:"Coffee",desc:"Buttery, flaky layers baked fresh daily. Golden on the outside, soft and airy within.",allergens:"Contains gluten, dairy, eggs",ingredients:"Butter • Flour • Eggs • Milk • Yeast • Salt"},
+      {name:"Muffin",price:3.00,sub:"Coffee",desc:"Moist blueberry muffin with a golden sugar crust. Baked in-house every morning.",allergens:"Contains gluten, dairy, eggs",ingredients:"Flour • Blueberries • Butter • Sugar • Eggs • Milk"},
+      {name:"Cinnamon Roll",price:4.00,sub:"Special Edition",desc:"Soft dough swirled with brown sugar and cinnamon, finished with cream cheese glaze.",allergens:"Contains gluten, dairy, eggs",ingredients:"Flour • Cinnamon • Brown Sugar • Butter • Cream Cheese • Eggs"},
+      {name:"Banana Bread",price:3.50,sub:"Coffee",desc:"Dense, moist loaf made with ripe bananas and a hint of vanilla. Naturally sweet.",allergens:"Contains gluten, eggs, may contain nuts",ingredients:"Banana • Flour • Eggs • Butter • Sugar • Vanilla"},
+      {name:"Brownie",price:3.50,sub:"Special Edition",desc:"Fudgy dark chocolate brownie with a crinkle top. Rich, dense, and deeply chocolatey.",allergens:"Contains gluten, dairy, eggs",ingredients:"Dark Chocolate • Butter • Sugar • Eggs • Flour • Cocoa"},
     ]},
     "Merch": { All: [
-      {name:"Tote Bag",price:15.00,emoji:"👜",sub:"Coffee"},
-      {name:"Travel Mug",price:24.00,emoji:"☕",sub:"Coffee"},
-      {name:"Coffee Beans 250g",price:18.00,emoji:"🫘",sub:"Special Edition"},
+      {name:"Tote Bag",price:15.00,sub:"Coffee",desc:"Sturdy canvas tote with the Lumiere logo. Fits a laptop, reusable cup, and everything in between.",allergens:"N/A",ingredients:"100% Cotton Canvas"},
+      {name:"Travel Mug",price:24.00,sub:"Coffee",desc:"Double-walled stainless steel mug. Keeps drinks hot for 8 hours, cold for 12.",allergens:"N/A",ingredients:"18/8 Stainless Steel • BPA-free lid"},
+      {name:"Coffee Beans 250g",price:18.00,sub:"Special Edition",desc:"Our house blend, roasted locally. Notes of dark chocolate, hazelnut, and caramel.",allergens:"No common allergens",ingredients:"Single-Origin Arabica Blend"},
     ]},
     "Bundles": { All: [
-      {name:"Breakfast Set",price:9.00,emoji:"🍽️",sub:"Coffee"},
-      {name:"Arvo Pick-Me-Up",price:8.50,emoji:"⚡",sub:"Coffee"},
-      {name:"Gift Bundle",price:35.00,emoji:"🎁",sub:"Special Edition"},
+      {name:"Breakfast Set",price:9.00,sub:"Coffee",desc:"Any hot drink paired with a croissant or muffin. The perfect morning combo.",allergens:"Contains gluten, dairy",ingredients:"Choice of Hot Drink • Choice of Pastry"},
+      {name:"Arvo Pick-Me-Up",price:8.50,sub:"Coffee",desc:"Double espresso or cold brew with a brownie. Your 3pm lifesaver.",allergens:"Contains gluten, dairy, eggs",ingredients:"Double Espresso or Cold Brew • Brownie"},
+      {name:"Gift Bundle",price:35.00,sub:"Special Edition",desc:"Travel mug, coffee beans, and a gift card in a branded box. Makes a perfect present.",allergens:"N/A",ingredients:"Travel Mug • 250g Coffee Beans • $10 Gift Card"},
     ]},
   };
 
@@ -866,14 +931,26 @@
     const grid = document.getElementById('productsGrid');
     const prods = getProducts();
     if (!prods.length) { grid.innerHTML = '<p style="color:var(--text-tertiary);font-size:13px;padding:12px;">No products found.</p>'; return; }
-    grid.innerHTML = prods.map(p => `
-      <div class="product-card" onclick="addItem('${p.name.replace(/'/g,"\\'")}',${p.price},'${p.emoji}')">
-        <div class="product-img">${p.emoji}</div>
-        <div class="product-info">
-          <div class="product-name">${p.name}</div>
-          <div class="product-price">$${p.price.toFixed(2)}</div>
-        </div>
-      </div>`).join('');
+    const isAdmin = currentStaffId === '0000';
+    grid.innerHTML = prods.map(p => {
+      const safeName = p.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const imgUrl = PRODUCT_IMGS[p.name] || '';
+      const imgHtml = imgUrl
+        ? '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:cover;" alt="' + p.name + '" loading="lazy">'
+        : p.name;
+      return '<div class="product-card' + (isAdmin ? ' admin-mode' : '') + '" onclick="addItem(\'' + safeName + '\',' + p.price + ',\'' + safeName + '\')">'
+        + '<div class="card-admin-btns">'
+        + '<button class="card-admin-btn edit" onclick="event.stopPropagation();openEdit(\'' + safeName + '\')">Edit</button>'
+        + '<button class="card-admin-btn delete" onclick="event.stopPropagation();deleteProduct(\'' + safeName + '\')">Delete</button>'
+        + '</div>'
+        + '<div class="product-img">' + imgHtml + '</div>'
+        + '<div class="product-info">'
+        + '<div class="product-name">' + p.name + '</div>'
+        + '<div class="product-price">$' + p.price.toFixed(2) + '</div>'
+        + '</div>'
+        + '<button class="card-info-btn" onclick="event.stopPropagation();openPinfo(\'' + safeName + '\')">i</button>'
+        + '</div>';
+    }).join('');
   }
 
   function selectCat(btn) {
@@ -1189,7 +1266,7 @@
   }
 
   // ── Clock In / Staff ──
-  let currentStaffId = '0000';
+  let currentStaffId = '';
   let currentStaffRole = 'Administrator';
   let numpadTarget = null; // 'staffId' | 'password'
   let numpadValue = '';
@@ -1363,6 +1440,7 @@
     }
     updateThemeToggleVisibility();
     closeClockIn();
+    renderProducts();
     showToast('Clocked in as ' + currentStaffId + ' · ' + currentStaffRole);
   }
 
@@ -1412,6 +1490,77 @@
 
   renderProducts();
 
+
+  // ── Product Info Modal ──
+  function findProduct(name) {
+    for (const cat of Object.values(PRODUCTS)) {
+      const p = cat.All.find(x => x.name === name);
+      if (p) return p;
+    }
+    return null;
+  }
+
+  function openPinfo(name) {
+    const p = findProduct(name);
+    if (!p) return;
+    document.getElementById('pinfoName').textContent = p.name;
+    document.getElementById('pinfoPrice').textContent = '$' + p.price.toFixed(2);
+    document.getElementById('pinfoEmoji').textContent = p.emoji;
+    document.getElementById('pinfoDesc').textContent = p.desc || 'No description available.';
+    const allergenEl = document.getElementById('pinfoAllergens');
+    const isClean = !p.allergens || p.allergens.toLowerCase().includes('no common');
+    allergenEl.style.background = isClean ? '' : 'rgba(239,68,68,0.08)';
+    allergenEl.style.borderColor = isClean ? '' : 'rgba(239,68,68,0.3)';
+    allergenEl.style.color = isClean ? '' : '#dc2626';
+    allergenEl.querySelector('i').className = isClean ? 'ti ti-leaf' : 'ti ti-alert-triangle';
+    allergenEl.querySelector('span').textContent = p.allergens || 'No common allergens';
+    document.getElementById('pinfoIngredients').textContent = p.ingredients || '—';
+    document.getElementById('pinfoOverlay').classList.add('show');
+  }
+
+  function closePinfo() { document.getElementById('pinfoOverlay').classList.remove('show'); }
+  function closePinfoIfBg(e) { if (e.target === document.getElementById('pinfoOverlay')) closePinfo(); }
+
+  // ── Edit Product ──
+  let editTarget = null;
+  function openEdit(name) {
+    const p = findProduct(name);
+    if (!p) return;
+    editTarget = p;
+    document.getElementById('editName').value = p.name;
+    document.getElementById('editPrice').value = p.price.toFixed(2);
+    document.getElementById('editDesc').value = p.desc || '';
+    document.getElementById('editOverlay').classList.add('show');
+  }
+
+  function closeEdit() { document.getElementById('editOverlay').classList.remove('show'); editTarget = null; }
+  function closeEditIfBg(e) { if (e.target === document.getElementById('editOverlay')) closeEdit(); }
+
+  function saveEdit() {
+    if (!editTarget) return;
+    const newName = document.getElementById('editName').value.trim();
+    const newPrice = parseFloat(document.getElementById('editPrice').value);
+    const newDesc = document.getElementById('editDesc').value.trim();
+    if (!newName || isNaN(newPrice)) { return; }
+    editTarget.name = newName;
+    editTarget.price = newPrice;
+    editTarget.desc = newDesc;
+    closeEdit();
+    renderProducts();
+    showToast('Item updated');
+  }
+
+  // ── Delete Product ──
+  function deleteProduct(name) {
+    if (!confirm('Delete "' + name + '" from the menu?')) return;
+    for (const cat of Object.values(PRODUCTS)) {
+      const idx = cat.All.findIndex(x => x.name === name);
+      if (idx !== -1) { cat.All.splice(idx, 1); break; }
+    }
+    renderProducts();
+    showToast('Item deleted');
+  }
+
   // ── Drag-to-scroll for tab rows ──
   function makeDraggable(el) {
     let isDown = false, startX, scrollLeft, dragged = false;
@@ -1440,5 +1589,61 @@
   makeDraggable(document.getElementById('subTabs'));
 
 </script>
+
+<!-- Product Info Modal -->
+<div class="pinfo-overlay" id="pinfoOverlay" onclick="closePinfoIfBg(event)">
+  <div class="pinfo-modal" id="pinfoModal">
+    <div class="pinfo-hero" id="pinfoHero">
+      <div class="pinfo-hero-emoji" id="pinfoEmoji"></div>
+      <div class="pinfo-hero-text">
+        <div class="pinfo-hero-name" id="pinfoName"></div>
+        <div class="pinfo-hero-price" id="pinfoPrice"></div>
+      </div>
+      <button class="pinfo-close" onclick="closePinfo()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="pinfo-body">
+      <div>
+        <div class="pinfo-section-label"><i class="ti ti-info-circle"></i> About</div>
+        <div class="pinfo-desc" id="pinfoDesc"></div>
+      </div>
+      <div>
+        <div class="pinfo-section-label"><i class="ti ti-alert-triangle"></i> Allergens</div>
+        <div class="pinfo-allergen-pill" id="pinfoAllergens"><i class="ti ti-leaf"></i><span></span></div>
+      </div>
+      <div>
+        <div class="pinfo-section-label"><i class="ti ti-list"></i> Ingredients</div>
+        <div class="pinfo-ingredients" id="pinfoIngredients"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div class="pinfo-overlay" id="editOverlay" onclick="closeEditIfBg(event)">
+  <div class="pinfo-modal" style="max-width:400px;">
+    <div style="padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Edit Item</div>
+      <button class="pinfo-close" style="position:static;background:var(--bg-tertiary);color:var(--text-primary);width:28px;height:28px;" onclick="closeEdit()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="pinfo-body" style="gap:14px;">
+      <div>
+        <div class="pinfo-section-label" style="margin-bottom:6px;">Name</div>
+        <input id="editName" style="width:100%;padding:9px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);outline:none;font-family:var(--font);" />
+      </div>
+      <div>
+        <div class="pinfo-section-label" style="margin-bottom:6px;">Price ($)</div>
+        <input id="editPrice" type="number" step="0.01" style="width:100%;padding:9px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);outline:none;font-family:var(--font);" />
+      </div>
+      <div>
+        <div class="pinfo-section-label" style="margin-bottom:6px;">Description</div>
+        <textarea id="editDesc" rows="3" style="width:100%;padding:9px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);outline:none;font-family:var(--font);resize:vertical;line-height:1.5;"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;padding-bottom:4px;">
+        <button onclick="closeEdit()" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">Cancel</button>
+        <button onclick="saveEdit()" style="flex:1;padding:10px;border-radius:8px;border:none;background:#2563eb;color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
