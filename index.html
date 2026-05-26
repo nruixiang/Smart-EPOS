@@ -92,9 +92,9 @@
     .admin-tab { padding: 12px 16px; font-size: 0.929rem; font-weight: 500; color: var(--text-secondary); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; font-family: var(--font); display: flex; align-items: center; gap: 6px; transition: color 0.15s; margin-bottom: -0.5px; }
     .admin-tab.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
     .admin-tab i { font-size: 1.071rem; }
-    .admin-body { flex: 1; overflow-y: auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 24px; }
-    .admin-section-label { font-size: 0.786rem; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: -8px; }
-    .admin-setting-row { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--bg-primary); }
+    .admin-body { flex: 1; overflow-y: auto; padding: 28px 24px; display: flex; flex-direction: column; gap: 0; }
+    .admin-section-label { font-size: 0.786rem; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+    .admin-setting-row { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--bg-primary); margin-bottom: 10px; }
     .admin-setting-left { display: flex; align-items: center; gap: 12px; }
     .admin-setting-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 1.143rem; color: var(--text-secondary); flex-shrink: 0; }
     .admin-setting-name { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
@@ -108,7 +108,7 @@
     .cashier-badge { font-size: 0.786rem; color: #d97706; display: flex; align-items: center; gap: 3px; margin-top: 2px; }
     .revoke-btn { margin-left: auto; padding: 6px 14px; border-radius: 20px; border: none; background: #fef3c7; color: #d97706; font-size: 0.857rem; font-weight: 600; cursor: pointer; font-family: var(--font); }
     .revoke-btn:hover { background: #fde68a; }
-    .admin-section-note { font-size: 0.857rem; color: var(--text-secondary); margin-top: -12px; }
+    .admin-section-note { font-size: 0.857rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 12px; }
     html, body { height: 100vh; overflow: hidden; font-size: 14px; }
     body { font-family: var(--font); background: var(--bg-tertiary); display: flex; flex-direction: column; }
     header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
@@ -720,7 +720,7 @@
             <button class="seg-btn" id="segL" onclick="setTextSize('L')">L</button>
           </div>
         </div>
-        <div class="admin-section-label">Cashier Admin Access</div>
+        <div class="admin-section-label" style="margin-top: 18px;">Cashier Admin Access</div>
         <div class="admin-section-note">Only cashiers marked as Admin can enter the Admin Panel.</div>
         <div class="cashier-row">
           <div class="cashier-avatar">O</div>
@@ -1284,7 +1284,7 @@
     document.getElementById('adminSettingsContent').style.display = tab === 'settings' ? 'flex' : 'none';
     document.getElementById('adminMenuContent').style.display = tab === 'menu' ? 'block' : 'none';
     if (tab === 'settings') document.getElementById('adminSettingsContent').style.flexDirection = 'column';
-    if (tab === 'settings') document.getElementById('adminSettingsContent').style.gap = '12px';
+    if (tab === 'settings') document.getElementById('adminSettingsContent').style.gap = '0';
   }
 
   // ── Supervisor PIN Modal ──
