@@ -134,6 +134,65 @@
     .pay-btn.card { background: #374151; border-color: #374151; }
     .pay-btn.card i, .pay-btn.card span { color: white; }
 
+    /* CASH KEYPAD PANEL */
+    .cash-panel { display: none; flex-direction: column; height: 100%; }
+    .cash-panel.active { display: flex; }
+    .order-panel { display: flex; flex-direction: column; height: 100%; }
+    .order-panel.hidden { display: none; }
+    .cash-header { padding: 14px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .back-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 18px; display: flex; align-items: center; padding: 0; }
+    .cash-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .amount-due-box { margin: 14px; background: #111; border-radius: var(--radius-lg); padding: 18px; text-align: center; flex-shrink: 0; }
+    .amount-due-label { font-size: 12px; color: #999; margin-bottom: 4px; }
+    .amount-due-val { font-size: 32px; font-weight: 800; color: #fff; letter-spacing: -1px; }
+    .cash-received-label { font-size: 12px; color: var(--text-secondary); padding: 0 14px 6px; flex-shrink: 0; }
+    .cash-input-display { margin: 0 14px 10px; padding: 10px 14px; border: 1.5px solid var(--border-hover); border-radius: var(--radius-md); font-size: 20px; font-weight: 600; color: var(--text-secondary); background: var(--bg-primary); display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .cash-input-display span { flex: 1; color: var(--text-primary); }
+    .change-row { margin: 0 14px 8px; display: flex; justify-content: space-between; font-size: 13px; flex-shrink: 0; }
+    .change-row .change-label { color: var(--text-secondary); }
+    .change-row .change-val { font-weight: 600; color: var(--green); }
+    .keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 0 14px; flex-shrink: 0; }
+    .key { padding: 14px 0; border: 0.5px solid var(--border); border-radius: var(--radius-md); background: var(--bg-primary); font-size: 18px; font-weight: 500; color: var(--text-primary); cursor: pointer; transition: background 0.1s; font-family: var(--font); text-align: center; }
+    .key:hover { background: var(--bg-secondary); }
+    .key:active { background: var(--bg-tertiary); transform: scale(0.96); }
+    .key.key-clear { background: var(--bg-secondary); font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+    .key.key-del { background: var(--bg-secondary); }
+    .confirm-btn { margin: 10px 14px 14px; padding: 14px; border-radius: var(--radius-md); border: none; font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: opacity 0.15s; }
+    .confirm-btn.ready { background: var(--green); color: white; }
+    .confirm-btn.not-ready { background: var(--bg-tertiary); color: var(--text-tertiary); cursor: not-allowed; }
+
+    /* RECEIPT MODAL */
+    .receipt-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .receipt-overlay.show { opacity: 1; pointer-events: all; }
+    .receipt-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 360px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; border: 0.5px solid var(--border); }
+    .receipt-modal-header { padding: 14px 16px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .receipt-modal-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .receipt-modal-title .icon { width: 30px; height: 30px; background: #111; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .receipt-modal-title .icon i { font-size: 16px; color: white; }
+    .receipt-ref { font-size: 11px; background: var(--bg-secondary); color: var(--text-secondary); padding: 3px 8px; border-radius: 4px; border: 0.5px solid var(--border); }
+    .receipt-close { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 20px; display: flex; align-items: center; }
+    .receipt-body { overflow-y: auto; padding: 20px 24px; flex: 1; }
+    .receipt-shop-name { text-align: center; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; color: var(--text-primary); margin-bottom: 2px; font-family: Georgia, serif; }
+    .receipt-shop-sub { text-align: center; font-size: 12px; color: var(--text-secondary); margin-bottom: 18px; }
+    .receipt-meta { width: 100%; font-size: 12px; margin-bottom: 16px; }
+    .receipt-meta td { padding: 2px 0; color: var(--text-secondary); }
+    .receipt-meta td:last-child { text-align: right; color: var(--text-primary); }
+    .receipt-divider { border: none; border-top: 0.5px solid var(--border); margin: 12px 0; }
+    .receipt-items { width: 100%; font-size: 13px; margin-bottom: 4px; }
+    .receipt-items td { padding: 4px 0; color: var(--text-primary); }
+    .receipt-items td:last-child { text-align: right; }
+    .receipt-items .item-qty-label { font-weight: 600; margin-right: 2px; }
+    .receipt-totals { width: 100%; font-size: 13px; margin-top: 4px; }
+    .receipt-totals td { padding: 3px 0; color: var(--text-secondary); }
+    .receipt-totals td:last-child { text-align: right; }
+    .receipt-total-final td { font-size: 15px; font-weight: 700; color: var(--text-primary); padding-top: 8px; }
+    .receipt-paid { text-align: center; font-size: 12px; color: var(--text-secondary); margin: 14px 0 4px; }
+    .receipt-thank { text-align: center; font-size: 12px; color: var(--text-tertiary); font-style: italic; }
+    .receipt-footer { padding: 12px 16px; border-top: 0.5px solid var(--border); display: flex; gap: 8px; flex-shrink: 0; }
+    .receipt-footer button { flex: 1; padding: 10px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); border: 0.5px solid var(--border); }
+    .btn-close-receipt { background: var(--bg-primary); color: var(--text-primary); }
+    .btn-print { background: #111; color: white; border-color: #111 !important; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
     /* TOAST */
     .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; padding: 10px 24px; border-radius: 24px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
     .toast.show { opacity: 1; }
@@ -252,8 +311,10 @@
     </div>
   </div>
 
-  <!-- RIGHT: Order Panel -->
+  <!-- RIGHT: Order Panel + Cash Keypad -->
   <div class="right-panel">
+    <!-- Normal order view -->
+    <div class="order-panel" id="orderPanel">
     <div class="order-header">
       <div>
         <div class="order-title">Current Order</div>
@@ -281,9 +342,73 @@
       </div>
     </div>
     <div class="payment-btns">
-      <button class="pay-btn cash" onclick="processPayment('Cash')"><i class="ti ti-cash"></i><span>Cash</span></button>
+      <button class="pay-btn cash" onclick="openCashKeypad()"><i class="ti ti-cash"></i><span>Cash</span></button>
       <button class="pay-btn card" onclick="processPayment('Card')"><i class="ti ti-credit-card"></i><span>Card</span></button>
       <button class="pay-btn" onclick="processPayment('Mobile')"><i class="ti ti-device-mobile"></i><span>Mobile</span></button>
+    </div>
+    </div>
+
+    <!-- Cash keypad view -->
+    <div class="cash-panel" id="cashPanel">
+      <div class="cash-header">
+        <button class="back-btn" onclick="closeCashKeypad()"><i class="ti ti-arrow-left"></i></button>
+        <i class="ti ti-cash" style="font-size:16px;color:var(--text-secondary);"></i>
+        <span class="cash-title">Cash Payment</span>
+      </div>
+      <div class="amount-due-box">
+        <div class="amount-due-label">Amount Due</div>
+        <div class="amount-due-val" id="keypadAmountDue">$0.00</div>
+      </div>
+      <div class="cash-received-label">Cash Received</div>
+      <div class="cash-input-display">
+        <span style="color:var(--text-tertiary);">$</span>
+        <span id="keypadDisplay">0.00</span>
+      </div>
+      <div class="change-row" id="changeRow" style="visibility:hidden;">
+        <span class="change-label">Change</span>
+        <span class="change-val" id="changeVal">$0.00</span>
+      </div>
+      <div class="keypad">
+        <button class="key" onclick="keyPress('7')">7</button>
+        <button class="key" onclick="keyPress('8')">8</button>
+        <button class="key" onclick="keyPress('9')">9</button>
+        <button class="key key-del" onclick="keyDel()"><i class="ti ti-backspace" style="font-size:20px;"></i></button>
+        <button class="key" onclick="keyPress('4')">4</button>
+        <button class="key" onclick="keyPress('5')">5</button>
+        <button class="key" onclick="keyPress('6')">6</button>
+        <button class="key key-clear" onclick="keyClear()">C</button>
+        <button class="key" onclick="keyPress('1')">1</button>
+        <button class="key" onclick="keyPress('2')">2</button>
+        <button class="key" onclick="keyPress('3')">3</button>
+        <button class="key" onclick="keyPress('00')">00</button>
+        <button class="key" style="grid-column:span 2;" onclick="keyPress('0')">0</button>
+        <button class="key" onclick="keyPress('.')">.</button>
+        <button class="key" onclick="keyExact()" title="Exact amount"><i class="ti ti-arrows-right-left" style="font-size:16px;"></i></button>
+      </div>
+      <button class="confirm-btn not-ready" id="confirmCashBtn" onclick="confirmCash()">
+        <i class="ti ti-circle-check" style="vertical-align:-2px;margin-right:6px;"></i>Confirm &amp; Complete Sale
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt Modal -->
+<div class="receipt-overlay" id="receiptOverlay">
+  <div class="receipt-modal">
+    <div class="receipt-modal-header">
+      <div class="receipt-modal-title">
+        <div class="icon"><i class="ti ti-receipt"></i></div>
+        Receipt
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="receipt-ref" id="receiptRef">#000000</span>
+        <button class="receipt-close" onclick="closeReceipt()"><i class="ti ti-x"></i></button>
+      </div>
+    </div>
+    <div class="receipt-body" id="receiptBody"></div>
+    <div class="receipt-footer">
+      <button class="btn-close-receipt" onclick="closeReceipt()">Close</button>
+      <button class="btn-print" onclick="window.print()"><i class="ti ti-printer"></i> Print</button>
     </div>
   </div>
 </div>
@@ -440,10 +565,140 @@
     setTimeout(()=>t.classList.remove('show'), 2500);
   }
 
+  // ── Cash Keypad ──
+  let keypadRaw = '';
+  let currentTotal = 0;
+
+  function openCashKeypad() {
+    if (!Object.keys(order).length) { showToast('Add items to the order first'); return; }
+    const items = Object.values(order);
+    const sub = items.reduce((a,i)=>a+i.price*i.qty,0);
+    currentTotal = parseFloat((sub * 1.09).toFixed(2));
+    document.getElementById('keypadAmountDue').textContent = '$' + currentTotal.toFixed(2);
+    keypadRaw = '';
+    updateKeypadDisplay();
+    document.getElementById('orderPanel').classList.add('hidden');
+    document.getElementById('cashPanel').classList.add('active');
+  }
+
+  function closeCashKeypad() {
+    document.getElementById('cashPanel').classList.remove('active');
+    document.getElementById('orderPanel').classList.remove('hidden');
+  }
+
+  function keyPress(val) {
+    if (val === '.') {
+      if (keypadRaw.includes('.')) return;
+      if (keypadRaw === '') keypadRaw = '0';
+    }
+    const parts = keypadRaw.split('.');
+    if (parts[1] && parts[1].length >= 2) return;
+    if (keypadRaw.length >= 8) return;
+    keypadRaw += val;
+    updateKeypadDisplay();
+  }
+
+  function keyDel() {
+    keypadRaw = keypadRaw.slice(0,-1);
+    updateKeypadDisplay();
+  }
+
+  function keyClear() {
+    keypadRaw = '';
+    updateKeypadDisplay();
+  }
+
+  function keyExact() {
+    keypadRaw = currentTotal.toFixed(2);
+    updateKeypadDisplay();
+  }
+
+  function updateKeypadDisplay() {
+    const display = document.getElementById('keypadDisplay');
+    const val = keypadRaw === '' ? '0.00' : keypadRaw;
+    display.textContent = val;
+    const received = parseFloat(val) || 0;
+    const changeRow = document.getElementById('changeRow');
+    const confirmBtn = document.getElementById('confirmCashBtn');
+    if (received >= currentTotal && currentTotal > 0) {
+      const change = received - currentTotal;
+      document.getElementById('changeVal').textContent = '$' + change.toFixed(2);
+      changeRow.style.visibility = 'visible';
+      confirmBtn.className = 'confirm-btn ready';
+    } else {
+      changeRow.style.visibility = 'hidden';
+      confirmBtn.className = 'confirm-btn not-ready';
+    }
+  }
+
+  function confirmCash() {
+    const received = parseFloat(keypadRaw) || 0;
+    if (received < currentTotal || currentTotal === 0) return;
+    const change = received - currentTotal;
+    showReceipt('Cash', received, change);
+  }
+
+  // ── Card / Mobile ──
   function processPayment(method) {
     if (!Object.keys(order).length) { showToast('Add items to the order first'); return; }
-    showToast(`${method} payment accepted! ✓`);
-    setTimeout(clearOrder, 600);
+    showReceipt(method, null, null);
+  }
+
+  // ── Receipt ──
+  function generateRef() {
+    return '#' + Math.random().toString(36).toUpperCase().slice(2,8);
+  }
+
+  function showReceipt(method, cashReceived, change) {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', {month:'numeric',day:'numeric',year:'numeric'});
+    const timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+    const ref = generateRef();
+    document.getElementById('receiptRef').textContent = ref;
+
+    const items = Object.values(order);
+    const sub = items.reduce((a,i)=>a+i.price*i.qty,0);
+    const tax = sub * 0.09;
+    const total = sub + tax;
+
+    const itemRows = items.map(item => `
+      <tr>
+        <td><span class="item-qty-label">${item.qty}×</span> ${item.name}</td>
+        <td>$${(item.price * item.qty).toFixed(2)}</td>
+      </tr>`).join('');
+
+    const cashRows = (method === 'Cash' && cashReceived !== null) ? `
+      <tr><td>Cash received</td><td>$${cashReceived.toFixed(2)}</td></tr>
+      <tr><td>Change</td><td>$${change.toFixed(2)}</td></tr>` : '';
+
+    document.getElementById('receiptBody').innerHTML = `
+      <div class="receipt-shop-name">LUMIÈRE</div>
+      <div class="receipt-shop-sub">Café &amp; Bakery</div>
+      <table class="receipt-meta">
+        <tr><td>Date</td><td>${dateStr}</td></tr>
+        <tr><td>Time</td><td>${timeStr}</td></tr>
+        <tr><td>Cashier</td><td>0000</td></tr>
+      </table>
+      <hr class="receipt-divider"/>
+      <table class="receipt-items">${itemRows}</table>
+      <hr class="receipt-divider"/>
+      <table class="receipt-totals">
+        <tr><td>Subtotal</td><td>$${sub.toFixed(2)}</td></tr>
+        <tr><td>Tax (9%)</td><td>$${tax.toFixed(2)}</td></tr>
+        <tr class="receipt-total-final"><td>TOTAL</td><td>$${total.toFixed(2)}</td></tr>
+        ${cashRows}
+      </table>
+      <div class="receipt-paid">Paid by ${method}</div>
+      <hr class="receipt-divider"/>
+      <div class="receipt-thank">Thank you for visiting!</div>`;
+
+    document.getElementById('receiptOverlay').classList.add('show');
+    closeCashKeypad();
+  }
+
+  function closeReceipt() {
+    document.getElementById('receiptOverlay').classList.remove('show');
+    clearOrder();
   }
 
   // ── AI Chat ──
