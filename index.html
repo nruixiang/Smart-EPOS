@@ -24,7 +24,7 @@
       --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
     @media (prefers-color-scheme: dark) {
-      :root {
+      :root:not([data-theme]) {
         --bg-primary: #1c1c1e;
         --bg-secondary: #2c2c2e;
         --bg-tertiary: #3a3a3c;
@@ -35,6 +35,37 @@
         --border-hover: rgba(255,255,255,0.22);
       }
     }
+    [data-theme="dark"] {
+      --bg-primary: #1c1c1e;
+      --bg-secondary: #2c2c2e;
+      --bg-tertiary: #3a3a3c;
+      --text-primary: #f2f2f7;
+      --text-secondary: #aeaeb2;
+      --text-tertiary: #636366;
+      --border: rgba(255,255,255,0.12);
+      --border-hover: rgba(255,255,255,0.22);
+    }
+    [data-theme="light"] {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f9f8f6;
+      --bg-tertiary: #f1efe8;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
+      --border: rgba(0,0,0,0.12);
+      --border-hover: rgba(0,0,0,0.22);
+    }
+
+    /* THEME TOGGLE */
+    .theme-toggle { display: none; align-items: center; margin-left: 10px; }
+    .theme-toggle.visible { display: flex; }
+    .toggle-track { width: 36px; height: 20px; border-radius: 10px; background: var(--bg-tertiary); border: 1.5px solid var(--border); cursor: pointer; position: relative; transition: background 0.25s; flex-shrink: 0; }
+    .toggle-track.on { background: #111; border-color: #111; }
+    [data-theme="dark"] .toggle-track.on { background: #f2f2f7; border-color: #f2f2f7; }
+    .toggle-thumb { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--text-tertiary); transition: transform 0.25s, background 0.25s; }
+    .toggle-track.on .toggle-thumb { transform: translateX(16px); background: white; }
+    [data-theme="dark"] .toggle-track.on .toggle-thumb { background: #1c1c1e; }
+    .toggle-icon { font-size: 13px; color: var(--text-tertiary); }
     html, body { height: 100vh; overflow: hidden; }
     body { font-family: var(--font); background: var(--bg-tertiary); display: flex; flex-direction: column; }
     header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
@@ -42,7 +73,47 @@
     .brand-icon { width: 32px; height: 32px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
     .brand-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
     .header-meta { font-size: 12px; color: var(--text-secondary); }
-    .header-right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-secondary); }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .header-pill { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 20px; border: 0.5px solid var(--border); background: var(--bg-secondary); font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+    .header-pill-btn { cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+    .header-pill-btn:hover { background: var(--bg-tertiary); border-color: var(--border-hover); color: var(--text-primary); }
+
+    /* CLOCK IN MODAL */
+    .clockin-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .clockin-overlay.show { opacity: 1; pointer-events: all; }
+    .clockin-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 380px; padding: 28px 24px 24px; border: 0.5px solid var(--border); display: flex; flex-direction: column; gap: 20px; }
+    .clockin-header { display: flex; align-items: flex-start; justify-content: space-between; }
+    .clockin-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+    .clockin-sub { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    .clockin-close { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 20px; display: flex; align-items: center; }
+    .clockin-close:hover { color: var(--text-primary); }
+    .clockin-fields { display: flex; flex-direction: column; gap: 14px; }
+    .clockin-field-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+    .clockin-field-box { width: 100%; padding: 13px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 15px; font-weight: 500; color: var(--text-primary); background: var(--bg-secondary); cursor: pointer; font-family: var(--font); text-align: left; transition: border-color 0.15s; display: flex; align-items: center; }
+    .clockin-field-box.active { border-color: var(--blue); background: var(--bg-primary); }
+    .clockin-field-box .placeholder { color: var(--text-tertiary); font-weight: 400; }
+    .clockin-field-box .value { color: var(--text-primary); letter-spacing: 3px; }
+    .clockin-btn { width: 100%; padding: 14px; border-radius: var(--radius-md); border: none; font-size: 15px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: opacity 0.15s; background: #374151; color: white; }
+    .clockin-btn.ready { background: #111; }
+    .clockin-btn:hover { opacity: 0.85; }
+
+    /* NUMPAD SHEET */
+    .numpad-sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: flex-end; justify-content: center; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .numpad-sheet.show { opacity: 1; pointer-events: all; }
+    .numpad-inner { background: var(--bg-primary); border-radius: 16px 16px 0 0; width: 100%; max-width: 420px; padding: 16px 20px 28px; display: flex; flex-direction: column; gap: 12px; transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.32,0.72,0,1); }
+    .numpad-sheet.show .numpad-inner { transform: translateY(0); }
+    .numpad-drag { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 4px; }
+    .numpad-top { display: flex; align-items: center; justify-content: space-between; }
+    .numpad-field-label { font-size: 12px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.07em; }
+    .numpad-done { background: none; border: none; font-size: 14px; font-weight: 600; color: var(--blue); cursor: pointer; font-family: var(--font); }
+    .numpad-display { text-align: center; font-size: 28px; font-weight: 600; color: var(--text-primary); padding: 6px 0; min-height: 44px; letter-spacing: 4px; border-bottom: 1.5px solid var(--border); }
+    .numpad-display .cursor { display: inline-block; width: 2px; height: 28px; background: var(--blue); margin-left: 2px; vertical-align: middle; animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .numpad-key { padding: 16px 0; border-radius: 10px; border: none; background: var(--bg-secondary); font-size: 22px; font-weight: 500; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.1s; }
+    .numpad-key:active { background: var(--bg-tertiary); transform: scale(0.95); }
+    .numpad-key.key-del { background: var(--bg-secondary); font-size: 18px; }
+    .numpad-key.key-empty { background: transparent; cursor: default; }
     .badge { background: var(--green); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
     .main { display: grid; grid-template-columns: 240px 1fr 300px; flex: 1; overflow: hidden; min-height: 0; }
 
@@ -277,12 +348,19 @@
       <div class="brand-name">Smart EPOS</div>
       <div class="header-meta">Orchard · T1</div>
     </div>
+    <div class="theme-toggle" id="themeToggle">
+      <i class="ti ti-sun toggle-icon" id="toggleIconLeft"></i>
+      <div class="toggle-track" id="toggleTrack" onclick="toggleTheme()">
+        <div class="toggle-thumb"></div>
+      </div>
+      <i class="ti ti-moon toggle-icon" id="toggleIconRight"></i>
+    </div>
   </div>
   <div class="header-right">
-    <span><i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px;"></i><span id="clock"></span></span>
-    <span><i class="ti ti-shield" style="vertical-align:-2px;margin-right:4px;"></i>Admin</span>
-    <span>0000 · Administrator</span>
-    <div class="badge">0</div>
+    <div class="header-pill"><i class="ti ti-clock" style="font-size:13px;"></i><span id="clock"></span></div>
+    <div class="header-pill"><i class="ti ti-shield" style="font-size:13px;"></i><span id="headerRole">Admin</span></div>
+    <div class="header-pill header-pill-btn" onclick="openClockIn()" id="staffPill"><i class="ti ti-user" style="font-size:13px;"></i><span id="headerStaffId">0000 · Administrator</span></div>
+    <div class="badge" id="headerBadge">0</div>
   </div>
 </header>
 
@@ -493,6 +571,60 @@
     <div class="receipt-footer">
       <button class="btn-close-receipt" onclick="closeReceipt()">Close</button>
       <button class="btn-print" onclick="window.print()"><i class="ti ti-printer"></i> Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- Clock In Modal -->
+<div class="clockin-overlay" id="clockinOverlay">
+  <div class="clockin-modal">
+    <div class="clockin-header">
+      <div>
+        <div class="clockin-title">Clock In</div>
+        <div class="clockin-sub">Enter your Staff ID and password to start your shift</div>
+      </div>
+      <button class="clockin-close" onclick="closeClockIn()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="clockin-fields">
+      <div>
+        <div class="clockin-field-label">Staff ID</div>
+        <button class="clockin-field-box" id="staffIdBox" onclick="openNumpad('staffId')">
+          <span class="placeholder" id="staffIdDisplay">Tap to enter Staff ID</span>
+        </button>
+      </div>
+      <div>
+        <div class="clockin-field-label">Password</div>
+        <button class="clockin-field-box" id="passwordBox" onclick="openNumpad('password')">
+          <span class="placeholder" id="passwordDisplay">Tap to enter password</span>
+        </button>
+      </div>
+    </div>
+    <button class="clockin-btn" id="clockinSubmitBtn" onclick="submitClockIn()">Clock In</button>
+  </div>
+</div>
+
+<!-- Numpad Sheet -->
+<div class="numpad-sheet" id="numpadSheet" onclick="numpadSheetClick(event)">
+  <div class="numpad-inner" id="numpadInner">
+    <div class="numpad-drag"></div>
+    <div class="numpad-top">
+      <span class="numpad-field-label" id="numpadLabel">Staff ID</span>
+      <button class="numpad-done" onclick="closeNumpad()">Done</button>
+    </div>
+    <div class="numpad-display" id="numpadDisplay"><span class="cursor"></span></div>
+    <div class="numpad-grid">
+      <button class="numpad-key" onclick="numpadPress('1')">1</button>
+      <button class="numpad-key" onclick="numpadPress('2')">2</button>
+      <button class="numpad-key" onclick="numpadPress('3')">3</button>
+      <button class="numpad-key" onclick="numpadPress('4')">4</button>
+      <button class="numpad-key" onclick="numpadPress('5')">5</button>
+      <button class="numpad-key" onclick="numpadPress('6')">6</button>
+      <button class="numpad-key" onclick="numpadPress('7')">7</button>
+      <button class="numpad-key" onclick="numpadPress('8')">8</button>
+      <button class="numpad-key" onclick="numpadPress('9')">9</button>
+      <button class="numpad-key key-empty" disabled></button>
+      <button class="numpad-key" onclick="numpadPress('0')">0</button>
+      <button class="numpad-key key-del" onclick="numpadDel()"><i class="ti ti-backspace"></i></button>
     </div>
   </div>
 </div>
@@ -891,6 +1023,127 @@
       loadBubble.textContent = 'Error: ' + (e.message || 'Could not reach AI. Check your API key.');
     }
     msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  // ── Clock In / Staff ──
+  let currentStaffId = '0000';
+  let currentStaffRole = 'Administrator';
+  let numpadTarget = null; // 'staffId' | 'password'
+  let numpadValue = '';
+  let clockinStaffId = '';
+  let clockinPassword = '';
+
+  function openClockIn() {
+    clockinStaffId = '';
+    clockinPassword = '';
+    updateClockInFields();
+    updateClockInBtn();
+    document.getElementById('clockinOverlay').classList.add('show');
+  }
+
+  function closeClockIn() {
+    document.getElementById('clockinOverlay').classList.remove('show');
+  }
+
+  function updateClockInFields() {
+    const idDisplay = document.getElementById('staffIdDisplay');
+    const pwDisplay = document.getElementById('passwordDisplay');
+    if (clockinStaffId) {
+      idDisplay.className = 'value';
+      idDisplay.textContent = clockinStaffId;
+    } else {
+      idDisplay.className = 'placeholder';
+      idDisplay.textContent = 'Tap to enter Staff ID';
+    }
+    if (clockinPassword) {
+      pwDisplay.className = 'value';
+      pwDisplay.textContent = '●'.repeat(clockinPassword.length);
+    } else {
+      pwDisplay.className = 'placeholder';
+      pwDisplay.textContent = 'Tap to enter password';
+    }
+  }
+
+  function updateClockInBtn() {
+    const btn = document.getElementById('clockinSubmitBtn');
+    const ready = clockinStaffId.length > 0 && clockinPassword.length > 0;
+    btn.className = 'clockin-btn' + (ready ? ' ready' : '');
+  }
+
+  // ── Theme Toggle ──
+  let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  function applyTheme() {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    document.getElementById('toggleTrack').classList.toggle('on', isDark);
+  }
+  applyTheme();
+
+  function toggleTheme() {
+    isDark = !isDark;
+    applyTheme();
+  }
+
+  function updateThemeToggleVisibility() {
+    const isAdmin = currentStaffId === '0000';
+    document.getElementById('themeToggle').classList.toggle('visible', isAdmin);
+  }
+  updateThemeToggleVisibility();
+
+  function submitClockIn() {
+    if (!clockinStaffId || !clockinPassword) return;
+    currentStaffId = clockinStaffId.padStart(4, '0');
+    currentStaffRole = currentStaffId === '0000' ? 'Administrator' : 'Staff';
+    const roleLabel = currentStaffId === '0000' ? 'Admin' : 'Staff';
+    document.getElementById('headerStaffId').textContent = currentStaffId + ' · ' + currentStaffRole;
+    document.getElementById('headerRole').textContent = roleLabel;
+    updateThemeToggleVisibility();
+    closeClockIn();
+    showToast('Clocked in as ' + currentStaffId + ' · ' + currentStaffRole);
+  }
+
+  // ── Numpad Sheet ──
+  function openNumpad(target) {
+    numpadTarget = target;
+    numpadValue = target === 'staffId' ? clockinStaffId : clockinPassword;
+    document.getElementById('numpadLabel').textContent = target === 'staffId' ? 'STAFF ID' : 'PASSWORD';
+    updateNumpadDisplay();
+    document.getElementById('staffIdBox').classList.toggle('active', target === 'staffId');
+    document.getElementById('passwordBox').classList.toggle('active', target === 'password');
+    document.getElementById('numpadSheet').classList.add('show');
+  }
+
+  function closeNumpad() {
+    document.getElementById('numpadSheet').classList.remove('show');
+    document.getElementById('staffIdBox').classList.remove('active');
+    document.getElementById('passwordBox').classList.remove('active');
+    if (numpadTarget === 'staffId') clockinStaffId = numpadValue;
+    else clockinPassword = numpadValue;
+    updateClockInFields();
+    updateClockInBtn();
+    numpadTarget = null;
+  }
+
+  function numpadSheetClick(e) {
+    if (e.target === document.getElementById('numpadSheet')) closeNumpad();
+  }
+
+  function numpadPress(val) {
+    if (numpadValue.length >= 8) return;
+    numpadValue += val;
+    updateNumpadDisplay();
+  }
+
+  function numpadDel() {
+    numpadValue = numpadValue.slice(0, -1);
+    updateNumpadDisplay();
+  }
+
+  function updateNumpadDisplay() {
+    const el = document.getElementById('numpadDisplay');
+    const isPassword = numpadTarget === 'password';
+    const text = isPassword ? '●'.repeat(numpadValue.length) : numpadValue;
+    el.innerHTML = (text || '') + '<span class="cursor"></span>';
   }
 
   renderProducts();
