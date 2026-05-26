@@ -947,7 +947,7 @@
         + '<div class="product-name">' + p.name + '</div>'
         + '<div class="product-price">$' + p.price.toFixed(2) + '</div>'
         + '</div>'
-        + '<button class="card-info-btn" onclick="event.stopPropagation();openPinfo(\'' + safeName + '\')">i</button>'
+        + (isAdmin ? '' : '<button class="card-info-btn" onclick="event.stopPropagation();openPinfo(\'' + safeName + '\')">i</button>')
         + '</div>';
     }).join('');
   }
@@ -1264,7 +1264,7 @@
   }
 
   // ── Clock In / Staff ──
-  let currentStaffId = '';
+  let currentStaffId = '0000';
   let currentStaffRole = 'Administrator';
   let numpadTarget = null; // 'staffId' | 'password'
   let numpadValue = '';
