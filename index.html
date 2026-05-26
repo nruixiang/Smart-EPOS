@@ -115,11 +115,29 @@
     .numpad-key.key-del { background: var(--bg-secondary); font-size: 18px; }
     .numpad-key.key-empty { background: transparent; cursor: default; }
     .badge { background: var(--green); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
-    .main { display: grid; grid-template-columns: 240px 1fr 300px; flex: 1; overflow: hidden; min-height: 0; }
+    .main { display: grid; grid-template-columns: 240px 1fr 300px; flex: 1; overflow: hidden; min-height: 0; transition: grid-template-columns 0.3s cubic-bezier(0.4,0,0.2,1); }
+    .main.left-collapsed { grid-template-columns: 44px 1fr 300px; }
 
     /* LEFT PANEL */
-    .left-panel { background: var(--bg-secondary); border-right: 0.5px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
-    .left-header { padding: 12px; border-bottom: 0.5px solid var(--border); }
+    .left-panel { background: var(--bg-secondary); border-right: 0.5px solid var(--border); display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+    .left-header { padding: 12px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+    .left-header-top { display: flex; align-items: center; justify-content: space-between; }
+    .collapse-btn { width: 24px; height: 24px; border-radius: 6px; border: none; background: transparent; cursor: pointer; color: var(--text-tertiary); display: flex; align-items: center; justify-content: center; font-size: 15px; transition: background 0.15s, color 0.15s; flex-shrink: 0; }
+    .collapse-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+    .collapse-btn i { transition: transform 0.3s; }
+    .left-panel.collapsed .collapse-btn i { transform: rotate(180deg); }
+
+    /* Collapsed strip */
+    .left-collapsed-strip { display: none; flex-direction: column; align-items: center; padding: 10px 0; gap: 4px; flex: 1; }
+    .left-panel.collapsed .left-collapsed-strip { display: flex; }
+    .left-panel.collapsed .left-header-top .ai-agent,
+    .left-panel.collapsed .tab-row,
+    .left-panel.collapsed ~ * .ai-chat,
+    .left-panel.collapsed .ai-chat,
+    .left-panel.collapsed .left-input { display: none; }
+    .strip-icon-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-size: 17px; transition: background 0.15s, color 0.15s; }
+    .strip-icon-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+    .strip-divider { width: 20px; height: 0.5px; background: var(--border); margin: 4px 0; }
     .tab-row { display: flex; gap: 4px; margin-top: 8px; }
     .tab-btn { flex: 1; padding: 6px 0; font-size: 12px; border: none; background: transparent; border-bottom: 2px solid transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; font-family: var(--font); }
     .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
@@ -367,19 +385,31 @@
 <div class="main">
 
   <!-- LEFT: AI Assistant -->
-  <div class="left-panel">
+  <div class="left-panel" id="leftPanel">
     <div class="left-header">
-      <div class="ai-agent">
-        <div class="ai-avatar"><i class="ti ti-robot"></i></div>
-        <div>
-          <div class="ai-name">Smart EPOS Assistant</div>
-          <div class="ai-status">Powered by AI · always ready</div>
+      <div class="left-header-top">
+        <div class="ai-agent">
+          <div class="ai-avatar"><i class="ti ti-robot"></i></div>
+          <div>
+            <div class="ai-name">Smart EPOS Assistant</div>
+            <div class="ai-status">Powered by AI · always ready</div>
+          </div>
         </div>
+        <button class="collapse-btn" id="collapseBtn" onclick="toggleLeftPanel()" title="Minimise panel">
+          <i class="ti ti-chevron-left"></i>
+        </button>
       </div>
       <div class="tab-row">
         <button class="tab-btn active"><i class="ti ti-message" style="vertical-align:-2px;margin-right:3px;"></i>Chat</button>
         <button class="tab-btn"><i class="ti ti-school" style="vertical-align:-2px;margin-right:3px;"></i>Train</button>
       </div>
+    </div>
+    <!-- Collapsed icon strip -->
+    <div class="left-collapsed-strip">
+      <button class="strip-icon-btn" onclick="toggleLeftPanel()" title="Expand"><i class="ti ti-chevron-right"></i></button>
+      <div class="strip-divider"></div>
+      <button class="strip-icon-btn" title="Chat" onclick="toggleLeftPanel()"><i class="ti ti-message"></i></button>
+      <button class="strip-icon-btn" title="Train" onclick="toggleLeftPanel()"><i class="ti ti-school"></i></button>
     </div>
     <div class="ai-chat" id="chatArea">
       <div class="ai-greeting">👋 Hi! Ask me anything about the POS — discounts, memberships, shortcuts, or how a feature works.</div>
@@ -1068,6 +1098,14 @@
     const btn = document.getElementById('clockinSubmitBtn');
     const ready = clockinStaffId.length > 0 && clockinPassword.length > 0;
     btn.className = 'clockin-btn' + (ready ? ' ready' : '');
+  }
+
+  // ── Left Panel Collapse ──
+  let leftPanelCollapsed = false;
+  function toggleLeftPanel() {
+    leftPanelCollapsed = !leftPanelCollapsed;
+    document.getElementById('leftPanel').classList.toggle('collapsed', leftPanelCollapsed);
+    document.querySelector('.main').classList.toggle('left-collapsed', leftPanelCollapsed);
   }
 
   // ── Theme Toggle ──
