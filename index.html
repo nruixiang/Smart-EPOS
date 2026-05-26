@@ -162,6 +162,46 @@
     .confirm-btn.ready { background: var(--green); color: white; }
     .confirm-btn.not-ready { background: var(--bg-tertiary); color: var(--text-tertiary); cursor: not-allowed; }
 
+    /* MOBILE PAY MODAL */
+    .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .mobile-overlay.show { opacity: 1; pointer-events: all; }
+    .mobile-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 380px; overflow: hidden; border: 0.5px solid var(--border); display: flex; flex-direction: column; }
+    .mobile-modal-top { background: #7c3aed; padding: 24px 20px 20px; text-align: center; position: relative; }
+    .mobile-modal-top .close-x { position: absolute; top: 12px; right: 14px; background: none; border: none; color: rgba(255,255,255,0.7); font-size: 20px; cursor: pointer; display: flex; align-items: center; }
+    .mobile-modal-top .close-x:hover { color: white; }
+    .mobile-modal-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.75); text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 6px; }
+    .mobile-modal-amount { font-size: 42px; font-weight: 800; color: white; letter-spacing: -1.5px; line-height: 1; margin-bottom: 6px; }
+    .mobile-modal-ref { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .mobile-modal-body { padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .qr-wrapper { border: 2px solid #7c3aed; border-radius: 12px; padding: 10px; background: white; }
+    .qr-wrapper img { display: block; width: 180px; height: 180px; }
+    .scan-hint { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; }
+    .wallet-chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+    .wallet-chip { font-size: 11px; color: var(--text-secondary); border: 0.5px solid var(--border); border-radius: 20px; padding: 3px 10px; background: var(--bg-secondary); }
+    .simulate-btn { width: 100%; padding: 14px; background: #7c3aed; color: white; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+    .simulate-btn:hover { opacity: 0.88; }
+    .cancel-mobile-btn { background: none; border: none; font-size: 13px; color: var(--text-secondary); cursor: pointer; padding: 4px; font-family: var(--font); }
+    .cancel-mobile-btn:hover { color: var(--text-primary); }
+
+    /* PROCESSING MODAL */
+    .processing-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 210; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .processing-overlay.show { opacity: 1; pointer-events: all; }
+    .processing-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 340px; padding: 40px 24px 36px; display: flex; flex-direction: column; align-items: center; gap: 16px; border: 0.5px solid var(--border); position: relative; }
+    .processing-modal .close-x { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--text-tertiary); font-size: 20px; cursor: pointer; display: flex; align-items: center; }
+    .countdown-ring { position: relative; width: 90px; height: 90px; }
+    .countdown-ring svg { animation: spinRing 1s linear infinite; }
+    @keyframes spinRing { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+    .countdown-ring .track { fill: none; stroke: #ede9fe; stroke-width: 6; }
+    .countdown-ring .progress { fill: none; stroke: #7c3aed; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 245; stroke-dashoffset: 60; }
+    .countdown-number { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; color: #7c3aed; }
+    .processing-title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+    .processing-sub { font-size: 13px; color: var(--text-secondary); }
+    .dots { display: flex; gap: 6px; }
+    .dots span { width: 8px; height: 8px; border-radius: 50%; background: #7c3aed; opacity: 0.3; animation: dotPulse 1.2s infinite; }
+    .dots span:nth-child(2) { animation-delay: 0.2s; }
+    .dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotPulse { 0%,80%,100% { opacity: 0.3; } 40% { opacity: 1; } }
+
     /* RECEIPT MODAL */
     .receipt-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .receipt-overlay.show { opacity: 1; pointer-events: all; }
@@ -345,7 +385,7 @@
     <div class="payment-btns">
       <button class="pay-btn cash" onclick="openCashKeypad()"><i class="ti ti-cash"></i><span>Cash</span></button>
       <button class="pay-btn card" onclick="processPayment('Card')"><i class="ti ti-credit-card"></i><span>Card</span></button>
-      <button class="pay-btn" onclick="processPayment('Mobile')"><i class="ti ti-device-mobile"></i><span>Mobile</span></button>
+      <button class="pay-btn" onclick="openMobileModal()"><i class="ti ti-device-mobile"></i><span>Mobile</span></button>
     </div>
     </div>
 
@@ -390,6 +430,49 @@
         <i class="ti ti-circle-check" style="vertical-align:-2px;margin-right:6px;"></i>Confirm &amp; Complete Sale
       </button>
     </div>
+  </div>
+</div>
+
+<!-- Mobile Pay Modal -->
+<div class="mobile-overlay" id="mobileOverlay">
+  <div class="mobile-modal">
+    <div class="mobile-modal-top">
+      <button class="close-x" onclick="closeMobileModal()"><i class="ti ti-x"></i></button>
+      <div class="mobile-modal-label"><i class="ti ti-device-mobile" style="font-size:14px;"></i> MOBILE PAY</div>
+      <div class="mobile-modal-amount" id="mobileAmount">$0.00</div>
+      <div class="mobile-modal-ref" id="mobileRef">Ref: ——</div>
+    </div>
+    <div class="mobile-modal-body">
+      <div class="qr-wrapper">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=SMARTEPOS-PAY&color=000000&bgcolor=ffffff" alt="QR Code" />
+      </div>
+      <div class="scan-hint"><i class="ti ti-wifi" style="font-size:14px;color:#7c3aed;"></i> Scan with any e-wallet app</div>
+      <div class="wallet-chips">
+        <span class="wallet-chip">DuitNow</span>
+        <span class="wallet-chip">Touch 'n Go</span>
+        <span class="wallet-chip">GrabPay</span>
+        <span class="wallet-chip">Boost</span>
+      </div>
+      <button class="simulate-btn" onclick="simulateScan()">Simulate Customer Scan</button>
+      <button class="cancel-mobile-btn" onclick="closeMobileModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Processing Modal -->
+<div class="processing-overlay" id="processingOverlay">
+  <div class="processing-modal">
+    <button class="close-x" onclick="closeProcessingModal()"><i class="ti ti-x"></i></button>
+    <div class="countdown-ring">
+      <svg viewBox="0 0 90 90" width="90" height="90">
+        <circle class="track" cx="45" cy="45" r="39"/>
+        <circle class="progress" id="countdownProgress" cx="45" cy="45" r="39"/>
+      </svg>
+      <div class="countdown-number" id="countdownNumber">3</div>
+    </div>
+    <div class="processing-title">Processing Payment</div>
+    <div class="processing-sub">Verifying with payment gateway…</div>
+    <div class="dots"><span></span><span></span><span></span></div>
   </div>
 </div>
 
@@ -639,10 +722,57 @@
     showReceipt('Cash', received, change);
   }
 
-  // ── Card / Mobile ──
+  // ── Card ──
   function processPayment(method) {
     if (!Object.keys(order).length) { showToast('Add items to the order first'); return; }
     showReceipt(method, null, null);
+  }
+
+  // ── Mobile Pay ──
+  function openMobileModal() {
+    if (!Object.keys(order).length) { showToast('Add items to the order first'); return; }
+    const items = Object.values(order);
+    const sub = items.reduce((a,i)=>a+i.price*i.qty,0);
+    const total = parseFloat((sub * 1.09).toFixed(2));
+    document.getElementById('mobileAmount').textContent = '$' + total.toFixed(2);
+    document.getElementById('mobileRef').textContent = 'Ref: ' + generateRef().replace('#','');
+    document.getElementById('mobileOverlay').classList.add('show');
+  }
+
+  function closeMobileModal() {
+    document.getElementById('mobileOverlay').classList.remove('show');
+  }
+
+  function simulateScan() {
+    closeMobileModal();
+    startProcessingCountdown();
+  }
+
+  let countdownTimer = null;
+
+  function startProcessingCountdown() {
+    const overlay = document.getElementById('processingOverlay');
+    const numEl = document.getElementById('countdownNumber');
+    let count = 3;
+
+    numEl.textContent = count;
+    overlay.classList.add('show');
+
+    countdownTimer = setInterval(() => {
+      count--;
+      if (count <= 0) {
+        clearInterval(countdownTimer);
+        overlay.classList.remove('show');
+        showReceipt('Mobile', null, null);
+        return;
+      }
+      numEl.textContent = count;
+    }, 1000);
+  }
+
+  function closeProcessingModal() {
+    clearInterval(countdownTimer);
+    document.getElementById('processingOverlay').classList.remove('show');
   }
 
   // ── Receipt ──
