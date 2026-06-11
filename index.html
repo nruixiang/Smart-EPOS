@@ -354,7 +354,18 @@
     .btn-close-receipt { background: var(--bg-primary); color: var(--text-primary); }
     .btn-print { background: #111; color: white; border-color: #111 !important; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-    /* DISCOUNT MODAL */
+    /* Applied Discount Banner */
+    .disc-applied-banner { display: none; align-items: center; justify-content: space-between; margin: 0 20px 14px; padding: 11px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); flex-shrink: 0; }
+    [data-theme="dark"] .disc-applied-banner { background: rgba(22,163,74,0.12); border-color: rgba(22,163,74,0.3); }
+    .disc-applied-banner.show { display: flex; }
+    .disc-applied-left { display: flex; align-items: center; gap: 8px; }
+    .disc-applied-check { color: #16a34a; font-size: 16px; }
+    .disc-applied-text { font-size: 13px; font-weight: 600; color: #16a34a; }
+    .disc-applied-remove { display: flex; align-items: center; gap: 4px; background: none; border: none; color: #dc2626; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font); padding: 0; }
+    .disc-applied-remove:hover { opacity: 0.75; }
+    .disc-applied-remove i { font-size: 13px; }
+
+    /* Discount Modal */
     .disc-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .disc-overlay.show { opacity: 1; pointer-events: all; }
     .disc-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 480px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); border: 0.5px solid var(--border); }
@@ -1309,8 +1320,31 @@
     badge.style.display = activeDiscount ? 'flex' : 'none';
   }
 
+  function updateDiscountBanner() {
+    const banner = document.getElementById('discAppliedBanner');
+    const text = document.getElementById('discAppliedText');
+    if (activeDiscount) {
+      text.textContent = 'Applied: ' + activeDiscount.label;
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+
+  function removeDiscount() {
+    activeDiscount = null;
+    selectedVoucherCard = null;
+    document.querySelectorAll('.disc-manual-item').forEach(i => i.classList.remove('selected'));
+    document.querySelectorAll('.disc-voucher-card').forEach(c => c.classList.remove('selected'));
+    updateDiscountBadge();
+    updateDiscountBanner();
+    renderOrder();
+    showToast('Discount removed');
+  }
+
   function openDiscount() {
     switchDiscTab('manual');
+    updateDiscountBanner();
     document.getElementById('discOverlay').classList.add('show');
   }
 
@@ -1336,6 +1370,7 @@
     el.classList.add('selected');
     activeDiscount = { label, type, value };
     updateDiscountBadge();
+    updateDiscountBanner();
     renderOrder();
     setTimeout(() => { closeDiscount(); showToast('Discount applied: ' + label); }, 200);
   }
@@ -1343,6 +1378,7 @@
   function simulateMemberScan() {
     activeDiscount = { label: 'Member (15%)', type: 'percent', value: 15 };
     updateDiscountBadge();
+    updateDiscountBanner();
     renderOrder();
     closeDiscount();
     showToast('Member discount applied: 15% off');
@@ -1353,6 +1389,7 @@
     if (phone.replace(/\D/g,'').length < 8) { showToast('Please enter a valid 8-digit phone number'); return; }
     activeDiscount = { label: 'Member (15%)', type: 'percent', value: 15 };
     updateDiscountBadge();
+    updateDiscountBanner();
     renderOrder();
     closeDiscount();
     showToast('Member discount applied: 15% off');
@@ -1364,6 +1401,7 @@
     selectedVoucherCard = { label, type, value };
     activeDiscount = { label, type, value };
     updateDiscountBadge();
+    updateDiscountBanner();
     renderOrder();
     setTimeout(() => { closeDiscount(); showToast('Voucher applied: ' + label); }, 200);
   }
@@ -1374,6 +1412,7 @@
     // Any code = $5 off
     activeDiscount = { label: 'Voucher Code ($5 off)', type: 'fixed', value: 5 };
     updateDiscountBadge();
+    updateDiscountBanner();
     renderOrder();
     closeDiscount();
     showToast('Voucher code applied: $5 off');
@@ -1949,6 +1988,13 @@
     <div class="disc-header">
       <div class="disc-title">Discounts &amp; Memberships</div>
       <button class="disc-close" onclick="closeDiscount()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="disc-applied-banner" id="discAppliedBanner">
+      <div class="disc-applied-left">
+        <i class="ti ti-circle-check-filled disc-applied-check"></i>
+        <span class="disc-applied-text" id="discAppliedText">Applied: —</span>
+      </div>
+      <button class="disc-applied-remove" onclick="removeDiscount()"><i class="ti ti-x"></i> Remove</button>
     </div>
     <div class="disc-tabs">
       <button class="disc-tab active" id="discTabManual" onclick="switchDiscTab('manual')">Manual</button>
