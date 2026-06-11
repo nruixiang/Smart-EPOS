@@ -354,6 +354,74 @@
     .btn-close-receipt { background: var(--bg-primary); color: var(--text-primary); }
     .btn-print { background: #111; color: white; border-color: #111 !important; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
+    /* DISCOUNT MODAL */
+    .disc-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .disc-overlay.show { opacity: 1; pointer-events: all; }
+    .disc-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 480px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); border: 0.5px solid var(--border); }
+    .disc-header { padding: 18px 20px 14px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .disc-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+    .disc-close { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 20px; display: flex; align-items: center; transition: color 0.15s; }
+    .disc-close:hover { color: var(--text-primary); }
+    .disc-tabs { display: flex; gap: 4px; margin: 0 20px 16px; background: var(--bg-secondary); border-radius: 10px; padding: 4px; flex-shrink: 0; }
+    .disc-tab { flex: 1; padding: 8px 0; font-size: 13px; font-weight: 500; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 7px; font-family: var(--font); transition: all 0.15s; }
+    .disc-tab.active { background: var(--bg-primary); color: var(--text-primary); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .disc-body { flex: 1; overflow-y: auto; }
+    /* Manual tab */
+    .disc-manual-list { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 8px; }
+    .disc-manual-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; transition: all 0.15s; background: var(--bg-primary); }
+    .disc-manual-item:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
+    .disc-manual-item.selected { border-color: var(--blue); background: rgba(37,99,235,0.05); }
+    .disc-manual-icon { font-size: 16px; color: var(--text-tertiary); }
+    .disc-manual-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .disc-manual-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    /* Membership tab */
+    .disc-membership { padding: 0 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .disc-qr-box { width: 100%; background: var(--bg-secondary); border-radius: var(--radius-md); padding: 28px; display: flex; flex-direction: column; align-items: center; gap: 10px; border: 0.5px solid var(--border); }
+    .disc-qr-icon { font-size: 48px; color: var(--text-tertiary); }
+    .disc-qr-label { font-size: 13px; color: var(--text-secondary); }
+    .disc-sim-btn { padding: 9px 22px; border: 1.5px solid var(--border); border-radius: var(--radius-md); background: var(--bg-primary); font-size: 13px; font-weight: 600; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.15s; }
+    .disc-sim-btn:hover { background: var(--bg-secondary); }
+    .disc-or { font-size: 11px; font-weight: 700; color: var(--text-tertiary); letter-spacing: 0.08em; }
+    .disc-phone-row { width: 100%; display: flex; gap: 8px; }
+    .disc-phone-input { flex: 1; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; background: var(--bg-primary); color: var(--text-primary); font-family: var(--font); outline: none; cursor: pointer; }
+    .disc-phone-input:focus { border-color: var(--blue); }
+    .disc-lookup-btn { padding: 11px 20px; background: #111; color: white; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); white-space: nowrap; transition: opacity 0.15s; }
+    .disc-lookup-btn:hover { opacity: 0.85; }
+    /* Voucher tab */
+    .disc-voucher-grid { padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .disc-voucher-card { padding: 14px; border-radius: var(--radius-md); cursor: pointer; transition: opacity 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+    .disc-voucher-card:hover { opacity: 0.85; }
+    .disc-voucher-card.selected { outline: 2.5px solid var(--blue); }
+    .disc-voucher-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .disc-voucher-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+    .disc-voucher-val { font-size: 15px; font-weight: 800; }
+    .disc-voucher-code-row { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 8px; }
+    .disc-or-line { display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); letter-spacing: 0.08em; }
+    .disc-or-line::before, .disc-or-line::after { content:''; flex:1; height:0.5px; background:var(--border); }
+    .disc-code-row { display: flex; gap: 8px; }
+    .disc-code-input { flex: 1; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; background: var(--bg-secondary); color: var(--text-tertiary); font-family: var(--font); outline: none; cursor: pointer; }
+    .disc-code-input:focus { border-color: var(--blue); color: var(--text-primary); }
+    .disc-apply-btn { padding: 11px 20px; background: #374151; color: white; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+    .disc-apply-btn:hover { opacity: 0.85; }
+    /* Keyboard sheet */
+    .disc-kb-sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: flex-end; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .disc-kb-sheet.show { opacity: 1; pointer-events: all; }
+    .disc-kb-inner { background: var(--bg-primary); border-radius: 16px 16px 0 0; width: 100%; max-width: 580px; padding: 14px 10px 24px; display: flex; flex-direction: column; gap: 10px; transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.32,0.72,0,1); }
+    .disc-kb-sheet.show .disc-kb-inner { transform: translateY(0); }
+    .disc-kb-field-row { display: flex; align-items: center; gap: 10px; padding: 0 6px; }
+    .disc-kb-field-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap; }
+    .disc-kb-field-val { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 15px; font-weight: 500; color: var(--text-primary); background: var(--bg-primary); font-family: var(--font); outline: none; }
+    .disc-kb-field-val:focus { border-color: var(--blue); }
+    .disc-kb-dismiss { font-size: 13px; color: var(--text-tertiary); background: none; border: none; cursor: pointer; padding: 4px; }
+    .disc-kb-rows { display: flex; flex-direction: column; gap: 6px; padding: 0 4px; }
+    .disc-kb-row { display: flex; gap: 5px; }
+    .disc-kb-key { flex: 1; padding: 13px 0; border-radius: 9px; border: none; background: var(--bg-secondary); font-size: 15px; font-weight: 500; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.1s; text-align: center; }
+    .disc-kb-key:active { background: var(--bg-tertiary); transform: scale(0.95); }
+    .disc-kb-key.wide { flex: 2; }
+    .disc-kb-key.action { background: #374151; color: white; font-size: 13px; font-weight: 600; }
+    .disc-kb-key.done { background: #d97706; color: white; font-size: 13px; font-weight: 600; flex: 2; }
+    .disc-kb-key.del { background: var(--bg-tertiary); }
+
     /* HOLD / RECALL */
     .recall-badge { position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--green); color: #ffffff !important; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 4px; pointer-events: none; line-height: 1; }
     .held-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -429,7 +497,10 @@
         <i class="ti ti-rotate-clockwise"></i><span>Recall</span>
         <span class="recall-badge" id="recallBadge" style="display:none;"></span>
       </button>
-      <button class="action-btn"><i class="ti ti-tag"></i><span>Discount</span></button>
+      <button class="action-btn" id="discountBtn" onclick="openDiscount()" style="position:relative;">
+        <i class="ti ti-tag"></i><span>Discount</span>
+        <span class="recall-badge" id="discountBadge" style="display:none;background:#e11d48;">✓</span>
+      </button>
       <button class="action-btn"><i class="ti ti-chart-bar"></i><span>Reports</span></button>
       <button class="action-btn"><i class="ti ti-users"></i><span>Members</span></button>
       <button class="action-btn"><i class="ti ti-shopping-cart"></i><span>Orders</span></button>
@@ -461,6 +532,7 @@
     </div>
     <div class="totals">
       <div class="total-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+      <div class="total-row" id="discountRow" style="display:none;"><span id="discountLabel" style="color:var(--green);font-weight:500;">Discount</span><span id="discountAmt" style="color:var(--green);font-weight:600;">-$0.00</span></div>
       <div class="total-row"><span>Tax (9%)</span><span id="taxAmt">$0.00</span></div>
       <div class="total-final">
         <span class="label">Total</span>
@@ -880,7 +952,7 @@
     renderOrder();
   }
 
-  function clearOrder() { order = {}; renderOrder(); }
+  function clearOrder() { order = {}; activeDiscount = null; renderOrder(); updateDiscountBadge(); }
 
   // ── Hold / Recall ──
   let heldOrders = [];
@@ -998,10 +1070,22 @@
   }
 
   function updateTotals(sub) {
-    const tax = sub * 0.09;
     document.getElementById('subtotal').textContent = '$' + sub.toFixed(2);
+    let discountAmt = 0;
+    if (activeDiscount && sub > 0) {
+      if (activeDiscount.type === 'percent') discountAmt = sub * activeDiscount.value / 100;
+      else if (activeDiscount.type === 'fixed') discountAmt = Math.min(activeDiscount.value, sub);
+      const discRow = document.getElementById('discountRow');
+      document.getElementById('discountLabel').textContent = 'Discount (' + activeDiscount.label + ')';
+      document.getElementById('discountAmt').textContent = '-$' + discountAmt.toFixed(2);
+      discRow.style.display = 'flex';
+    } else {
+      document.getElementById('discountRow').style.display = 'none';
+    }
+    const discounted = Math.max(0, sub - discountAmt);
+    const tax = discounted * 0.09;
     document.getElementById('taxAmt').textContent = '$' + tax.toFixed(2);
-    document.getElementById('totalAmt').textContent = '$' + (sub+tax).toFixed(2);
+    document.getElementById('totalAmt').textContent = '$' + (discounted + tax).toFixed(2);
   }
 
   function showToast(msg) {
@@ -1018,7 +1102,13 @@
     if (!Object.keys(order).length) { showToast('Add items to the order first'); return; }
     const items = Object.values(order);
     const sub = items.reduce((a,i)=>a+i.price*i.qty,0);
-    currentTotal = parseFloat((sub * 1.09).toFixed(2));
+    let discountAmt = 0;
+    if (activeDiscount && sub > 0) {
+      if (activeDiscount.type === 'percent') discountAmt = sub * activeDiscount.value / 100;
+      else if (activeDiscount.type === 'fixed') discountAmt = Math.min(activeDiscount.value, sub);
+    }
+    const discounted = Math.max(0, sub - discountAmt);
+    currentTotal = parseFloat((discounted * 1.09).toFixed(2));
     document.getElementById('keypadAmountDue').textContent = '$' + currentTotal.toFixed(2);
     keypadRaw = '';
     updateKeypadDisplay();
@@ -1094,7 +1184,13 @@
     if (!Object.keys(order).length) { showToast('Add items to the order first'); return; }
     const items = Object.values(order);
     const sub = items.reduce((a,i)=>a+i.price*i.qty,0);
-    const total = parseFloat((sub * 1.09).toFixed(2));
+    let discountAmt = 0;
+    if (activeDiscount && sub > 0) {
+      if (activeDiscount.type === 'percent') discountAmt = sub * activeDiscount.value / 100;
+      else if (activeDiscount.type === 'fixed') discountAmt = Math.min(activeDiscount.value, sub);
+    }
+    const discounted = Math.max(0, sub - discountAmt);
+    const total = parseFloat((discounted * 1.09).toFixed(2));
     document.getElementById('mobileAmount').textContent = '$' + total.toFixed(2);
     document.getElementById('mobileRef').textContent = 'Ref: ' + generateRef().replace('#','');
     document.getElementById('mobileOverlay').classList.add('show');
@@ -1150,8 +1246,16 @@
 
     const items = Object.values(order);
     const sub = items.reduce((a,i)=>a+i.price*i.qty,0);
-    const tax = sub * 0.09;
-    const total = sub + tax;
+    let discountAmt = 0;
+    let discountRow = '';
+    if (activeDiscount && sub > 0) {
+      if (activeDiscount.type === 'percent') discountAmt = sub * activeDiscount.value / 100;
+      else if (activeDiscount.type === 'fixed') discountAmt = Math.min(activeDiscount.value, sub);
+      discountRow = `<tr style="color:#16a34a;"><td>Discount (${activeDiscount.label})</td><td>-$${discountAmt.toFixed(2)}</td></tr>`;
+    }
+    const discounted = Math.max(0, sub - discountAmt);
+    const tax = discounted * 0.09;
+    const total = discounted + tax;
 
     const itemRows = items.map(item => `
       <tr>
@@ -1169,13 +1273,14 @@
       <table class="receipt-meta">
         <tr><td>Date</td><td>${dateStr}</td></tr>
         <tr><td>Time</td><td>${timeStr}</td></tr>
-        <tr><td>Cashier</td><td>0000</td></tr>
+        <tr><td>Cashier</td><td>${currentStaffId || '0000'}</td></tr>
       </table>
       <hr class="receipt-divider"/>
       <table class="receipt-items">${itemRows}</table>
       <hr class="receipt-divider"/>
       <table class="receipt-totals">
         <tr><td>Subtotal</td><td>$${sub.toFixed(2)}</td></tr>
+        ${discountRow}
         <tr><td>Tax (9%)</td><td>$${tax.toFixed(2)}</td></tr>
         <tr class="receipt-total-final"><td>TOTAL</td><td>$${total.toFixed(2)}</td></tr>
         ${cashRows}
@@ -1191,6 +1296,141 @@
   function closeReceipt() {
     document.getElementById('receiptOverlay').classList.remove('show');
     clearOrder();
+  }
+
+  // ── Discount ──
+  let activeDiscount = null;
+  let discKbTarget = null; // 'phone' | 'code'
+  let discKbBuffer = '';
+  let selectedVoucherCard = null;
+
+  function updateDiscountBadge() {
+    const badge = document.getElementById('discountBadge');
+    badge.style.display = activeDiscount ? 'flex' : 'none';
+  }
+
+  function openDiscount() {
+    switchDiscTab('manual');
+    document.getElementById('discOverlay').classList.add('show');
+  }
+
+  function closeDiscount() {
+    document.getElementById('discOverlay').classList.remove('show');
+  }
+
+  function closeDiscIfBg(e) {
+    if (e.target === document.getElementById('discOverlay')) closeDiscount();
+  }
+
+  function switchDiscTab(tab) {
+    ['manual','membership','voucher'].forEach(t => {
+      document.getElementById('discTab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+      document.getElementById('discPane' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? (t === 'voucher' ? 'block' : 'flex') : 'none';
+    });
+    document.getElementById('discPaneManual').style.display = tab === 'manual' ? 'flex' : 'none';
+    document.getElementById('discPaneManual').style.flexDirection = 'column';
+  }
+
+  function applyManualDiscount(label, type, value, el) {
+    document.querySelectorAll('.disc-manual-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    activeDiscount = { label, type, value };
+    updateDiscountBadge();
+    renderOrder();
+    setTimeout(() => { closeDiscount(); showToast('Discount applied: ' + label); }, 200);
+  }
+
+  function simulateMemberScan() {
+    activeDiscount = { label: 'Member (15%)', type: 'percent', value: 15 };
+    updateDiscountBadge();
+    renderOrder();
+    closeDiscount();
+    showToast('Member discount applied: 15% off');
+  }
+
+  function applyMemberDiscount() {
+    const phone = discKbBuffer && discKbTarget === 'phone' ? discKbBuffer : document.getElementById('discPhoneDisplay').dataset.val || '';
+    if (phone.replace(/\D/g,'').length < 8) { showToast('Please enter a valid 8-digit phone number'); return; }
+    activeDiscount = { label: 'Member (15%)', type: 'percent', value: 15 };
+    updateDiscountBadge();
+    renderOrder();
+    closeDiscount();
+    showToast('Member discount applied: 15% off');
+  }
+
+  function selectVoucherCard(label, type, value, el) {
+    document.querySelectorAll('.disc-voucher-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedVoucherCard = { label, type, value };
+    activeDiscount = { label, type, value };
+    updateDiscountBadge();
+    renderOrder();
+    setTimeout(() => { closeDiscount(); showToast('Voucher applied: ' + label); }, 200);
+  }
+
+  function applyVoucherCode() {
+    const code = (document.getElementById('discKbVal').value || document.getElementById('discCodeDisplay').dataset.val || '').trim();
+    if (!code) { showToast('Please enter a voucher code'); return; }
+    // Any code = $5 off
+    activeDiscount = { label: 'Voucher Code ($5 off)', type: 'fixed', value: 5 };
+    updateDiscountBadge();
+    renderOrder();
+    closeDiscount();
+    showToast('Voucher code applied: $5 off');
+  }
+
+  // Keyboard sheet
+  function openDiscKb(target) {
+    discKbTarget = target;
+    discKbBuffer = '';
+    const isPhone = target === 'phone';
+    document.getElementById('discKbLabel').textContent = isPhone ? 'ENTER PHONE NUMBER:' : 'ENTER VOUCHER CODE:';
+    document.getElementById('discKbVal').value = '';
+    document.getElementById('discKbSheet').classList.add('show');
+  }
+
+  function closeDiscKb() {
+    document.getElementById('discKbSheet').classList.remove('show');
+    if (discKbTarget === 'phone') {
+      const el = document.getElementById('discPhoneDisplay');
+      el.textContent = discKbBuffer || 'Tap to enter phone...';
+      el.style.color = discKbBuffer ? 'var(--text-primary)' : 'var(--text-tertiary)';
+      el.dataset.val = discKbBuffer;
+    } else if (discKbTarget === 'code') {
+      const el = document.getElementById('discCodeDisplay');
+      el.textContent = discKbBuffer || 'TAP TO ENTER CODE...';
+      el.style.color = discKbBuffer ? 'var(--text-primary)' : 'var(--text-tertiary)';
+      el.dataset.val = discKbBuffer;
+    }
+  }
+
+  function closeDiscKbIfBg(e) {
+    if (e.target === document.getElementById('discKbSheet')) closeDiscKb();
+  }
+
+  function discKbPress(ch) {
+    const isPhone = discKbTarget === 'phone';
+    if (isPhone) {
+      if (!/[0-9]/.test(ch)) return; // phone only digits
+      if (discKbBuffer.length >= 8) return;
+    } else {
+      if (discKbBuffer.length >= 20) return;
+    }
+    discKbBuffer += ch;
+    document.getElementById('discKbVal').value = discKbBuffer;
+  }
+
+  function discKbDel() {
+    discKbBuffer = discKbBuffer.slice(0, -1);
+    document.getElementById('discKbVal').value = discKbBuffer;
+  }
+
+  function discKbDone() {
+    closeDiscKb();
+    if (discKbTarget === 'phone') {
+      const digits = discKbBuffer.replace(/\D/g,'');
+      if (digits.length < 8) { showToast('Phone number must be 8 digits'); return; }
+    }
   }
 
   // ── Clock In / Staff ──
@@ -1699,6 +1939,159 @@
     <div class="edit-modal-footer">
       <button class="edit-btn-cancel" onclick="closeEdit()">Cancel</button>
       <button class="edit-btn-save" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Discount Modal -->
+<div class="disc-overlay" id="discOverlay" onclick="closeDiscIfBg(event)">
+  <div class="disc-modal">
+    <div class="disc-header">
+      <div class="disc-title">Discounts &amp; Memberships</div>
+      <button class="disc-close" onclick="closeDiscount()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="disc-tabs">
+      <button class="disc-tab active" id="discTabManual" onclick="switchDiscTab('manual')">Manual</button>
+      <button class="disc-tab" id="discTabMembership" onclick="switchDiscTab('membership')">Membership</button>
+      <button class="disc-tab" id="discTabVoucher" onclick="switchDiscTab('voucher')">Voucher</button>
+    </div>
+    <div class="disc-body">
+      <!-- Manual -->
+      <div id="discPaneManual" class="disc-manual-list">
+        <div class="disc-manual-item" onclick="applyManualDiscount('Staff Discount (20%)', 'percent', 20, this)">
+          <i class="ti ti-tag disc-manual-icon"></i>
+          <div><div class="disc-manual-name">Staff Discount (20%)</div><div class="disc-manual-desc">20% off total</div></div>
+        </div>
+        <div class="disc-manual-item" onclick="applyManualDiscount('Student Discount (10%)', 'percent', 10, this)">
+          <i class="ti ti-tag disc-manual-icon"></i>
+          <div><div class="disc-manual-name">Student Discount (10%)</div><div class="disc-manual-desc">10% off total</div></div>
+        </div>
+        <div class="disc-manual-item" onclick="applyManualDiscount('$5 Off Voucher', 'fixed', 5, this)">
+          <i class="ti ti-tag disc-manual-icon"></i>
+          <div><div class="disc-manual-name">$5 Off Voucher</div><div class="disc-manual-desc">$5 off total</div></div>
+        </div>
+      </div>
+      <!-- Membership -->
+      <div id="discPaneMembership" class="disc-membership" style="display:none;">
+        <div class="disc-qr-box">
+          <i class="ti ti-qrcode disc-qr-icon"></i>
+          <div class="disc-qr-label">Scan customer QR code using scanner</div>
+          <button class="disc-sim-btn" onclick="simulateMemberScan()">Simulate Scan</button>
+        </div>
+        <div class="disc-or">OR ENTER PHONE NUMBER</div>
+        <div class="disc-phone-row">
+          <div class="disc-phone-input" id="discPhoneDisplay" onclick="openDiscKb('phone')" style="color:var(--text-tertiary);">Tap to enter phone...</div>
+          <button class="disc-lookup-btn" onclick="applyMemberDiscount()">Lookup</button>
+        </div>
+      </div>
+      <!-- Voucher -->
+      <div id="discPaneVoucher" style="display:none;">
+        <div class="disc-voucher-grid">
+          <div class="disc-voucher-card" style="background:#eff6ff;" onclick="selectVoucherCard('Mall Voucher ($10 off)','fixed',10,this)">
+            <span class="disc-voucher-icon" style="color:#2563eb;">🏬</span>
+            <div><div class="disc-voucher-name" style="color:#2563eb;">Mall Voucher</div><div class="disc-voucher-val" style="color:#2563eb;">$10 off</div></div>
+          </div>
+          <div class="disc-voucher-card" style="background:#eff6ff;" onclick="selectVoucherCard('Mall Voucher ($5 off)','fixed',5,this)">
+            <span class="disc-voucher-icon" style="color:#2563eb;">🏬</span>
+            <div><div class="disc-voucher-name" style="color:#2563eb;">Mall Voucher</div><div class="disc-voucher-val" style="color:#2563eb;">$5 off</div></div>
+          </div>
+          <div class="disc-voucher-card" style="background:#fefce8;" onclick="selectVoucherCard('Lucky Draw ($10 off)','fixed',10,this)">
+            <span class="disc-voucher-icon" style="color:#d97706;">⭐</span>
+            <div><div class="disc-voucher-name" style="color:#d97706;">Lucky Draw</div><div class="disc-voucher-val" style="color:#d97706;">$10 off</div></div>
+          </div>
+          <div class="disc-voucher-card" style="background:#fdf2f8;" onclick="selectVoucherCard('Senior Citizen ($5 off)','fixed',5,this)">
+            <span class="disc-voucher-icon" style="color:#db2777;">❤️</span>
+            <div><div class="disc-voucher-name" style="color:#db2777;">Senior Citizen</div><div class="disc-voucher-val" style="color:#db2777;">$5 off</div></div>
+          </div>
+          <div class="disc-voucher-card" style="background:#f0fdf4;" onclick="selectVoucherCard('Student Voucher ($5 off)','fixed',5,this)">
+            <span class="disc-voucher-icon" style="color:#16a34a;">🎓</span>
+            <div><div class="disc-voucher-name" style="color:#16a34a;">Student Voucher</div><div class="disc-voucher-val" style="color:#16a34a;">$5 off</div></div>
+          </div>
+          <div class="disc-voucher-card" style="background:#faf5ff;" onclick="selectVoucherCard('Promo Voucher ($15 off)','fixed',15,this)">
+            <span class="disc-voucher-icon" style="color:#7c3aed;">🎟️</span>
+            <div><div class="disc-voucher-name" style="color:#7c3aed;">Promo Voucher</div><div class="disc-voucher-val" style="color:#7c3aed;">$15 off</div></div>
+          </div>
+        </div>
+        <div class="disc-voucher-code-row">
+          <div class="disc-or-line">OR ENTER A VOUCHER CODE</div>
+          <div class="disc-code-row">
+            <div class="disc-code-input" id="discCodeDisplay" onclick="openDiscKb('code')" style="display:flex;align-items:center;color:var(--text-tertiary);font-size:11px;letter-spacing:0.1em;">TAP TO ENTER CODE...</div>
+            <button class="disc-apply-btn" onclick="applyVoucherCode()">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Discount Keyboard Sheet -->
+<div class="disc-kb-sheet" id="discKbSheet" onclick="closeDiscKbIfBg(event)">
+  <div class="disc-kb-inner">
+    <div class="disc-kb-field-row">
+      <span class="disc-kb-field-label" id="discKbLabel">ENTER PHONE NUMBER:</span>
+      <input class="disc-kb-field-val" id="discKbVal" readonly />
+      <button class="disc-kb-dismiss" onclick="closeDiscKb()"><i class="ti ti-chevron-down" style="font-size:18px;"></i></button>
+    </div>
+    <div class="disc-kb-rows">
+      <div class="disc-kb-row">
+        <button class="disc-kb-key" onclick="discKbPress('1')">1</button>
+        <button class="disc-kb-key" onclick="discKbPress('2')">2</button>
+        <button class="disc-kb-key" onclick="discKbPress('3')">3</button>
+        <button class="disc-kb-key" onclick="discKbPress('4')">4</button>
+        <button class="disc-kb-key" onclick="discKbPress('5')">5</button>
+        <button class="disc-kb-key" onclick="discKbPress('6')">6</button>
+        <button class="disc-kb-key" onclick="discKbPress('7')">7</button>
+        <button class="disc-kb-key" onclick="discKbPress('8')">8</button>
+        <button class="disc-kb-key" onclick="discKbPress('9')">9</button>
+        <button class="disc-kb-key" onclick="discKbPress('0')">0</button>
+        <button class="disc-kb-key del" onclick="discKbDel()"><i class="ti ti-backspace"></i></button>
+      </div>
+      <div class="disc-kb-row">
+        <button class="disc-kb-key" onclick="discKbPress('Q')">Q</button>
+        <button class="disc-kb-key" onclick="discKbPress('W')">W</button>
+        <button class="disc-kb-key" onclick="discKbPress('E')">E</button>
+        <button class="disc-kb-key" onclick="discKbPress('R')">R</button>
+        <button class="disc-kb-key" onclick="discKbPress('T')">T</button>
+        <button class="disc-kb-key" onclick="discKbPress('Y')">Y</button>
+        <button class="disc-kb-key" onclick="discKbPress('U')">U</button>
+        <button class="disc-kb-key" onclick="discKbPress('I')">I</button>
+        <button class="disc-kb-key" onclick="discKbPress('O')">O</button>
+        <button class="disc-kb-key" onclick="discKbPress('P')">P</button>
+      </div>
+      <div class="disc-kb-row">
+        <button class="disc-kb-key" onclick="discKbPress('A')">A</button>
+        <button class="disc-kb-key" onclick="discKbPress('S')">S</button>
+        <button class="disc-kb-key" onclick="discKbPress('D')">D</button>
+        <button class="disc-kb-key" onclick="discKbPress('F')">F</button>
+        <button class="disc-kb-key" onclick="discKbPress('G')">G</button>
+        <button class="disc-kb-key" onclick="discKbPress('H')">H</button>
+        <button class="disc-kb-key" onclick="discKbPress('J')">J</button>
+        <button class="disc-kb-key" onclick="discKbPress('K')">K</button>
+        <button class="disc-kb-key" onclick="discKbPress('L')">L</button>
+        <button class="disc-kb-key del" onclick="discKbDel()"><i class="ti ti-backspace"></i></button>
+      </div>
+      <div class="disc-kb-row">
+        <button class="disc-kb-key action">⇧</button>
+        <button class="disc-kb-key" onclick="discKbPress('Z')">Z</button>
+        <button class="disc-kb-key" onclick="discKbPress('X')">X</button>
+        <button class="disc-kb-key" onclick="discKbPress('C')">C</button>
+        <button class="disc-kb-key" onclick="discKbPress('V')">V</button>
+        <button class="disc-kb-key" onclick="discKbPress('B')">B</button>
+        <button class="disc-kb-key" onclick="discKbPress('N')">N</button>
+        <button class="disc-kb-key" onclick="discKbPress('M')">M</button>
+        <button class="disc-kb-key del" onclick="discKbDel()"><i class="ti ti-backspace"></i></button>
+        <button class="disc-kb-key del" onclick="discKbDel()"><i class="ti ti-backspace"></i></button>
+      </div>
+      <div class="disc-kb-row">
+        <button class="disc-kb-key" onclick="discKbPress('@')">@</button>
+        <button class="disc-kb-key" onclick="discKbPress('.')">.</button>
+        <button class="disc-kb-key" onclick="discKbPress('-')">-</button>
+        <button class="disc-kb-key" onclick="discKbPress('_')">_</button>
+        <button class="disc-kb-key" onclick="discKbPress('/')"> /</button>
+        <button class="disc-kb-key" onclick="discKbPress('#')">#</button>
+        <button class="disc-kb-key wide" onclick="discKbPress(' ')">SPACE</button>
+        <button class="disc-kb-key done" onclick="discKbDone()">↵ Done</button>
+      </div>
     </div>
   </div>
 </div>
