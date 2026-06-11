@@ -191,51 +191,7 @@
     .numpad-key.key-del { background: var(--bg-secondary); font-size: 18px; }
     .numpad-key.key-empty { background: transparent; cursor: default; }
     .badge { background: var(--green); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
-    .main { display: grid; grid-template-columns: 240px 1fr 300px; flex: 1; overflow: hidden; min-height: 0; transition: grid-template-columns 0.3s cubic-bezier(0.4,0,0.2,1); }
-    .main.left-collapsed { grid-template-columns: 44px 1fr 300px; }
-
-    /* LEFT PANEL */
-    .left-panel { background: var(--bg-secondary); border-right: 0.5px solid var(--border); display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-    .left-header { padding: 12px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
-    .left-header-top { display: flex; align-items: center; justify-content: space-between; }
-    .collapse-btn { width: 24px; height: 24px; border-radius: 6px; border: none; background: transparent; cursor: pointer; color: var(--text-tertiary); display: flex; align-items: center; justify-content: center; font-size: 15px; transition: background 0.15s, color 0.15s; flex-shrink: 0; }
-    .collapse-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
-    .collapse-btn i { transition: transform 0.3s; }
-    .left-panel.collapsed .collapse-btn i { transform: rotate(180deg); }
-
-    /* Collapsed strip */
-    .left-collapsed-strip { display: none; flex-direction: column; align-items: center; padding: 10px 0; gap: 4px; flex: 1; }
-    .left-panel.collapsed .left-collapsed-strip { display: flex; }
-    .left-panel.collapsed .left-header-top .ai-agent,
-    .left-panel.collapsed .tab-row,
-    .left-panel.collapsed ~ * .ai-chat,
-    .left-panel.collapsed .ai-chat,
-    .left-panel.collapsed .left-input { display: none; }
-    .strip-icon-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-size: 17px; transition: background 0.15s, color 0.15s; }
-    .strip-icon-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
-    .strip-divider { width: 20px; height: 0.5px; background: var(--border); margin: 4px 0; }
-    .tab-row { display: flex; gap: 4px; margin-top: 8px; }
-    .tab-btn { flex: 1; padding: 6px 0; font-size: 12px; border: none; background: transparent; border-bottom: 2px solid transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; font-family: var(--font); }
-    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
-    .ai-agent { display: flex; align-items: center; gap: 8px; }
-    .ai-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--blue); display: flex; align-items: center; justify-content: center; }
-    .ai-avatar i { font-size: 14px; color: white; }
-    .ai-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
-    .ai-status { font-size: 10px; color: var(--text-tertiary); }
-    .ai-chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
-    .ai-greeting { background: var(--bg-primary); border-radius: var(--radius-md); padding: 10px; border: 0.5px solid var(--border); font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
-    .quick-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
-    .chat-msgs { display: flex; flex-direction: column; gap: 6px; }
-    .chat-bubble { padding: 8px 10px; border-radius: 8px; font-size: 12px; line-height: 1.5; max-width: 95%; }
-    .chat-bubble.user { background: var(--blue); color: white; align-self: flex-end; border-radius: 8px 8px 2px 8px; }
-    .chat-bubble.ai { background: var(--bg-primary); border: 0.5px solid var(--border); color: var(--text-primary); align-self: flex-start; border-radius: 8px 8px 8px 2px; }
-    .chat-bubble.loading { color: var(--text-tertiary); font-style: italic; }
-    .quick-btn { width: 100%; text-align: left; padding: 6px 10px; font-size: 12px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg-primary); color: var(--text-secondary); cursor: pointer; transition: background 0.15s; font-family: var(--font); margin-bottom: 2px; }
-    .quick-btn:hover { background: var(--bg-tertiary); }
-    .left-input { padding: 10px; border-top: 0.5px solid var(--border); display: flex; gap: 6px; }
-    .left-input input { flex: 1; padding: 7px 10px; font-size: 12px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary); outline: none; font-family: var(--font); }
-    .left-input input:focus { border-color: var(--blue); }
-    .left-input button { padding: 7px 10px; background: var(--blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+    .main { display: grid; grid-template-columns: 1fr 300px; flex: 1; overflow: hidden; min-height: 0; }
 
     /* MIDDLE PANEL */
     .mid-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-primary); }
@@ -402,37 +358,11 @@
     .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; padding: 10px 24px; border-radius: 24px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
     .toast.show { opacity: 1; }
 
-    /* API KEY MODAL */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
-    .modal { background: var(--bg-primary); border-radius: var(--radius-lg); padding: 24px; width: 360px; border: 0.5px solid var(--border); }
-    .modal h2 { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
-    .modal p { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
-    .modal input { width: 100%; padding: 9px 12px; font-size: 13px; border: 0.5px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); outline: none; font-family: var(--font); margin-bottom: 12px; }
-    .modal-btns { display: flex; gap: 8px; }
-    .modal-btns button { flex: 1; padding: 9px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); border: 0.5px solid var(--border); }
-    .btn-primary { background: var(--blue); color: white; border-color: var(--blue) !important; }
-    .btn-secondary { background: var(--bg-secondary); color: var(--text-secondary); }
-    .api-hint { font-size: 11px; color: var(--text-tertiary); margin-bottom: 0 !important; }
   </style>
 </head>
 <body>
 
 <div class="toast" id="toast"></div>
-
-<!-- API Key Modal -->
-<div class="modal-overlay" id="apiModal">
-  <div class="modal">
-    <h2>🔑 Enter your Anthropic API key</h2>
-    <p>The AI assistant requires an Anthropic API key. Your key is stored only in your browser's local storage and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
-    <p class="api-hint">Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a></p>
-    <br/>
-    <div class="modal-btns">
-      <button class="btn-secondary" onclick="skipApiKey()">Skip (no AI)</button>
-      <button class="btn-primary" onclick="saveApiKey()">Save & Continue</button>
-    </div>
-  </div>
-</div>
 
 <header>
   <div class="header-left">
@@ -451,50 +381,6 @@
 </header>
 
 <div class="main">
-
-  <!-- LEFT: AI Assistant -->
-  <div class="left-panel" id="leftPanel">
-    <div class="left-header">
-      <div class="left-header-top">
-        <div class="ai-agent">
-          <div class="ai-avatar"><i class="ti ti-robot"></i></div>
-          <div>
-            <div class="ai-name">Smart EPOS Assistant</div>
-            <div class="ai-status">Powered by AI · always ready</div>
-          </div>
-        </div>
-        <button class="collapse-btn" id="collapseBtn" onclick="toggleLeftPanel()" title="Minimise panel">
-          <i class="ti ti-chevron-left"></i>
-        </button>
-      </div>
-      <div class="tab-row">
-        <button class="tab-btn active"><i class="ti ti-message" style="vertical-align:-2px;margin-right:3px;"></i>Chat</button>
-        <button class="tab-btn"><i class="ti ti-school" style="vertical-align:-2px;margin-right:3px;"></i>Train</button>
-      </div>
-    </div>
-    <!-- Collapsed icon strip -->
-    <div class="left-collapsed-strip">
-      <button class="strip-icon-btn" title="Chat" onclick="toggleLeftPanel()"><i class="ti ti-message"></i></button>
-      <button class="strip-icon-btn" title="Train" onclick="toggleLeftPanel()"><i class="ti ti-school"></i></button>
-    </div>
-    <div class="ai-chat" id="chatArea">
-      <div class="ai-greeting">👋 Hi! Ask me anything about the POS — discounts, memberships, shortcuts, or how a feature works.</div>
-      <div class="quick-label">Quick questions</div>
-      <div class="chat-msgs" id="chatMsgs"></div>
-      <button class="quick-btn" onclick="sendQuick('What are the best sellers today?')">Best sellers today</button>
-      <button class="quick-btn" onclick="sendQuick('Compare Latte vs Cappuccino')">📌 Compare products</button>
-      <button class="quick-btn" onclick="sendQuick('How do I split a payment?')">Split payment</button>
-      <button class="quick-btn" onclick="sendQuick('How do I void an item?')">Void item</button>
-      <button class="quick-btn" onclick="sendQuick('How do I apply a discount?')">Apply discount</button>
-      <button class="quick-btn" onclick="sendQuick('How do I look up a member?')">Member lookup</button>
-      <button class="quick-btn" onclick="sendQuick('How do I hold an order?')">Hold order</button>
-      <button class="quick-btn" onclick="sendQuick('How do I redeem a voucher?')">Redeem voucher</button>
-    </div>
-    <div class="left-input">
-      <input type="text" id="chatInput" placeholder="Ask a question..." onkeydown="if(event.key==='Enter')submitChat()" />
-      <button onclick="submitChat()"><i class="ti ti-send"></i></button>
-    </div>
-  </div>
 
   <!-- MIDDLE: Products -->
   <div class="mid-panel">
@@ -831,18 +717,6 @@
     document.getElementById('clock').textContent = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
   }
   updateClock(); setInterval(updateClock, 1000);
-
-  // ── API Key ──
-  let apiKey = localStorage.getItem('epos_api_key') || '';
-  function saveApiKey() {
-    const val = document.getElementById('apiKeyInput').value.trim();
-    if (!val.startsWith('sk-')) { alert('Please enter a valid Anthropic API key (starts with sk-)'); return; }
-    apiKey = val;
-    localStorage.setItem('epos_api_key', apiKey);
-    document.getElementById('apiModal').style.display = 'none';
-  }
-  function skipApiKey() { document.getElementById('apiModal').style.display = 'none'; }
-  if (apiKey) document.getElementById('apiModal').style.display = 'none';
 
   // ── Products ──
   // ── Product image URLs ──
@@ -1204,67 +1078,6 @@
     clearOrder();
   }
 
-  // ── AI Chat ──
-  const SYSTEM_PROMPT = `You are a helpful Smart EPOS AI assistant for a café POS system. Be concise and practical (2-4 sentences). Help with:
-- Menu: Espresso $3, Americano $3.50, Latte/Cappuccino/Flat White $4.50, Mocha $5, teas $3–3.50, cold drinks $2.50–5.50, pastries $3–4, merch, bundles
-- Discounts: use the DISCOUNT button in the action bar
-- Split payments: use Cash, Card, or Mobile buttons
-- Member lookups: MEMBERS button
-- Hold/recall orders: HOLD and RECALL buttons
-- Void items: use the − button next to each item, or CLEAR to remove all
-- Reports: REPORTS button`;
-
-  let chatHistory = [];
-
-  function sendQuick(q) { sendMessage(q); }
-  function submitChat() {
-    const input = document.getElementById('chatInput');
-    const msg = input.value.trim();
-    if (!msg) return;
-    input.value = '';
-    sendMessage(msg);
-  }
-
-  async function sendMessage(msg) {
-    const msgs = document.getElementById('chatMsgs');
-    chatHistory.push({role:'user',content:msg});
-
-    const userBubble = document.createElement('div');
-    userBubble.className = 'chat-bubble user';
-    userBubble.textContent = msg;
-    msgs.appendChild(userBubble);
-
-    const loadBubble = document.createElement('div');
-    loadBubble.className = 'chat-bubble ai loading';
-    loadBubble.textContent = 'Thinking...';
-    msgs.appendChild(loadBubble);
-    msgs.scrollTop = msgs.scrollHeight;
-
-    if (!apiKey) {
-      loadBubble.className = 'chat-bubble ai';
-      loadBubble.textContent = 'No API key set. Click the gear icon or reload to add your Anthropic API key.';
-      return;
-    }
-
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,system:SYSTEM_PROMPT,messages:chatHistory})
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error.message);
-      const reply = data.content?.map(c=>c.text||'').join('') || 'Sorry, no response.';
-      chatHistory.push({role:'assistant',content:reply});
-      loadBubble.className = 'chat-bubble ai';
-      loadBubble.textContent = reply;
-    } catch(e) {
-      loadBubble.className = 'chat-bubble ai';
-      loadBubble.textContent = 'Error: ' + (e.message || 'Could not reach AI. Check your API key.');
-    }
-    msgs.scrollTop = msgs.scrollHeight;
-  }
-
   // ── Clock In / Staff ──
   let currentStaffId = '';
   let currentStaffRole = 'Administrator';
@@ -1308,14 +1121,6 @@
     const btn = document.getElementById('clockinSubmitBtn');
     const ready = clockinStaffId.length > 0 && clockinPassword.length > 0;
     btn.className = 'clockin-btn' + (ready ? ' ready' : '');
-  }
-
-  // ── Left Panel Collapse ──
-  let leftPanelCollapsed = false;
-  function toggleLeftPanel() {
-    leftPanelCollapsed = !leftPanelCollapsed;
-    document.getElementById('leftPanel').classList.toggle('collapsed', leftPanelCollapsed);
-    document.querySelector('.main').classList.toggle('left-collapsed', leftPanelCollapsed);
   }
 
   // ── Text Size ──
@@ -1423,15 +1228,14 @@
 
   function updateThemeToggleVisibility() { /* no-op, replaced by admin panel */ }
 
-  function submitClockIn() {
-    if (!clockinStaffId || !clockinPassword) return;
-    currentStaffId = clockinStaffId.padStart(4, '0');
-    currentStaffRole = currentStaffId === '0000' ? 'Administrator' : 'Staff';
-    const roleLabel = currentStaffId === '0000' ? 'Admin' : 'Staff';
-    document.getElementById('headerStaffId').textContent = currentStaffId + ' · ' + currentStaffRole;
+  function applySession(staffId, staffRole) {
+    currentStaffId = staffId;
+    currentStaffRole = staffRole;
+    const roleLabel = staffId === '0000' ? 'Admin' : 'Staff';
+    document.getElementById('headerStaffId').textContent = staffId + ' · ' + staffRole;
     document.getElementById('headerRole').textContent = roleLabel;
     const adminPill = document.getElementById('adminPill');
-    if (currentStaffId === '0000') {
+    if (staffId === '0000') {
       adminPill.classList.add('header-pill-btn');
       adminPill.style.cursor = 'pointer';
     } else {
@@ -1439,10 +1243,28 @@
       adminPill.style.cursor = 'default';
     }
     updateThemeToggleVisibility();
-    closeClockIn();
     renderProducts();
-    showToast('Clocked in as ' + currentStaffId + ' · ' + currentStaffRole);
   }
+
+  function submitClockIn() {
+    if (!clockinStaffId || !clockinPassword) return;
+    const id = clockinStaffId.padStart(4, '0');
+    const role = id === '0000' ? 'Administrator' : 'Staff';
+    localStorage.setItem('epos_staff_id', id);
+    localStorage.setItem('epos_staff_role', role);
+    applySession(id, role);
+    closeClockIn();
+    showToast('Clocked in as ' + id + ' · ' + role);
+  }
+
+  // ── Restore session on startup ──
+  (function restoreSession() {
+    const savedId = localStorage.getItem('epos_staff_id');
+    const savedRole = localStorage.getItem('epos_staff_role');
+    if (savedId) {
+      applySession(savedId, savedRole || (savedId === '0000' ? 'Administrator' : 'Staff'));
+    }
+  })();
 
   // ── Numpad Sheet ──
   function openNumpad(target) {
@@ -1488,8 +1310,8 @@
     el.innerHTML = (text || '') + '<span class="cursor"></span>';
   }
 
-  renderProducts();
-
+  // If no saved session, render products in default (non-admin) state
+  if (!localStorage.getItem('epos_staff_id')) renderProducts();
 
   // ── Product Info Modal ──
   function findProduct(name) {
