@@ -823,7 +823,7 @@
       </button>
       <button class="action-btn" onclick="openReports()"><i class="ti ti-chart-bar"></i><span>Reports</span></button>
       <button class="action-btn" onclick="openMembers()"><i class="ti ti-users"></i><span>Members</span></button>
-      <button class="action-btn"><i class="ti ti-shopping-cart"></i><span>Orders</span></button>
+      <button class="action-btn" onclick="openOrdersModal()"><i class="ti ti-shopping-cart"></i><span>Orders</span></button>
     </div>
   </div>
 
@@ -2183,6 +2183,7 @@
     if (fieldKbTargetId === 'customerDisplay') updateCustomerMatchCard();
     if (fieldKbTargetId === 'memSearchInput') renderMembersList();
     if (fieldKbTargetId === 'searchInput') filterProducts();
+    if (fieldKbTargetId === 'ordersSearch') renderOrdersTab();
   }
 
   function fieldKbDone() {
@@ -2632,6 +2633,18 @@
   let rptMonthOffset = 0; // 0 = current month
   let rptSalesTarget = 15000;
 
+  function openOrdersModal() {
+    document.getElementById('ordersOverlay').classList.add('show');
+    renderOrdersTab();
+  }
+
+  function closeOrdersModal() {
+    document.getElementById('ordersOverlay').classList.remove('show');
+  }
+
+  function closeOrdersIfBg(e) {
+    if (e.target === document.getElementById('ordersOverlay')) closeOrdersModal();
+  }
   function openReports() {
     rptMonthOffset = 0;
     document.getElementById('rptOverlay').classList.add('show');
@@ -2647,7 +2660,7 @@
   }
 
   function switchRptTab(tab) {
-    ['eod','hourly','month','wastage','orders'].forEach(t => {
+    ['eod','hourly','month','wastage'].forEach(t => {
       document.getElementById('rptTab_' + t).classList.toggle('active', t === tab);
       document.getElementById('rptPane_' + t).style.display = t === tab ? 'flex' : 'none';
     });
@@ -2655,7 +2668,6 @@
     if (tab === 'hourly') renderRptHourly();
     if (tab === 'month') renderRptMonth();
     if (tab === 'wastage') renderRptWastage();
-    if (tab === 'orders') renderOrdersTab();
   }
 
   function todayKey() {
@@ -3851,7 +3863,6 @@
       <button class="rpt-tab" id="rptTab_hourly" onclick="switchRptTab('hourly')">Hourly</button>
       <button class="rpt-tab" id="rptTab_month" onclick="switchRptTab('month')">Month to Date</button>
       <button class="rpt-tab" id="rptTab_wastage" onclick="switchRptTab('wastage')">Wastage</button>
-      <button class="rpt-tab" id="rptTab_orders" onclick="switchRptTab('orders')">Orders</button>
     </div>
 
     <!-- END OF DAY -->
@@ -4013,8 +4024,17 @@
       </div>
     </div>
 
-    <!-- ORDERS -->
-    <div class="rpt-body" id="rptPane_orders" style="display:none;">
+  </div>
+</div>
+
+<!-- Orders Modal -->
+<div class="rpt-overlay" id="ordersOverlay" onclick="closeOrdersIfBg(event)">
+  <div class="rpt-modal">
+    <div class="rpt-header">
+      <div class="rpt-title">Orders</div>
+      <button class="rpt-close" onclick="closeOrdersModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="rpt-body" style="display:flex;">
       <div class="rpt-orders-toolbar">
         <div class="rpt-orders-filters">
           <button class="rpt-orders-filter active" id="ordFilter_all" onclick="setOrderFilter('all')">All</button>
@@ -4022,11 +4042,10 @@
           <button class="rpt-orders-filter" id="ordFilter_2h" onclick="setOrderFilter('2h')">Last 2 hrs</button>
           <button class="rpt-orders-filter" id="ordFilter_3h" onclick="setOrderFilter('3h')">Last 3 hrs</button>
         </div>
-        <input class="rpt-orders-search" id="ordersSearch" type="text" placeholder="Search Order #..." oninput="renderOrdersTab()" />
+        <input class="rpt-orders-search" id="ordersSearch" type="text" placeholder="Search Order #..." readonly onclick="openFieldKb('ordersSearch','text','SEARCH ORDER #:')" />
       </div>
       <div id="rptOrdersList" style="display:flex;flex-direction:column;gap:10px;"></div>
     </div>
-
   </div>
 </div>
 <div class="wastage-overlay" id="wastageOverlay" onclick="closeWastageIfBg(event)">
