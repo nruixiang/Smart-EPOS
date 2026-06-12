@@ -2621,13 +2621,20 @@
       el.className = 'rpt-wastage-log-entry';
       el.innerHTML = `
         <div class="rpt-wastage-log-icon">${imgHtml}</div>
-        <div>
+        <div style="flex:1;min-width:0;">
           <div class="rpt-wastage-log-name">${e.itemName}</div>
           <div class="rpt-wastage-log-meta">${e.reason} · ${currentStaffId || '0000'} · ${timeStr}</div>
         </div>
-        <div class="rpt-wastage-log-qty">−${e.qty} units</div>`;
+        <div class="rpt-wastage-log-qty">−${e.qty} units</div>
+        <button onclick="deleteWastageEntry('${e.id}')" style="margin-left:10px;background:none;border:none;cursor:pointer;color:var(--text-tertiary);font-size:16px;display:flex;align-items:center;padding:4px;border-radius:6px;transition:color 0.15s,background 0.15s;" onmouseover="this.style.color='var(--red)';this.style.background='#fef2f2';" onmouseout="this.style.color='var(--text-tertiary)';this.style.background='none';"><i class="ti ti-trash"></i></button>`;
       logContainer.appendChild(el);
     });
+  }
+
+  function deleteWastageEntry(id) {
+    const log = getWastageLog();
+    saveWastageLog(log.filter(e => String(e.id) !== String(id)));
+    renderRptWastage();
   }
 
   // ── Log Wastage Modal ──
@@ -2785,7 +2792,7 @@
 
   function selectWastageReason(reason) {
     wastageSelectedReason = reason;
-    const reasonIdMap = { 'Expired': 'wrExpired', 'Overproduction': 'wrOverproduction', 'Damaged': 'wrDamaged', 'Wrong order': 'wrWrongOrder' };
+    const reasonIdMap = { 'Expired': 'wrExpired', 'Overproduction': 'wrOverproduction', 'Damaged': 'wrDamaged', 'Wrong Order': 'wrWrongOrder' };
     Object.entries(reasonIdMap).forEach(([r, id]) => {
       document.getElementById(id).classList.toggle('active', r === reason);
     });
@@ -2814,7 +2821,7 @@
     const log = getWastageLog();
     entries.forEach(([name, qty]) => {
       const p = getAllProducts().find(x => x.name === name);
-      log.push({ itemName: name, qty, reason: wastageSelectedReason, note, date: now.toISOString(), cost: p ? p.price * qty : 0 });
+      log.push({ id: Date.now() + Math.random(), itemName: name, qty, reason: wastageSelectedReason, note, date: now.toISOString(), cost: p ? p.price * qty : 0 });
     });
     saveWastageLog(log);
     closeLogWastage();
@@ -3473,7 +3480,7 @@
         <button class="wastage-reason-btn" id="wrExpired" onclick="selectWastageReason('Expired')"><i class="ti ti-clock-off" style="font-size:16px;"></i> Expired</button>
         <button class="wastage-reason-btn" id="wrOverproduction" onclick="selectWastageReason('Overproduction')"><i class="ti ti-settings" style="font-size:16px;"></i> Overproduction</button>
         <button class="wastage-reason-btn" id="wrDamaged" onclick="selectWastageReason('Damaged')"><i class="ti ti-alert-triangle" style="font-size:16px;"></i> Damaged</button>
-        <button class="wastage-reason-btn" id="wrWrongOrder" onclick="selectWastageReason('Wrong order')"><i class="ti ti-x" style="font-size:16px;"></i> Wrong order</button>
+        <button class="wastage-reason-btn" id="wrWrongOrder" onclick="selectWastageReason('Wrong Order')"><i class="ti ti-x" style="font-size:16px;"></i> Wrong Order</button>
       </div>
       <!-- Note -->
       <div class="wastage-section-label">Optional Note</div>
