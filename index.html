@@ -1237,6 +1237,60 @@
     return all.filter(p => (currentSub==='All'||p.sub===currentSub) && (!search||p.name.toLowerCase().includes(search)));
   }
 
+  // ── Custom Product Images ──
+  const CUSTOM_IMGS_KEY = 'smartepos_custom_imgs';
+  function loadCustomImgs() {
+    try { return JSON.parse(localStorage.getItem(CUSTOM_IMGS_KEY) || '{}'); } catch(e) { return {}; }
+  }
+  function saveCustomImgs(obj) {
+    try { localStorage.setItem(CUSTOM_IMGS_KEY, JSON.stringify(obj)); } catch(e) {}
+  }
+  let customImgs = loadCustomImgs();
+
+  function getProductImg(name) {
+    return customImgs[name] || PRODUCT_IMGS[name] || '';
+  }
+
+  let editImgData = null; // base64 string or null (no change) or '' (remove)
+
+  function triggerImgUpload() {
+    document.getElementById('editImgInput').click();
+  }
+
+  function handleImgUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('Image too large — max 5 MB'); event.target.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      editImgData = e.target.result;
+      showEditImgPreview(editImgData);
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  }
+
+  function showEditImgPreview(src) {
+    const preview = document.getElementById('editImgPreview');
+    const empty = document.getElementById('editImgThumbEmpty');
+    if (src) {
+      preview.src = src;
+      preview.style.display = 'block';
+      empty.style.display = 'none';
+    } else {
+      preview.src = '';
+      preview.style.display = 'none';
+      empty.style.display = 'block';
+    }
+  }
+
+  function removeEditImg() {
+    editImgData = ''; // empty string = explicit removal
+    showEditImgPreview('');
+  }
+
+  // ── Edit Product ──
+
   function renderProducts() {
     const grid = document.getElementById('productsGrid');
     const prods = getProducts();
@@ -1244,7 +1298,7 @@
     const isAdmin = currentStaffId === '0000';
     grid.innerHTML = prods.map(p => {
       const safeName = p.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-      const imgUrl = PRODUCT_IMGS[p.name] || '';
+      const imgUrl = getProductImg(p.name);
       const imgHtml = imgUrl
         ? '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:cover;" alt="' + p.name + '" loading="lazy">'
         : p.name;
@@ -2496,7 +2550,7 @@
     if (!p) return;
     document.getElementById('pinfoName').textContent = p.name;
     document.getElementById('pinfoPrice').textContent = '$' + p.price.toFixed(2);
-    const imgUrl = PRODUCT_IMGS[p.name] || '';
+    const imgUrl = getProductImg(p.name);
     const heroEl = document.getElementById('pinfoEmoji');
     if (imgUrl) {
       heroEl.innerHTML = '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:cover;" alt="' + p.name + '">';
@@ -2550,6 +2604,11 @@
     document.getElementById('editValidTo').value = p.validTo || '';
     document.getElementById('editDesc').value = p.desc || '';
 
+    // Load current image into preview
+    editImgData = null;
+    const currentImg = getProductImg(p.name);
+    showEditImgPreview(currentImg);
+
     document.getElementById('editOverlay').classList.add('show');
   }
 
@@ -2596,6 +2655,27 @@
       if (newSub) editTarget.sub = newSub;
       editTarget.validFrom = newValidFrom;
       editTarget.validTo = newValidTo;
+    }
+
+    // Handle image changes
+    if (editImgData !== null) {
+      if (editImgData === '') {
+        delete customImgs[newName];
+        // also remove old name key in case name changed
+        delete customImgs[editTarget.name];
+      } else {
+        // If name changed, remove old key
+        if (editTarget.name !== newName) delete customImgs[editTarget.name];
+        customImgs[newName] = editImgData;
+      }
+      saveCustomImgs(customImgs);
+    } else if (editTarget.name !== newName) {
+      // Name changed, move image key
+      if (customImgs[editTarget.name]) {
+        customImgs[newName] = customImgs[editTarget.name];
+        delete customImgs[editTarget.name];
+        saveCustomImgs(customImgs);
+      }
     }
 
     closeEdit();
@@ -3091,7 +3171,7 @@
     labelEl.textContent = "Today's Log";
     logContainer.appendChild(labelEl);
     todayEntries.forEach(e => {
-      const imgUrl = PRODUCT_IMGS[e.itemName] || '';
+      const imgUrl = getProductImg(e.itemName);
       const imgHtml = imgUrl
         ? `<img src="${imgUrl}" alt="${e.itemName}">`
         : `<span>📦</span>`;
@@ -3207,7 +3287,7 @@
     container.innerHTML = products.map(p => {
       const qty = wastageSelectedItems[p.name] || 0;
       const isSelected = qty > 0;
-      const imgUrl = PRODUCT_IMGS[p.name] || '';
+      const imgUrl = getProductImg(p.name);
       const imgHtml = imgUrl ? `<img src="${imgUrl}" alt="${p.name}">` : `<span style="font-size:20px;">📦</span>`;
       const safeName = p.name.replace(/'/g, "\\'");
       return `<div class="wastage-item-row${isSelected ? ' selected' : ''}" onclick="toggleWastageItem('${safeName}', ${p.price})">
@@ -3241,7 +3321,7 @@
     chips.innerHTML = Object.entries(wastageSelectedItems).map(([name, qty]) => {
       const p = allProds.find(x => x.name === name);
       const price = p ? p.price : 0;
-      const imgUrl = PRODUCT_IMGS[name] || '';
+      const imgUrl = getProductImg(name);
       const imgHtml = imgUrl ? `<img src="${imgUrl}" alt="${name}">` : '📦';
       const safeName = name.replace(/'/g, "\\'");
       return `<div class="wastage-chip">
@@ -3456,6 +3536,14 @@
   .edit-btn-cancel:hover { opacity: 0.75; }
   .edit-btn-save { border: none; background: #2563eb; color: white; }
   .edit-btn-save:hover { opacity: 0.88; }
+  .edit-img-row { display: flex; align-items: center; gap: 14px; }
+  .edit-img-thumb { width: 64px; height: 64px; border-radius: 10px; background: #ffc0cb; flex-shrink: 0; overflow: hidden; }
+  .edit-img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .edit-img-thumb-empty { width: 100%; height: 100%; background: #ffb3c1; }
+  .edit-img-upload-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 16px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg-primary); color: var(--text-primary); font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--font); transition: border-color 0.15s, background 0.15s; }
+  .edit-img-upload-btn:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
+  .edit-img-upload-btn i { font-size: 18px; color: var(--text-secondary); }
+  .edit-img-hint { font-size: 11px; color: var(--text-tertiary); margin-top: 6px; }
 </style>
 <div class="pinfo-overlay" id="editOverlay" onclick="closeEditIfBg(event)">
   <div class="edit-modal">
@@ -3514,6 +3602,22 @@
       <div>
         <div class="edit-field-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
         <textarea id="editDesc" rows="3" class="edit-input" placeholder="Short description shown on receipt" style="resize:vertical;line-height:1.5;"></textarea>
+      </div>
+
+      <!-- Product Photo -->
+      <div>
+        <div class="edit-field-label">Product Photo <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
+        <div class="edit-img-row">
+          <div class="edit-img-thumb" id="editImgThumb">
+            <div class="edit-img-thumb-empty" id="editImgThumbEmpty"></div>
+            <img id="editImgPreview" style="display:none;width:100%;height:100%;object-fit:cover;" alt="Preview" />
+          </div>
+          <button type="button" class="edit-img-upload-btn" onclick="triggerImgUpload()">
+            <i class="ti ti-photo-up"></i> Upload Photo
+          </button>
+        </div>
+        <div class="edit-img-hint">JPG, PNG or WebP · max 5 MB</div>
+        <input type="file" id="editImgInput" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleImgUpload(event)" />
       </div>
 
     </div>
