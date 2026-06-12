@@ -238,15 +238,6 @@
     .qty-btn { width: 22px; height: 22px; border: 0.5px solid var(--border); border-radius: 4px; background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; color: var(--text-primary); line-height: 1; font-family: var(--font); }
     .qty-num { font-size: 13px; font-weight: 500; min-width: 16px; text-align: center; color: var(--text-primary); }
     .customer-row { padding: 8px 10px; border-top: 0.5px solid var(--border); display: flex; gap: 6px; flex-shrink: 0; }
-    .customer-attached-card { display: none; margin: 0 10px; padding: 10px 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); flex-shrink: 0; }
-    [data-theme="dark"] .customer-attached-card { background: rgba(22,163,74,0.1); border-color: rgba(22,163,74,0.25); }
-    .customer-attached-card.show { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .customer-attached-left { display: flex; align-items: center; gap: 9px; }
-    .customer-attached-avatar { width: 30px; height: 30px; border-radius: 50%; background: #16a34a; color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .customer-attached-name { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
-    .customer-attached-pts { font-size: 11px; color: #16a34a; font-weight: 500; }
-    .customer-attached-remove { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 15px; display: flex; align-items: center; padding: 2px; flex-shrink: 0; }
-    .customer-attached-remove:hover { color: var(--red); }
     .customer-input { flex: 1; padding: 7px 10px; font-size: 12px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); outline: none; font-family: var(--font); cursor: pointer; }
     .icon-btn { width: 32px; height: 32px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); flex-shrink: 0; }
     .totals { padding: 10px 14px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
@@ -515,6 +506,93 @@
     [data-theme="dark"] .mem-btn-delete { background: rgba(220,38,38,0.12); border-color: rgba(220,38,38,0.3); }
     .mem-back-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 18px; display: flex; align-items: center; padding: 0; }
 
+    /* REPORTS MODAL */
+    .rpt-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .rpt-overlay.show { opacity: 1; pointer-events: all; }
+    .rpt-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 660px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); border: 0.5px solid var(--border); }
+    .rpt-header { padding: 18px 20px 0; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .rpt-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+    .rpt-close { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 20px; display: flex; align-items: center; }
+    .rpt-close:hover { color: var(--text-primary); }
+    .rpt-tabs { display: flex; gap: 0; padding: 14px 20px 0; border-bottom: 0.5px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+    .rpt-tab { padding: 8px 14px; font-size: 13px; font-weight: 500; color: var(--text-secondary); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; font-family: var(--font); white-space: nowrap; margin-bottom: -0.5px; transition: color 0.15s; display: flex; align-items: center; gap: 5px; }
+    .rpt-tab.active { color: var(--text-primary); border-bottom-color: var(--text-primary); font-weight: 600; }
+    .rpt-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+    /* Stat cards */
+    .rpt-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .rpt-stat-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+    .rpt-stat-label { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between; }
+    .rpt-stat-label i { font-size: 16px; color: var(--text-tertiary); }
+    .rpt-stat-label i.green { color: var(--green); }
+    .rpt-stat-val { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+    .rpt-stat-val.green { color: var(--green); }
+    .rpt-stat-sub { font-size: 12px; color: var(--text-secondary); }
+    /* Summary breakdown */
+    .rpt-breakdown { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
+    .rpt-breakdown-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 14px; }
+    .rpt-breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-top: 0.5px solid var(--border); font-size: 13px; color: var(--text-secondary); }
+    .rpt-breakdown-row:first-of-type { border-top: none; }
+    .rpt-breakdown-row.strong { font-weight: 700; color: var(--text-primary); font-size: 14px; }
+    .rpt-breakdown-row.green { color: var(--green); }
+    .rpt-breakdown-row.red { color: var(--red); }
+    /* Hourly */
+    .rpt-hourly-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .rpt-hour-label { width: 44px; color: var(--text-tertiary); font-size: 12px; flex-shrink: 0; text-align: right; }
+    .rpt-hour-bar-wrap { flex: 1; background: var(--bg-secondary); border-radius: 6px; height: 28px; overflow: hidden; }
+    .rpt-hour-bar { height: 100%; background: var(--bg-tertiary); border-radius: 6px; transition: width 0.4s ease; min-width: 0; }
+    .rpt-hour-bar.has-sales { background: #16a34a22; }
+    .rpt-hour-val { width: 52px; text-align: right; font-size: 12px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
+    /* Month to date */
+    .rpt-month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .rpt-month-nav-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 18px; padding: 4px; }
+    .rpt-month-title { font-size: 16px; font-weight: 700; color: var(--text-primary); text-align: center; }
+    .rpt-month-sub { font-size: 12px; color: var(--text-tertiary); text-align: center; margin-top: 2px; }
+    .rpt-target-card { border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; background: var(--bg-primary); display: flex; flex-direction: column; gap: 10px; }
+    .rpt-target-top { display: flex; align-items: center; justify-content: space-between; }
+    .rpt-target-label { font-size: 13px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
+    .rpt-target-edit { display: flex; align-items: center; gap: 6px; }
+    .rpt-target-val { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .rpt-target-edit-btn { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 14px; padding: 2px; }
+    .rpt-target-progress { height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+    .rpt-target-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.4s; }
+    .rpt-target-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .rpt-target-stat { background: var(--bg-secondary); border-radius: 8px; padding: 10px 12px; }
+    .rpt-target-stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-tertiary); margin-bottom: 4px; }
+    .rpt-target-stat-val { font-size: 16px; font-weight: 800; color: var(--text-primary); }
+    .rpt-target-stat-val.red { color: var(--red); }
+    .rpt-alert { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #fef2f2; border: 0.5px solid #fecaca; border-radius: 8px; font-size: 12px; color: var(--red); }
+    [data-theme="dark"] .rpt-alert { background: rgba(220,38,38,0.1); border-color: rgba(220,38,38,0.25); }
+    .rpt-total-banner { background: #111; border-radius: var(--radius-lg); padding: 20px; color: white; }
+    [data-theme="dark"] .rpt-total-banner { background: #2c2c2e; }
+    .rpt-total-banner-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+    .rpt-total-banner-val { font-size: 36px; font-weight: 800; color: white; margin-bottom: 6px; }
+    .rpt-total-banner-meta { font-size: 13px; color: rgba(255,255,255,0.6); display: flex; gap: 16px; flex-wrap: wrap; }
+    .rpt-total-banner-meta span { color: var(--green); font-weight: 600; }
+    /* Calendar */
+    .rpt-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+    .rpt-cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-tertiary); padding: 4px 0; }
+    .rpt-cal-day { border-radius: 8px; border: 0.5px solid var(--border); min-height: 56px; padding: 5px 6px; font-size: 12px; background: var(--bg-primary); cursor: default; position: relative; }
+    .rpt-cal-day.today { border-color: var(--green); }
+    .rpt-cal-day.has-sales { background: #d1fae5; border-color: #6ee7b7; }
+    [data-theme="dark"] .rpt-cal-day.has-sales { background: rgba(22,163,74,0.18); border-color: rgba(22,163,74,0.4); }
+    .rpt-cal-day-num { font-weight: 600; color: var(--text-primary); }
+    .rpt-cal-day-sal { font-size: 11px; font-weight: 700; color: #16a34a; margin-top: 2px; }
+    .rpt-cal-day-ord { font-size: 10px; color: var(--text-tertiary); }
+    .rpt-cal-legend { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+    .rpt-cal-dot { width: 12px; height: 12px; border-radius: 3px; }
+    /* Wastage */
+    .rpt-wastage-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .rpt-wastage-stat { border-radius: var(--radius-lg); padding: 14px 16px; border: 0.5px solid var(--border); }
+    .rpt-wastage-stat.red { background: #fef2f2; border-color: #fecaca; }
+    [data-theme="dark"] .rpt-wastage-stat.red { background: rgba(220,38,38,0.08); border-color: rgba(220,38,38,0.2); }
+    .rpt-wastage-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); margin-bottom: 6px; }
+    .rpt-wastage-stat-val { font-size: 28px; font-weight: 800; color: var(--red); }
+    .rpt-wastage-stat-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .rpt-wastage-hint { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; background: #fefce8; border: 0.5px solid #fde68a; border-radius: 8px; font-size: 12px; color: #92400e; }
+    [data-theme="dark"] .rpt-wastage-hint { background: rgba(217,119,6,0.1); border-color: rgba(217,119,6,0.3); color: #d97706; }
+    .rpt-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px; color: var(--text-tertiary); font-size: 13px; text-align: center; gap: 8px; }
+    .rpt-empty i { font-size: 36px; }
+
     /* HOLD / RECALL */
     .recall-badge { position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--green); color: #ffffff !important; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 4px; pointer-events: none; line-height: 1; }
     .held-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -594,7 +672,7 @@
         <i class="ti ti-tag"></i><span>Discount</span>
         <span class="recall-badge" id="discountBadge" style="display:none;background:#e11d48;">✓</span>
       </button>
-      <button class="action-btn"><i class="ti ti-chart-bar"></i><span>Reports</span></button>
+      <button class="action-btn" onclick="openReports()"><i class="ti ti-chart-bar"></i><span>Reports</span></button>
       <button class="action-btn" onclick="openMembers()"><i class="ti ti-users"></i><span>Members</span></button>
       <button class="action-btn"><i class="ti ti-shopping-cart"></i><span>Orders</span></button>
       <button class="action-btn"><i class="ti ti-building-store"></i><span>Outlets</span></button>
@@ -617,16 +695,6 @@
         <i class="ti ti-box"></i>
         <p>Order is empty</p>
       </div>
-    </div>
-    <div class="customer-attached-card" id="customerAttachedCard">
-      <div class="customer-attached-left">
-        <div class="customer-attached-avatar" id="customerAttachedAvatar">?</div>
-        <div>
-          <div class="customer-attached-name" id="customerAttachedName">—</div>
-          <div class="customer-attached-pts" id="customerAttachedPts">0 pts · will earn +0 pts</div>
-        </div>
-      </div>
-      <button class="customer-attached-remove" onclick="detachCustomer()" title="Remove customer"><i class="ti ti-x"></i></button>
     </div>
     <div class="customer-row" id="customerRow">
       <input type="text" class="customer-input" id="customerDisplay" placeholder="Phone number..." readonly onclick="openMembers()" />
@@ -1189,7 +1257,6 @@
     const tax = discounted * 0.09;
     document.getElementById('taxAmt').textContent = '$' + tax.toFixed(2);
     document.getElementById('totalAmt').textContent = '$' + (discounted + tax).toFixed(2);
-    updateCustomerPtsDisplay();
   }
 
   function showToast(msg) {
@@ -1360,6 +1427,16 @@
     const discounted = Math.max(0, sub - discountAmt);
     const tax = discounted * 0.09;
     const total = discounted + tax;
+
+    // Log transaction for reports
+    const txHour = now.getHours();
+    const txDay = now.getDate();
+    salesLog.push({
+      ref, method, date: now, hour: txHour, day: txDay,
+      gross: sub, discount: discountAmt, tax, total,
+      items: items.map(i => ({name: i.name, qty: i.qty, price: i.price})),
+      customer: attachedCustomer ? attachedCustomer.name : null
+    });
 
     // Award member points & purchase history
     if (attachedCustomer) {
@@ -1560,54 +1637,23 @@
     if (attachedCustomer && attachedCustomer.id === m.id) {
       attachedCustomer = null;
       showToast('Customer detached from order');
-      updateCustomerRowDisplay();
-      openProfile(m.id);
     } else {
       attachedCustomer = m;
-      updateCustomerRowDisplay();
-      closeMembers();
       showToast(m.name + ' attached to current order');
     }
+    updateCustomerRowDisplay();
+    openProfile(m.id);
   }
 
   function updateCustomerRowDisplay() {
-    const card = document.getElementById('customerAttachedCard');
-    const searchRow = document.getElementById('customerRow');
     const el = document.getElementById('customerDisplay');
     if (attachedCustomer) {
-      card.classList.add('show');
-      searchRow.style.display = 'none';
-      document.getElementById('customerAttachedAvatar').textContent = getInitial(attachedCustomer.name);
-      document.getElementById('customerAttachedName').textContent = attachedCustomer.name;
-      updateCustomerPtsDisplay();
-      el.value = attachedCustomer.name;
+      el.value = attachedCustomer.name + ' \u00B7 ' + formatPhone(attachedCustomer.phone);
+      el.style.color = 'var(--text-primary)';
     } else {
-      card.classList.remove('show');
-      searchRow.style.display = '';
       el.value = '';
       el.style.color = '';
     }
-  }
-
-  function updateCustomerPtsDisplay() {
-    if (!attachedCustomer) return;
-    const items = Object.values(order);
-    const sub = items.reduce((a, i) => a + i.price * i.qty, 0);
-    let discountAmt = 0;
-    if (activeDiscount && sub > 0) {
-      if (activeDiscount.type === 'percent') discountAmt = sub * activeDiscount.value / 100;
-      else if (activeDiscount.type === 'fixed') discountAmt = Math.min(activeDiscount.value, sub);
-    }
-    const finalTotal = Math.max(0, sub - discountAmt);
-    const earnPts = Math.floor(finalTotal);
-    const currentPts = attachedCustomer.points || 0;
-    document.getElementById('customerAttachedPts').textContent =
-      currentPts + ' pts · will earn +' + earnPts + ' pts';
-  }
-
-  function detachCustomer() {
-    attachedCustomer = null;
-    updateCustomerRowDisplay();
   }
 
   // Edit
@@ -2271,6 +2317,189 @@
   makeDraggable(document.getElementById('catTabs'));
   makeDraggable(document.getElementById('subTabs'));
 
+  // ── Reports ──
+  let salesLog = [];
+  let rptMonthOffset = 0; // 0 = current month
+  let rptSalesTarget = 15000;
+
+  function openReports() {
+    rptMonthOffset = 0;
+    document.getElementById('rptOverlay').classList.add('show');
+    switchRptTab('eod');
+  }
+
+  function closeReports() {
+    document.getElementById('rptOverlay').classList.remove('show');
+  }
+
+  function closeRptIfBg(e) {
+    if (e.target === document.getElementById('rptOverlay')) closeReports();
+  }
+
+  function switchRptTab(tab) {
+    ['eod','hourly','month','wastage'].forEach(t => {
+      document.getElementById('rptTab_' + t).classList.toggle('active', t === tab);
+      document.getElementById('rptPane_' + t).style.display = t === tab ? 'flex' : 'none';
+    });
+    if (tab === 'eod') renderRptEod();
+    if (tab === 'hourly') renderRptHourly();
+    if (tab === 'month') renderRptMonth();
+    if (tab === 'wastage') renderRptWastage();
+  }
+
+  function todayKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+  }
+
+  function todaySales() {
+    const tk = todayKey();
+    return salesLog.filter(t => {
+      const d = t.date;
+      return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === tk;
+    });
+  }
+
+  function renderRptEod() {
+    const txs = todaySales();
+    const gross = txs.reduce((a, t) => a + t.gross, 0);
+    const disc  = txs.reduce((a, t) => a + t.discount, 0);
+    const tax   = txs.reduce((a, t) => a + t.tax, 0);
+    const net   = txs.reduce((a, t) => a + t.total, 0);
+    const customers = txs.filter(t => t.customer).length;
+    const avgReceipt = txs.length ? net / txs.length : 0;
+    const profit = net * 0.65;
+
+    document.getElementById('rptEodGross').textContent  = '$' + gross.toFixed(2);
+    document.getElementById('rptEodNet').textContent    = '$' + net.toFixed(2);
+    document.getElementById('rptEodCust').textContent   = customers;
+    document.getElementById('rptEodAvg').textContent    = 'Avg per receipt: $' + avgReceipt.toFixed(2);
+    document.getElementById('rptEodTx').textContent     = txs.length;
+    document.getElementById('rptBdGross').textContent   = '$' + gross.toFixed(2);
+    document.getElementById('rptBdDisc').textContent    = '-$' + disc.toFixed(2);
+    document.getElementById('rptBdTax').textContent     = '$' + tax.toFixed(2);
+    document.getElementById('rptBdTotal').textContent   = '$' + net.toFixed(2);
+    document.getElementById('rptBdProfit').textContent  = '$' + profit.toFixed(2);
+  }
+
+  function renderRptHourly() {
+    const txs = todaySales();
+    const hours = {};
+    for (let h = 8; h <= 20; h++) hours[h] = 0;
+    txs.forEach(t => { if (hours[t.hour] !== undefined) hours[t.hour] += t.total; });
+    const max = Math.max(...Object.values(hours), 1);
+    const container = document.getElementById('rptHourlyList');
+    container.innerHTML = Object.entries(hours).map(([h, val]) => {
+      const label = h < 12 ? h + ' AM' : (h == 12 ? '12 PM' : (h - 12) + ' PM');
+      const pct = (val / max * 100).toFixed(1);
+      return `<div class="rpt-hourly-row">
+        <div class="rpt-hour-label">${label}</div>
+        <div class="rpt-hour-bar-wrap"><div class="rpt-hour-bar ${val > 0 ? 'has-sales' : ''}" style="width:${pct}%"></div></div>
+        <div class="rpt-hour-val">$${val.toFixed(2)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderRptMonth() {
+    const now = new Date();
+    const viewDate = new Date(now.getFullYear(), now.getMonth() + rptMonthOffset, 1);
+    const yr = viewDate.getFullYear(), mo = viewDate.getMonth();
+    const daysInMonth = new Date(yr, mo + 1, 0).getDate();
+    const isCurrentMonth = yr === now.getFullYear() && mo === now.getMonth();
+
+    // Month sales
+    const monthTxs = salesLog.filter(t => t.date.getFullYear() === yr && t.date.getMonth() === mo);
+    const monthTotal = monthTxs.reduce((a, t) => a + t.total, 0);
+    const monthOrders = monthTxs.length;
+
+    // Target stats
+    const dayOfMonth = isCurrentMonth ? now.getDate() : daysInMonth;
+    const daysLeft = isCurrentMonth ? daysInMonth - dayOfMonth : 0;
+    const pct = Math.min(100, monthTotal / rptSalesTarget * 100);
+    const dailyTarget = (rptSalesTarget / daysInMonth).toFixed(0);
+    const projected = isCurrentMonth && dayOfMonth > 0 ? (monthTotal / dayOfMonth * daysInMonth) : monthTotal;
+    const needPerDay = isCurrentMonth && daysLeft > 0 ? Math.max(0, (rptSalesTarget - monthTotal) / daysLeft) : 0;
+    const avgDay = dayOfMonth > 0 ? monthTotal / dayOfMonth : 0;
+    const avgOrder = monthOrders > 0 ? monthTotal / monthOrders : 0;
+
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('rptMonthTitle').textContent = monthNames[mo] + ' ' + yr;
+    document.getElementById('rptMonthSub').textContent = isCurrentMonth
+      ? `Day ${dayOfMonth} of ${daysInMonth} · ${daysLeft} days left`
+      : `${daysInMonth} days`;
+    document.getElementById('rptTargetPct').textContent = pct.toFixed(1) + '% of target';
+    document.getElementById('rptTargetCollected').textContent = '$' + monthTotal.toFixed(2) + ' collected';
+    document.getElementById('rptTargetFill').style.width = pct + '%';
+    document.getElementById('rptTargetVal').textContent = '$' + rptSalesTarget.toLocaleString();
+    document.getElementById('rptDailyTarget').textContent = '$' + dailyTarget;
+    document.getElementById('rptProjected').textContent = '$' + projected.toFixed(0);
+    document.getElementById('rptNeedPerDay').textContent = '$' + needPerDay.toFixed(0);
+    document.getElementById('rptMonthBannerTotal').textContent = '$' + monthTotal.toFixed(2);
+    document.getElementById('rptMonthBannerLabel').textContent = monthNames[mo].toUpperCase() + ' ' + yr + ' — TOTAL SALES';
+    document.getElementById('rptMonthBannerOrders').textContent = monthOrders + ' orders';
+    document.getElementById('rptMonthBannerAvgDay').textContent = '$' + avgDay.toFixed(2) + ' avg/day';
+    document.getElementById('rptMonthBannerAvgOrder').textContent = '$' + avgOrder.toFixed(2) + ' avg/order';
+
+    const alertEl = document.getElementById('rptTargetAlert');
+    if (isCurrentMonth && daysLeft > 0 && needPerDay > 0) {
+      alertEl.style.display = 'flex';
+      alertEl.querySelector('span').textContent = `Need $${needPerDay.toFixed(0)}/day for the remaining ${daysLeft} days to hit the $${rptSalesTarget.toLocaleString()} target.`;
+    } else {
+      alertEl.style.display = 'none';
+    }
+
+    // Build day sales map
+    const dayMap = {};
+    monthTxs.forEach(t => {
+      const d = t.date.getDate();
+      if (!dayMap[d]) dayMap[d] = { total: 0, orders: 0 };
+      dayMap[d].total += t.total;
+      dayMap[d].orders++;
+    });
+
+    // Calendar
+    const firstDow = new Date(yr, mo, 1).getDay();
+    const today = now.getDate();
+    let cal = '<div class="rpt-cal-grid">';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => cal += `<div class="rpt-cal-dow">${d}</div>`);
+    for (let i = 0; i < firstDow; i++) cal += '<div></div>';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const isToday = isCurrentMonth && d === today;
+      const data = dayMap[d];
+      cal += `<div class="rpt-cal-day${data ? ' has-sales' : ''}${isToday ? ' today' : ''}">
+        <div class="rpt-cal-day-num">${d}${isToday ? ' ·' : ''}</div>
+        ${data ? `<div class="rpt-cal-day-sal">$${data.total.toFixed(0)}</div><div class="rpt-cal-day-ord">${data.orders} order${data.orders>1?'s':''}</div>` : ''}
+      </div>`;
+    }
+    cal += '</div>';
+    cal += `<div class="rpt-cal-legend">
+      <div class="rpt-cal-dot" style="background:#d1fae5;border:1px solid #6ee7b7;"></div> Low
+      <div class="rpt-cal-dot" style="background:#6ee7b7;"></div>
+      <div class="rpt-cal-dot" style="background:#16a34a;"></div>
+      <div class="rpt-cal-dot" style="background:#065f46;"></div> High
+    </div>`;
+    document.getElementById('rptCalendar').innerHTML = cal;
+  }
+
+  function rptMonthNav(dir) {
+    rptMonthOffset += dir;
+    renderRptMonth();
+  }
+
+  function rptEditTarget() {
+    const val = prompt('Set monthly sales target ($):', rptSalesTarget);
+    if (val && !isNaN(parseFloat(val))) {
+      rptSalesTarget = parseFloat(val);
+      renderRptMonth();
+    }
+  }
+
+  function renderRptWastage() {
+    // Stub — wastage logged via Inventory
+    document.getElementById('rptWastageCount').textContent = '0';
+    document.getElementById('rptWastageReason').textContent = '—';
+  }
+
 </script>
 
 <!-- Product Info Modal -->
@@ -2749,5 +2978,135 @@
     <div class="held-modal-body" id="heldModalBody"></div>
   </div>
 </div>
+<!-- Reports Modal -->
+<div class="rpt-overlay" id="rptOverlay" onclick="closeRptIfBg(event)">
+  <div class="rpt-modal">
+    <div class="rpt-header">
+      <div class="rpt-title">Business Reports</div>
+      <button class="rpt-close" onclick="closeReports()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="rpt-tabs">
+      <button class="rpt-tab active" id="rptTab_eod" onclick="switchRptTab('eod')">End of Day</button>
+      <button class="rpt-tab" id="rptTab_hourly" onclick="switchRptTab('hourly')">Hourly</button>
+      <button class="rpt-tab" id="rptTab_month" onclick="switchRptTab('month')">Month to Date</button>
+      <button class="rpt-tab" id="rptTab_wastage" onclick="switchRptTab('wastage')">Wastage</button>
+      <button class="rpt-tab" id="rptTab_orders" onclick="switchRptTab('orders')" style="display:none;"></button>
+    </div>
+
+    <!-- END OF DAY -->
+    <div class="rpt-body" id="rptPane_eod" style="display:flex;">
+      <div class="rpt-stat-grid">
+        <div class="rpt-stat-card">
+          <div class="rpt-stat-label">Gross Sales <i class="ti ti-currency-dollar"></i></div>
+          <div class="rpt-stat-val" id="rptEodGross">$0.00</div>
+        </div>
+        <div class="rpt-stat-card">
+          <div class="rpt-stat-label">Net Sales <i class="ti ti-currency-dollar green"></i></div>
+          <div class="rpt-stat-val green" id="rptEodNet">$0.00</div>
+        </div>
+        <div class="rpt-stat-card">
+          <div class="rpt-stat-label">Customers <i class="ti ti-users"></i></div>
+          <div class="rpt-stat-val" id="rptEodCust">0</div>
+          <div class="rpt-stat-sub" id="rptEodAvg">Avg per receipt: $0.00</div>
+        </div>
+        <div class="rpt-stat-card">
+          <div class="rpt-stat-label">Transactions <i class="ti ti-receipt"></i></div>
+          <div class="rpt-stat-val" id="rptEodTx">0</div>
+        </div>
+      </div>
+      <div class="rpt-breakdown">
+        <div class="rpt-breakdown-title">Summary Breakdown</div>
+        <div class="rpt-breakdown-row"><span>Gross Sales</span><span id="rptBdGross">$0.00</span></div>
+        <div class="rpt-breakdown-row red"><span>Discounts</span><span id="rptBdDisc">-$0.00</span></div>
+        <div class="rpt-breakdown-row"><span>Tax Collected</span><span id="rptBdTax">$0.00</span></div>
+        <div class="rpt-breakdown-row strong"><span>Total Collected</span><span id="rptBdTotal">$0.00</span></div>
+        <div class="rpt-breakdown-row green"><span>Estimated Gross Profit (65% margin)</span><span id="rptBdProfit">$0.00</span></div>
+      </div>
+    </div>
+
+    <!-- HOURLY -->
+    <div class="rpt-body" id="rptPane_hourly" style="display:none;">
+      <div id="rptHourlyList" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- MONTH TO DATE -->
+    <div class="rpt-body" id="rptPane_month" style="display:none;">
+      <div class="rpt-month-nav">
+        <button class="rpt-month-nav-btn" onclick="rptMonthNav(-1)"><i class="ti ti-chevron-left"></i></button>
+        <div>
+          <div class="rpt-month-title" id="rptMonthTitle">June 2026</div>
+          <div class="rpt-month-sub" id="rptMonthSub"></div>
+        </div>
+        <button class="rpt-month-nav-btn" onclick="rptMonthNav(1)"><i class="ti ti-chevron-right"></i></button>
+      </div>
+      <div class="rpt-target-card">
+        <div class="rpt-target-top">
+          <div class="rpt-target-label"><i class="ti ti-trending-up" style="font-size:16px;color:var(--green);"></i> Sales Target</div>
+          <div class="rpt-target-edit">
+            <div class="rpt-target-val" id="rptTargetVal">$15,000</div>
+            <button class="rpt-target-edit-btn" onclick="rptEditTarget()"><i class="ti ti-pencil"></i></button>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);" id="rptTargetCollected">$0 collected</div>
+        <div class="rpt-target-progress"><div class="rpt-target-fill" id="rptTargetFill" style="width:0%;"></div></div>
+        <div style="font-size:11px;color:var(--text-tertiary);text-align:right;" id="rptTargetPct">0.0% of target</div>
+        <div class="rpt-target-stats">
+          <div class="rpt-target-stat">
+            <div class="rpt-target-stat-label">Daily Target</div>
+            <div class="rpt-target-stat-val" id="rptDailyTarget">$500</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">needed/day</div>
+          </div>
+          <div class="rpt-target-stat">
+            <div class="rpt-target-stat-label">Projected</div>
+            <div class="rpt-target-stat-val" id="rptProjected">$0</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">at current pace</div>
+          </div>
+          <div class="rpt-target-stat">
+            <div class="rpt-target-stat-label">Need/Day Left</div>
+            <div class="rpt-target-stat-val red" id="rptNeedPerDay">$0</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">to hit target</div>
+          </div>
+        </div>
+      </div>
+      <div class="rpt-alert" id="rptTargetAlert" style="display:none;"><i class="ti ti-alert-circle" style="font-size:14px;flex-shrink:0;"></i><span></span></div>
+      <div class="rpt-total-banner">
+        <div class="rpt-total-banner-label" id="rptMonthBannerLabel">JUNE 2026 — TOTAL SALES</div>
+        <div class="rpt-total-banner-val" id="rptMonthBannerTotal">$0.00</div>
+        <div class="rpt-total-banner-meta">
+          <span id="rptMonthBannerOrders">0 orders</span>
+          <span id="rptMonthBannerAvgDay">$0.00 avg/day</span>
+          <span id="rptMonthBannerAvgOrder">$0.00 avg/order</span>
+        </div>
+      </div>
+      <div id="rptCalendar"></div>
+    </div>
+
+    <!-- WASTAGE -->
+    <div class="rpt-body" id="rptPane_wastage" style="display:none;">
+      <div class="rpt-wastage-stat-grid">
+        <div class="rpt-wastage-stat red">
+          <div class="rpt-wastage-stat-label">Entries Today</div>
+          <div class="rpt-wastage-stat-val" id="rptWastageCount">0</div>
+          <div class="rpt-wastage-stat-sub">logged wastage records</div>
+        </div>
+        <div class="rpt-wastage-stat">
+          <div class="rpt-wastage-stat-label" style="color:var(--text-tertiary);">Top Reason</div>
+          <div class="rpt-wastage-stat-val" id="rptWastageReason" style="color:var(--text-primary);font-size:20px;">—</div>
+        </div>
+      </div>
+      <div class="rpt-wastage-hint">
+        <i class="ti ti-alert-triangle" style="flex-shrink:0;margin-top:1px;"></i>
+        <span>Log ingredient wastage via the <strong>Inventory</strong> button → Wastage tab.</span>
+      </div>
+      <div class="rpt-empty">
+        <i class="ti ti-alert-triangle"></i>
+        <div style="font-weight:600;">No wastage logged today</div>
+        <div style="color:var(--text-tertiary);">Open Inventory → Wastage tab to track<br>discarded or expired ingredients.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 </body>
 </html>
