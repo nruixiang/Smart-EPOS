@@ -590,6 +590,32 @@
     .rpt-wastage-stat-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
     .rpt-wastage-hint { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; background: #fefce8; border: 0.5px solid #fde68a; border-radius: 8px; font-size: 12px; color: #92400e; }
     [data-theme="dark"] .rpt-wastage-hint { background: rgba(217,119,6,0.1); border-color: rgba(217,119,6,0.3); color: #d97706; }
+
+    /* ORDERS TAB */
+    .rpt-orders-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; }
+    .rpt-orders-search { flex: 1; padding: 8px 12px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font); outline: none; max-width: 200px; }
+    .rpt-orders-search:focus { border-color: var(--blue); }
+    .rpt-orders-filters { display: flex; gap: 6px; }
+    .rpt-orders-filter { padding: 6px 12px; border-radius: 20px; border: 0.5px solid var(--border); background: transparent; font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; font-family: var(--font); transition: all 0.15s; white-space: nowrap; }
+    .rpt-orders-filter.active { background: #111; color: white; border-color: #111; }
+    [data-theme="dark"] .rpt-orders-filter.active { background: var(--bg-tertiary); border-color: var(--border-hover); color: var(--text-primary); }
+    .rpt-order-card { border: 0.5px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-primary); overflow: hidden; }
+    .rpt-order-card.voided { opacity: 0.7; }
+    .rpt-order-card-top { padding: 12px 14px 10px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .rpt-order-id { font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+    .rpt-order-voided-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; background: #fef2f2; border: 1px solid #fecaca; font-size: 11px; font-weight: 700; color: var(--red); letter-spacing: 0.04em; }
+    .rpt-order-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 3px; }
+    .rpt-order-right { text-align: right; flex-shrink: 0; }
+    .rpt-order-total { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+    .rpt-order-total.voided { color: var(--text-tertiary); text-decoration: line-through; }
+    .rpt-order-items-count { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+    .rpt-order-items-list { padding: 0 14px 10px; font-size: 12px; color: var(--text-secondary); border-top: 0.5px solid var(--border); padding-top: 8px; }
+    .rpt-order-actions { padding: 10px 14px; border-top: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .rpt-order-print-btn { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--blue); background: none; border: none; cursor: pointer; font-family: var(--font); padding: 0; }
+    .rpt-order-print-btn:hover { opacity: 0.75; }
+    .rpt-order-void-btn { font-size: 12px; font-weight: 600; color: var(--red); background: none; border: none; cursor: pointer; font-family: var(--font); padding: 0; transition: opacity 0.15s; }
+    .rpt-order-void-btn:hover { opacity: 0.75; }
+    .rpt-order-voided-label { font-size: 12px; font-weight: 600; color: var(--text-tertiary); margin-left: auto; }
     .rpt-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px; color: var(--text-tertiary); font-size: 13px; text-align: center; gap: 8px; }
     .rpt-empty i { font-size: 36px; }
 
@@ -2421,7 +2447,7 @@
   }
 
   function switchRptTab(tab) {
-    ['eod','hourly','month','wastage'].forEach(t => {
+    ['eod','hourly','month','wastage','orders'].forEach(t => {
       document.getElementById('rptTab_' + t).classList.toggle('active', t === tab);
       document.getElementById('rptPane_' + t).style.display = t === tab ? 'flex' : 'none';
     });
@@ -2429,6 +2455,7 @@
     if (tab === 'hourly') renderRptHourly();
     if (tab === 'month') renderRptMonth();
     if (tab === 'wastage') renderRptWastage();
+    if (tab === 'orders') renderOrdersTab();
   }
 
   function todayKey() {
@@ -2440,7 +2467,7 @@
     const tk = todayKey();
     return salesLog.filter(t => {
       const d = t.date;
-      return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === tk;
+      return !t.voided && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === tk;
     });
   }
 
@@ -2837,6 +2864,97 @@
     renderRptWastage();
     const total = entries.reduce((a,[,q]) => a+q, 0);
     showToast(`Wastage logged: ${total} unit${total!==1?'s':''} · ${wastageSelectedReason}`);
+  }  // ── Orders Tab ──
+  let ordersFilter = 'all';
+
+  function setOrderFilter(f) {
+    ordersFilter = f;
+    ['all','1h','2h','3h'].forEach(k => {
+      document.getElementById('ordFilter_' + k).classList.toggle('active', k === f);
+    });
+    renderOrdersTab();
+  }
+
+  function renderOrdersTab() {
+    const now = new Date();
+    const search = (document.getElementById('ordersSearch').value || '').toLowerCase();
+    const cutoffs = { '1h': 60, '2h': 120, '3h': 180 };
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+    let entries = salesLog.filter(t => {
+      const tTime = t.date instanceof Date ? t.date.getTime() : new Date(t.date).getTime();
+      if (tTime < todayStart) return false;
+      if (ordersFilter !== 'all') {
+        const mins = (now - tTime) / 60000;
+        if (mins > cutoffs[ordersFilter]) return false;
+      }
+      if (search && !t.ref.toLowerCase().includes(search)) return false;
+      return true;
+    }).slice().reverse();
+
+    const container = document.getElementById('rptOrdersList');
+    if (!entries.length) {
+      container.innerHTML = `<div class="rpt-empty"><i class="ti ti-receipt-off"></i><div style="font-weight:600;">No orders found</div><div style="color:var(--text-tertiary);">Completed orders will appear here.</div></div>`;
+      return;
+    }
+
+    container.innerHTML = entries.map(t => {
+      const d = t.date instanceof Date ? t.date : new Date(t.date);
+      const timeStr = d.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+      const itemSummary = t.items.map(i => `${i.qty}x ${i.name}`).join(', ');
+      const itemCount = t.items.reduce((a, i) => a + i.qty, 0);
+      const shortRef = t.ref.replace('#','');
+      const isVoided = t.voided === true;
+
+      return `<div class="rpt-order-card${isVoided ? ' voided' : ''}">
+        <div class="rpt-order-card-top">
+          <div>
+            <div class="rpt-order-id">
+              Order #${shortRef}
+              ${isVoided ? '<span class="rpt-order-voided-badge">VOIDED</span>' : ''}
+            </div>
+            <div class="rpt-order-meta">${timeStr} · ${t.method.toUpperCase()}${t.customer ? ' · ' + t.customer : ''}</div>
+          </div>
+          <div class="rpt-order-right">
+            <div class="rpt-order-total${isVoided ? ' voided' : ''}">$${t.total.toFixed(2)}</div>
+            <div class="rpt-order-items-count">${itemCount} item${itemCount !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <div class="rpt-order-items-list">${itemSummary}</div>
+        <div class="rpt-order-actions">
+          <button class="rpt-order-print-btn"><i class="ti ti-printer"></i> Print Receipt</button>
+          ${isVoided
+            ? '<span class="rpt-order-voided-label">Order voided</span>'
+            : `<div class="rpt-void-confirm" id="voidConfirm_${shortRef}" style="display:none;align-items:center;gap:8px;margin-left:auto;">
+                <span style="font-size:12px;color:var(--text-secondary);">Void this order?</span>
+                <button style="font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;border:none;background:#dc2626;color:white;cursor:pointer;" onclick="voidOrder('${shortRef}')">Yes, Void</button>
+                <button style="font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;" onclick="cancelVoid('${shortRef}')">Cancel</button>
+               </div>
+               <button class="rpt-order-void-btn" id="voidBtn_${shortRef}" onclick="showVoidConfirm('${shortRef}')">Void Entire Order</button>`
+          }
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function showVoidConfirm(shortRef) {
+    document.getElementById('voidBtn_' + shortRef).style.display = 'none';
+    document.getElementById('voidConfirm_' + shortRef).style.display = 'flex';
+  }
+
+  function cancelVoid(shortRef) {
+    document.getElementById('voidBtn_' + shortRef).style.display = '';
+    document.getElementById('voidConfirm_' + shortRef).style.display = 'none';
+  }
+
+  function voidOrder(shortRef) {
+    const fullRef = '#' + shortRef;
+    const tx = salesLog.find(t => t.ref === fullRef);
+    if (!tx) return;
+    tx.voided = true;
+    renderOrdersTab();
+    renderRptEod();
+    showToast(`Order ${fullRef} voided`);
   }
 
 </script>
@@ -3329,7 +3447,7 @@
       <button class="rpt-tab" id="rptTab_hourly" onclick="switchRptTab('hourly')">Hourly</button>
       <button class="rpt-tab" id="rptTab_month" onclick="switchRptTab('month')">Month to Date</button>
       <button class="rpt-tab" id="rptTab_wastage" onclick="switchRptTab('wastage')">Wastage</button>
-      <button class="rpt-tab" id="rptTab_orders" onclick="switchRptTab('orders')" style="display:none;"></button>
+      <button class="rpt-tab" id="rptTab_orders" onclick="switchRptTab('orders')">Orders</button>
     </div>
 
     <!-- END OF DAY -->
@@ -3446,10 +3564,22 @@
       </div>
     </div>
 
+    <!-- ORDERS -->
+    <div class="rpt-body" id="rptPane_orders" style="display:none;">
+      <div class="rpt-orders-toolbar">
+        <div class="rpt-orders-filters">
+          <button class="rpt-orders-filter active" id="ordFilter_all" onclick="setOrderFilter('all')">All</button>
+          <button class="rpt-orders-filter" id="ordFilter_1h" onclick="setOrderFilter('1h')">Last 1 hr</button>
+          <button class="rpt-orders-filter" id="ordFilter_2h" onclick="setOrderFilter('2h')">Last 2 hrs</button>
+          <button class="rpt-orders-filter" id="ordFilter_3h" onclick="setOrderFilter('3h')">Last 3 hrs</button>
+        </div>
+        <input class="rpt-orders-search" id="ordersSearch" type="text" placeholder="Search Order #..." oninput="renderOrdersTab()" />
+      </div>
+      <div id="rptOrdersList" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+
   </div>
 </div>
-
-<!-- Log Wastage Modal -->
 <div class="wastage-overlay" id="wastageOverlay" onclick="closeWastageIfBg(event)">
   <div class="wastage-modal">
     <div class="wastage-modal-header">
