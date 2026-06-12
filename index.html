@@ -808,7 +808,7 @@
       <button class="sub-tab" onclick="selectSub(this,'Special Edition')">Special Edition</button>
     </div>
     <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="🔍  Search products..." oninput="filterProducts()" />
+      <input type="text" id="searchInput" placeholder="🔍  Search products..." readonly onclick="openFieldKb('searchInput','text','SEARCH PRODUCTS:')" />
     </div>
     <div class="products-grid" id="productsGrid"></div>
     <div class="mid-actions">
@@ -2182,6 +2182,7 @@
     if (input) input.value = fieldKbBuffer;
     if (fieldKbTargetId === 'customerDisplay') updateCustomerMatchCard();
     if (fieldKbTargetId === 'memSearchInput') renderMembersList();
+    if (fieldKbTargetId === 'searchInput') filterProducts();
   }
 
   function fieldKbDone() {
@@ -3665,7 +3666,6 @@
         <button class="disc-kb-key" onclick="fieldKbPress('8')">8</button>
         <button class="disc-kb-key" onclick="fieldKbPress('9')">9</button>
         <button class="disc-kb-key" onclick="fieldKbPress('0')">0</button>
-        <button class="disc-kb-key del" onclick="fieldKbDel()"><i class="ti ti-backspace"></i></button>
       </div>
       <div class="disc-kb-row">
         <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('q'))">Q</button>
@@ -3689,7 +3689,6 @@
         <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('j'))">J</button>
         <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('k'))">K</button>
         <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('l'))">L</button>
-        <button class="disc-kb-key del" onclick="fieldKbDel()"><i class="ti ti-backspace"></i></button>
       </div>
       <div class="disc-kb-row">
         <button class="disc-kb-key action" id="fieldKbShift" onclick="fieldKbToggleShift()">⇧</button>
@@ -3700,7 +3699,6 @@
         <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('b'))">B</button>
         <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('n'))">N</button>
         <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('m'))">M</button>
-        <button class="disc-kb-key del" onclick="fieldKbDel()"><i class="ti ti-backspace"></i></button>
         <button class="disc-kb-key del" onclick="fieldKbDel()"><i class="ti ti-backspace"></i></button>
       </div>
       <div class="disc-kb-row">
