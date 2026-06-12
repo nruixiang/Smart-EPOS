@@ -215,6 +215,7 @@
     .product-info { padding: 8px; flex-shrink: 0; }
     .product-name { font-size: 12px; font-weight: 500; color: var(--text-primary); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .product-price { font-size: 13px; font-weight: 600; color: var(--green); }    .mid-actions { border-top: 0.5px solid var(--border); padding: 10px 14px; display: flex; gap: 6px; justify-content: center; flex-shrink: 0; flex-wrap: wrap; }
+    .mid-actions .action-btn { flex: 1; }
     .action-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 10px; border: 0.5px solid var(--border); border-radius: var(--radius-md); background: transparent; cursor: pointer; transition: background 0.15s; min-width: 52px; font-family: var(--font); }
     .action-btn:hover { background: var(--bg-secondary); }
     .action-btn i { font-size: 18px; color: var(--text-secondary); }
@@ -803,7 +804,6 @@
       <button class="action-btn" onclick="openReports()"><i class="ti ti-chart-bar"></i><span>Reports</span></button>
       <button class="action-btn" onclick="openMembers()"><i class="ti ti-users"></i><span>Members</span></button>
       <button class="action-btn"><i class="ti ti-shopping-cart"></i><span>Orders</span></button>
-      <button class="action-btn"><i class="ti ti-building-store"></i><span>Outlets</span></button>
     </div>
   </div>
 
