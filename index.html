@@ -609,14 +609,30 @@
     /* WASTAGE MODAL */
     .wastage-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .wastage-overlay.show { opacity: 1; pointer-events: all; }
-    .wastage-modal { background: var(--bg-primary); border-radius: 16px; width: 540px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); border: 0.5px solid var(--border); }
-    .wastage-modal-header { padding: 18px 20px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-    .wastage-modal-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+    .wastage-modal { background: var(--bg-primary); border-radius: 16px; width: 560px; height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); border: 0.5px solid var(--border); }
+    .wastage-modal-header { padding: 16px 20px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .wastage-modal-title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
     .wastage-modal-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
     .wastage-modal-close { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 20px; display: flex; align-items: center; }
     .wastage-modal-close:hover { color: var(--text-primary); }
-    .wastage-modal-body { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
-    .wastage-search { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 24px; border: 1px solid var(--border); background: var(--bg-secondary); }
+    /* Step indicator */
+    .wastage-steps { display: flex; align-items: center; gap: 0; padding: 0 20px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; background: var(--bg-secondary); }
+    .wastage-step-tab { flex: 1; padding: 10px 0; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-tertiary); border-bottom: 2px solid transparent; cursor: default; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .wastage-step-tab.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+    .wastage-step-tab.done { color: var(--green); border-bottom-color: var(--green); cursor: pointer; }
+    .wastage-step-num { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid currentColor; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    /* Step panes */
+    .wastage-step-pane { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+    .wastage-step-pane.hidden { display: none; }
+    /* Selected items chips at top of step 2 */
+    .wastage-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .wastage-chip { display: flex; align-items: center; gap: 6px; padding: 5px 10px 5px 6px; border-radius: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 12px; font-weight: 600; color: #15803d; cursor: pointer; }
+    [data-theme="dark"] .wastage-chip { background: rgba(22,163,74,0.15); border-color: rgba(22,163,74,0.4); color: #4ade80; }
+    .wastage-chip-img { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; background: var(--bg-secondary); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .wastage-chip-img img { width: 100%; height: 100%; object-fit: cover; }
+    .wastage-chip-qty { background: #15803d; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; margin-left: 2px; }
+    [data-theme="dark"] .wastage-chip-qty { background: #16a34a; }
+    .wastage-search { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 24px; border: 1px solid var(--border); background: var(--bg-secondary); flex-shrink: 0; }
     .wastage-search input { flex: 1; border: none; background: transparent; font-size: 14px; color: var(--text-primary); outline: none; font-family: var(--font); }
     .wastage-search input::placeholder { color: var(--text-tertiary); }
     .wastage-search i { color: var(--text-tertiary); font-size: 16px; }
@@ -637,11 +653,11 @@
     .wastage-item-check { width: 22px; height: 22px; border-radius: 50%; background: #16a34a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .wastage-item-check i { font-size: 13px; color: white; }
     .wastage-reasons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .wastage-reason-btn { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 12px; border-radius: var(--radius-md); border: 1.5px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+    .wastage-reason-btn { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 8px; border-radius: var(--radius-md); border: 1.5px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
     .wastage-reason-btn:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
     .wastage-reason-btn.active { border-color: #d97706; background: #fffbeb; color: #92400e; }
     [data-theme="dark"] .wastage-reason-btn.active { background: rgba(217,119,6,0.12); border-color: rgba(217,119,6,0.5); color: #d97706; }
-    .wastage-note-input { width: 100%; padding: 11px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 13px; font-family: var(--font); outline: none; resize: none; transition: border-color 0.15s; }
+    .wastage-note-input { width: 100%; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 13px; font-family: var(--font); outline: none; resize: none; transition: border-color 0.15s; }
     .wastage-note-input:focus { border-color: var(--blue); }
     .wastage-summary { border-top: 0.5px solid var(--border); padding-top: 12px; display: flex; flex-direction: column; gap: 6px; }
     .wastage-summary-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary); }
@@ -652,6 +668,11 @@
     .wastage-modal-footer button { flex: 1; padding: 13px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
     .wastage-cancel-btn { border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary); }
     .wastage-cancel-btn:hover { opacity: 0.75; }
+    .wastage-next-btn { border: none; background: #111; color: white; }
+    .wastage-next-btn:hover { opacity: 0.85; }
+    .wastage-next-btn:disabled { background: var(--bg-tertiary); color: var(--text-tertiary); cursor: not-allowed; opacity: 1; }
+    .wastage-back-btn { border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary); flex: 0 0 auto; width: 48px; padding: 13px 0; }
+    .wastage-back-btn:hover { opacity: 0.75; }
     .wastage-confirm-btn { border: none; background: #dc2626; color: white; }
     .wastage-confirm-btn:hover { opacity: 0.88; }
     .wastage-confirm-btn:disabled { background: var(--bg-tertiary); color: var(--text-tertiary); cursor: not-allowed; opacity: 1; }
@@ -2612,8 +2633,8 @@
   let wastageLog = [];
   let wastageSelectedItems = {}; // { itemName: qty }
   let wastageSelectedReason = null;
+  let wastageCurrentStep = 1;
 
-  // Flatten all products for wastage
   function getAllProducts() {
     const all = [];
     Object.values(PRODUCTS).forEach(cat => cat.All.forEach(p => all.push(p)));
@@ -2623,20 +2644,17 @@
   function openLogWastage() {
     wastageSelectedItems = {};
     wastageSelectedReason = null;
+    wastageCurrentStep = 1;
     document.getElementById('wastageSearchInput').value = '';
     document.getElementById('wastageNote').value = '';
-    // Reset reason buttons
     ['Expired','Overproduction','Damaged','Wrong order'].forEach(r => {
-      const id = 'wr' + r.replace(' ','');
-      const btn = document.getElementById(id);
+      const btn = document.getElementById('wr' + r.replace(' ',''));
       if (btn) btn.classList.remove('active');
     });
-    // Set subtitle
     const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-    document.getElementById('wastageModalSub').textContent = `Inventory · Today, ${timeStr}`;
+    document.getElementById('wastageModalSub').textContent = `Inventory · Today, ${now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}`;
+    wastageGoStep(1);
     renderWastageItems();
-    updateWastageSummary();
     document.getElementById('wastageOverlay').classList.add('show');
   }
 
@@ -2646,6 +2664,42 @@
 
   function closeWastageIfBg(e) {
     if (e.target === document.getElementById('wastageOverlay')) closeLogWastage();
+  }
+
+  function wastageGoStep(step) {
+    wastageCurrentStep = step;
+    document.getElementById('wastageStep1').classList.toggle('hidden', step !== 1);
+    document.getElementById('wastageStep2').classList.toggle('hidden', step !== 2);
+    document.getElementById('wstep1tab').className = 'wastage-step-tab ' + (step === 1 ? 'active' : 'done');
+    document.getElementById('wstep2tab').className = 'wastage-step-tab ' + (step === 2 ? 'active' : '');
+    document.getElementById('wastageModalTitle').textContent = step === 1 ? 'Log wastage — Select Items' : 'Log wastage — Reason & Confirm';
+    const leftBtn = document.getElementById('wastageLeftBtn');
+    const rightBtn = document.getElementById('wastageRightBtn');
+    if (step === 1) {
+      leftBtn.textContent = 'Cancel';
+      leftBtn.onclick = closeLogWastage;
+      leftBtn.className = 'wastage-cancel-btn';
+      const count = Object.keys(wastageSelectedItems).length;
+      rightBtn.textContent = count > 0 ? `Next — ${count} item${count>1?'s':''} selected` : 'Next — Choose Reason';
+      rightBtn.onclick = wastageNext;
+      rightBtn.className = 'wastage-next-btn';
+      rightBtn.disabled = count === 0;
+    } else {
+      leftBtn.innerHTML = '<i class="ti ti-arrow-left"></i>';
+      leftBtn.onclick = () => wastageGoStep(1);
+      leftBtn.className = 'wastage-back-btn';
+      rightBtn.textContent = 'Confirm wastage';
+      rightBtn.onclick = confirmWastage;
+      rightBtn.className = 'wastage-confirm-btn';
+      rightBtn.disabled = wastageSelectedReason === null;
+      renderWastageChips();
+      updateWastageSummary();
+    }
+  }
+
+  function wastageNext() {
+    if (Object.keys(wastageSelectedItems).length === 0) return;
+    wastageGoStep(2);
   }
 
   function renderWastageItems() {
@@ -2660,88 +2714,88 @@
       const qty = wastageSelectedItems[p.name] || 0;
       const isSelected = qty > 0;
       const imgUrl = PRODUCT_IMGS[p.name] || '';
-      const imgHtml = imgUrl
-        ? `<img src="${imgUrl}" alt="${p.name}">`
-        : `<span style="font-size:20px;">📦</span>`;
-      const stockDisplay = 'In stock';
+      const imgHtml = imgUrl ? `<img src="${imgUrl}" alt="${p.name}">` : `<span style="font-size:20px;">📦</span>`;
       const safeName = p.name.replace(/'/g, "\\'");
-      return `<div class="wastage-item-row${isSelected ? ' selected' : ''}" id="wrow_${p.name.replace(/\s/g,'_')}" onclick="toggleWastageItem('${safeName}', ${p.price})">
+      return `<div class="wastage-item-row${isSelected ? ' selected' : ''}" onclick="toggleWastageItem('${safeName}', ${p.price})">
         <div class="wastage-item-img">${imgHtml}</div>
         <div style="flex:1;min-width:0;">
           <div class="wastage-item-name">${p.name}</div>
-          <div class="wastage-item-stock">${stockDisplay}</div>
+          <div class="wastage-item-stock">$${p.price.toFixed(2)} per unit</div>
         </div>
         ${isSelected ? `
         <div class="wastage-item-controls" onclick="event.stopPropagation()">
           <button class="wastage-qty-btn" onclick="changeWastageQty('${safeName}', ${p.price}, -1)">−</button>
           <span class="wastage-qty-num">${qty}</span>
           <button class="wastage-qty-btn" onclick="changeWastageQty('${safeName}', ${p.price}, 1)">+</button>
-          <span class="wastage-item-cost">–$${(p.price * qty).toFixed(2)} est.</span>
+          <span class="wastage-item-cost">–$${(p.price * qty).toFixed(2)}</span>
           <div class="wastage-item-check"><i class="ti ti-check"></i></div>
-        </div>` : ''}
+        </div>` : `<div style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);flex-shrink:0;"></div>`}
+      </div>`;
+    }).join('');
+    // Sync Next button label
+    if (wastageCurrentStep === 1) {
+      const rightBtn = document.getElementById('wastageRightBtn');
+      const count = Object.keys(wastageSelectedItems).length;
+      rightBtn.disabled = count === 0;
+      rightBtn.textContent = count > 0 ? `Next — ${count} item${count>1?'s':''} selected` : 'Next — Choose Reason';
+    }
+  }
+
+  function renderWastageChips() {
+    const chips = document.getElementById('wastageChips');
+    const allProds = getAllProducts();
+    chips.innerHTML = Object.entries(wastageSelectedItems).map(([name, qty]) => {
+      const p = allProds.find(x => x.name === name);
+      const price = p ? p.price : 0;
+      const imgUrl = PRODUCT_IMGS[name] || '';
+      const imgHtml = imgUrl ? `<img src="${imgUrl}" alt="${name}">` : '📦';
+      const safeName = name.replace(/'/g, "\\'");
+      return `<div class="wastage-chip">
+        <div class="wastage-chip-img">${imgHtml}</div>
+        <span>${name}</span>
+        <div class="wastage-chip-qty">
+          <span onclick="changeWastageQty('${safeName}',${price},-1);renderWastageChips();updateWastageSummary();" style="cursor:pointer;padding:0 3px;">−</span>
+          <span>${qty}</span>
+          <span onclick="changeWastageQty('${safeName}',${price},1);renderWastageChips();updateWastageSummary();" style="cursor:pointer;padding:0 3px;">+</span>
+        </div>
       </div>`;
     }).join('');
   }
 
   function toggleWastageItem(name, price) {
-    if (wastageSelectedItems[name]) {
-      delete wastageSelectedItems[name];
-    } else {
-      wastageSelectedItems[name] = 1;
-    }
+    if (wastageSelectedItems[name]) delete wastageSelectedItems[name];
+    else wastageSelectedItems[name] = 1;
     renderWastageItems();
-    updateWastageSummary();
   }
 
   function changeWastageQty(name, price, delta) {
-    if (!wastageSelectedItems[name]) wastageSelectedItems[name] = 1;
-    wastageSelectedItems[name] = Math.max(1, wastageSelectedItems[name] + delta);
-    renderWastageItems();
-    updateWastageSummary();
+    const current = wastageSelectedItems[name] || 0;
+    const next = current + delta;
+    if (next <= 0) delete wastageSelectedItems[name];
+    else wastageSelectedItems[name] = next;
+    if (wastageCurrentStep === 1) renderWastageItems();
   }
 
   function selectWastageReason(reason) {
     wastageSelectedReason = reason;
-    const ids = {
-      'Expired': 'wrExpired', 'Overproduction': 'wrOverproduction',
-      'Damaged': 'wrDamaged', 'Wrong order': 'wrWrongOrder'
-    };
-    Object.keys(ids).forEach(r => {
-      document.getElementById(ids[r]).classList.toggle('active', r === reason);
+    ['Expired','Overproduction','Damaged','Wrong order'].forEach(r => {
+      document.getElementById('wr' + r.replace(' ','')).classList.toggle('active', r === reason);
     });
+    document.getElementById('wastageRightBtn').disabled = false;
     updateWastageSummary();
   }
 
   function updateWastageSummary() {
     const entries = Object.entries(wastageSelectedItems);
-    const itemCount = entries.length;
-    const totalQty = entries.reduce((a, [, q]) => a + q, 0);
+    const totalQty = entries.reduce((a,[,q]) => a+q, 0);
     const allProds = getAllProducts();
-    const totalCost = entries.reduce((a, [name, qty]) => {
+    const totalCost = entries.reduce((a,[name,qty]) => {
       const p = allProds.find(x => x.name === name);
       return a + (p ? p.price * qty : 0);
     }, 0);
-
-    const summary = document.getElementById('wastageSummary');
-    const confirmBtn = document.getElementById('wastageConfirmBtn');
-
-    if (itemCount > 0) {
-      summary.style.display = 'flex';
-      document.getElementById('wsItems').textContent = itemCount + ' item' + (itemCount !== 1 ? 's' : '');
-      document.getElementById('wsQty').textContent = totalQty + ' unit' + (totalQty !== 1 ? 's' : '');
-      document.getElementById('wsCost').textContent = '–$' + totalCost.toFixed(2);
-      if (itemCount === 1 && entries.length) {
-        const [name, qty] = entries[0];
-        const remaining = 'est. remaining';
-        document.getElementById('wsInventory').textContent = remaining;
-      } else {
-        document.getElementById('wsInventory').textContent = itemCount + ' items updated';
-      }
-    } else {
-      summary.style.display = 'none';
-    }
-    const canConfirm = itemCount > 0 && wastageSelectedReason !== null;
-    confirmBtn.disabled = !canConfirm;
+    document.getElementById('wsItems').textContent = entries.length + ' item' + (entries.length !== 1 ? 's' : '');
+    document.getElementById('wsQty').textContent = totalQty + ' unit' + (totalQty !== 1 ? 's' : '');
+    document.getElementById('wsCost').textContent = '–$' + totalCost.toFixed(2);
   }
 
   function confirmWastage() {
@@ -2750,19 +2804,11 @@
     const now = new Date();
     entries.forEach(([name, qty]) => {
       const p = getAllProducts().find(x => x.name === name);
-      wastageLog.push({
-        itemName: name,
-        qty,
-        reason: wastageSelectedReason,
-        note: document.getElementById('wastageNote').value.trim(),
-        date: now,
-        cost: p ? p.price * qty : 0,
-        emoji: '📦'
-      });
+      wastageLog.push({ itemName: name, qty, reason: wastageSelectedReason, note: document.getElementById('wastageNote').value.trim(), date: now, cost: p ? p.price * qty : 0 });
     });
     closeLogWastage();
     renderRptWastage();
-    const total = entries.reduce((a,[,q])=>a+q,0);
+    const total = entries.reduce((a,[,q]) => a+q, 0);
     showToast(`Wastage logged: ${total} unit${total!==1?'s':''} · ${wastageSelectedReason}`);
   }
 
@@ -3380,45 +3426,59 @@
   <div class="wastage-modal">
     <div class="wastage-modal-header">
       <div>
-        <div class="wastage-modal-title">Log wastage</div>
+        <div class="wastage-modal-title" id="wastageModalTitle">Log wastage — Select Items</div>
         <div class="wastage-modal-sub" id="wastageModalSub">Inventory · Today, --:--</div>
       </div>
       <button class="wastage-modal-close" onclick="closeLogWastage()"><i class="ti ti-x"></i></button>
     </div>
-    <div class="wastage-modal-body">
-      <!-- Search -->
+    <!-- Step tabs -->
+    <div class="wastage-steps">
+      <div class="wastage-step-tab active" id="wstep1tab" onclick="wastageGoStep(1)">
+        <span class="wastage-step-num">1</span> Select Items
+      </div>
+      <div class="wastage-step-tab" id="wstep2tab">
+        <span class="wastage-step-num">2</span> Reason &amp; Confirm
+      </div>
+    </div>
+
+    <!-- STEP 1: Search + item list -->
+    <div class="wastage-step-pane" id="wastageStep1">
       <div class="wastage-search">
         <i class="ti ti-search"></i>
         <input type="text" id="wastageSearchInput" placeholder="Search item..." oninput="renderWastageItems()" />
       </div>
-      <!-- Item list -->
-      <div>
-        <div class="wastage-section-label">Select Item</div>
-        <div id="wastageItemList" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;"></div>
-      </div>
+      <div class="wastage-section-label">Select Items</div>
+      <div id="wastageItemList" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- STEP 2: Review selection + reason + note + summary -->
+    <div class="wastage-step-pane hidden" id="wastageStep2">
+      <!-- Selected items chips -->
+      <div class="wastage-section-label">Selected Items</div>
+      <div class="wastage-selected-chips" id="wastageChips"></div>
       <!-- Reason -->
-      <div>
-        <div class="wastage-section-label" style="margin-bottom:8px;">Reason for wastage</div>
-        <div class="wastage-reasons">
-          <button class="wastage-reason-btn" id="wrExpired" onclick="selectWastageReason('Expired')"><i class="ti ti-clock-off" style="font-size:16px;"></i> Expired</button>
-          <button class="wastage-reason-btn" id="wrOverproduction" onclick="selectWastageReason('Overproduction')"><i class="ti ti-settings" style="font-size:16px;"></i> Overproduction</button>
-          <button class="wastage-reason-btn" id="wrDamaged" onclick="selectWastageReason('Damaged')"><i class="ti ti-alert-triangle" style="font-size:16px;"></i> Damaged</button>
-          <button class="wastage-reason-btn" id="wrWrongOrder" onclick="selectWastageReason('Wrong order')"><i class="ti ti-x" style="font-size:16px;"></i> Wrong order</button>
-        </div>
+      <div class="wastage-section-label" style="margin-top:4px;">Reason for wastage</div>
+      <div class="wastage-reasons">
+        <button class="wastage-reason-btn" id="wrExpired" onclick="selectWastageReason('Expired')"><i class="ti ti-clock-off" style="font-size:16px;"></i> Expired</button>
+        <button class="wastage-reason-btn" id="wrOverproduction" onclick="selectWastageReason('Overproduction')"><i class="ti ti-settings" style="font-size:16px;"></i> Overproduction</button>
+        <button class="wastage-reason-btn" id="wrDamaged" onclick="selectWastageReason('Damaged')"><i class="ti ti-alert-triangle" style="font-size:16px;"></i> Damaged</button>
+        <button class="wastage-reason-btn" id="wrWrongOrder" onclick="selectWastageReason('Wrong order')"><i class="ti ti-x" style="font-size:16px;"></i> Wrong order</button>
       </div>
-      <!-- Optional note -->
-      <textarea class="wastage-note-input" id="wastageNote" rows="2" placeholder="Optional note (e.g. left out overnight)"></textarea>
+      <!-- Note -->
+      <div class="wastage-section-label">Optional Note</div>
+      <textarea class="wastage-note-input" id="wastageNote" rows="3" placeholder="e.g. left out overnight, dropped on floor..."></textarea>
       <!-- Summary -->
-      <div class="wastage-summary" id="wastageSummary" style="display:none;">
+      <div class="wastage-summary" id="wastageSummary">
         <div class="wastage-summary-row"><span>Items selected</span><span id="wsItems">0 items</span></div>
         <div class="wastage-summary-row"><span>Qty wasted</span><span id="wsQty">0 units</span></div>
         <div class="wastage-summary-row"><span>Est. cost lost</span><span class="red" id="wsCost">–$0.00</span></div>
-        <div class="wastage-summary-row"><span>Inventory after log</span><span class="green" id="wsInventory">—</span></div>
       </div>
     </div>
-    <div class="wastage-modal-footer">
-      <button class="wastage-cancel-btn" onclick="closeLogWastage()">Cancel</button>
-      <button class="wastage-confirm-btn" id="wastageConfirmBtn" onclick="confirmWastage()" disabled>Confirm wastage</button>
+
+    <!-- Footer -->
+    <div class="wastage-modal-footer" id="wastageFooter">
+      <button class="wastage-cancel-btn" id="wastageLeftBtn" onclick="closeLogWastage()">Cancel</button>
+      <button class="wastage-next-btn" id="wastageRightBtn" onclick="wastageNext()" disabled>Next — Choose Reason</button>
     </div>
   </div>
 </div>
