@@ -535,6 +535,24 @@
     .rpt-breakdown-row.strong { font-weight: 700; color: var(--text-primary); font-size: 14px; }
     .rpt-breakdown-row.green { color: var(--green); }
     .rpt-breakdown-row.red { color: var(--red); }
+    .rpt-breakdown-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .rpt-breakdown-header .rpt-breakdown-title { margin-bottom: 0; }
+    .rpt-detail-btn { display: flex; align-items: center; gap: 5px; padding: 6px 12px; font-size: 12px; font-weight: 500; border-radius: 20px; border: 0.5px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary); cursor: pointer; font-family: var(--font); transition: all 0.15s; white-space: nowrap; }
+    .rpt-detail-btn:hover { background: #111; color: white; border-color: #111; }
+    .rpt-detail-btn.active { background: #111; color: white; border-color: #111; }
+    .rpt-detail-section-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin: 16px 0 6px; }
+    .rpt-detail-section-label:first-of-type { margin-top: 10px; }
+    .rpt-cat-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
+    .rpt-cat-table th { text-align: left; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; padding: 6px 4px; border-bottom: 0.5px solid var(--border); }
+    .rpt-cat-table td { padding: 8px 4px; border-top: 0.5px solid var(--border); color: var(--text-secondary); }
+    .rpt-cat-table td:nth-child(1) { font-weight: 600; color: var(--text-primary); }
+    .rpt-cat-table td:nth-child(2), .rpt-cat-table td:nth-child(3) { text-align: right; }
+    .rpt-cat-table tfoot td { font-weight: 700; color: var(--text-primary); border-top: 1.5px solid var(--text-primary); }
+    .rpt-top-item-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-top: 0.5px solid var(--border); font-size: 13px; }
+    .rpt-top-item-row:first-of-type { border-top: none; }
+    .rpt-top-item-name { color: var(--text-primary); font-weight: 500; }
+    .rpt-top-item-meta { color: var(--text-tertiary); font-size: 12px; }
+    .rpt-top-item-sales { color: var(--text-primary); font-weight: 600; }
     /* Hourly */
     .rpt-hourly-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
     .rpt-hour-label { width: 44px; color: var(--text-tertiary); font-size: 12px; flex-shrink: 0; text-align: right; }
@@ -2500,6 +2518,94 @@
     document.getElementById('rptBdTax').textContent     = '$' + tax.toFixed(2);
     document.getElementById('rptBdTotal').textContent   = '$' + net.toFixed(2);
     document.getElementById('rptBdProfit').textContent  = '$' + profit.toFixed(2);
+
+    renderRptEodDetail(txs, wastageEntries);
+  }
+
+  function getProductCategory(name) {
+    for (const [cat, val] of Object.entries(PRODUCTS)) {
+      if (val.All.find(p => p.name === name)) return cat;
+    }
+    return 'Other';
+  }
+
+  function toggleRptEodDetail() {
+    const panel = document.getElementById('rptEodDetail');
+    const btn = document.getElementById('rptEodDetailBtn');
+    const label = document.getElementById('rptEodDetailBtnLabel');
+    const showing = panel.style.display !== 'none';
+    panel.style.display = showing ? 'none' : 'block';
+    btn.classList.toggle('active', !showing);
+    label.textContent = showing ? 'View Detailed Breakdown' : 'Hide Detailed Breakdown';
+  }
+
+  function renderRptEodDetail(txs, wastageEntries) {
+    // Payment methods
+    const cash = txs.filter(t => t.method === 'Cash').reduce((a,t) => a + t.total, 0);
+    const card = txs.filter(t => t.method === 'Card').reduce((a,t) => a + t.total, 0);
+    const mobile = txs.filter(t => t.method === 'Mobile').reduce((a,t) => a + t.total, 0);
+    document.getElementById('rptDtCash').textContent = '$' + cash.toFixed(2);
+    document.getElementById('rptDtCard').textContent = '$' + card.toFixed(2);
+    document.getElementById('rptDtMobile').textContent = '$' + mobile.toFixed(2);
+
+    // Sales analysis
+    const net = txs.reduce((a,t) => a + (t.gross - t.discount), 0);
+    const gst = txs.reduce((a,t) => a + t.tax, 0);
+    const totalSales = txs.reduce((a,t) => a + t.total, 0);
+    document.getElementById('rptDtNet').textContent = '$' + net.toFixed(2);
+    document.getElementById('rptDtGst').textContent = '$' + gst.toFixed(2);
+    document.getElementById('rptDtTotalSales').textContent = '$' + totalSales.toFixed(2);
+
+    // Order stats
+    const allItems = txs.flatMap(t => t.items);
+    const itemsSold = allItems.reduce((a,i) => a + i.qty, 0);
+    const uniqueProducts = new Set(allItems.map(i => i.name)).size;
+    const avgItems = txs.length ? (itemsSold / txs.length) : 0;
+    const ordersWithCust = txs.filter(t => t.customer).length;
+    document.getElementById('rptDtOrders').textContent = txs.length;
+    document.getElementById('rptDtItemsSold').textContent = itemsSold;
+    document.getElementById('rptDtUniqueProducts').textContent = uniqueProducts;
+    document.getElementById('rptDtAvgItems').textContent = avgItems.toFixed(1);
+    document.getElementById('rptDtOrdersWithCust').textContent = ordersWithCust;
+
+    // Category breakdown
+    const catMap = {};
+    allItems.forEach(i => {
+      const cat = getProductCategory(i.name);
+      if (!catMap[cat]) catMap[cat] = {sales: 0, qty: 0};
+      catMap[cat].sales += i.price * i.qty;
+      catMap[cat].qty += i.qty;
+    });
+    const catEntries = Object.entries(catMap).sort((a,b) => b[1].sales - a[1].sales);
+    const catTotalSales = catEntries.reduce((a,[,v]) => a + v.sales, 0);
+    const catTotalQty = catEntries.reduce((a,[,v]) => a + v.qty, 0);
+    document.getElementById('rptDtCatBody').innerHTML = catEntries.length
+      ? catEntries.map(([cat,v]) => `<tr><td>${cat}</td><td>$${v.sales.toFixed(2)}</td><td>${v.qty}</td></tr>`).join('')
+      : `<tr><td colspan="3" style="text-align:center;color:var(--text-tertiary);">No sales yet</td></tr>`;
+    document.getElementById('rptDtCatFoot').innerHTML = catEntries.length
+      ? `<tr><td>TOTAL</td><td>$${catTotalSales.toFixed(2)}</td><td>${catTotalQty}</td></tr>`
+      : '';
+
+    // Top selling items
+    const itemMap = {};
+    allItems.forEach(i => {
+      if (!itemMap[i.name]) itemMap[i.name] = {qty: 0, sales: 0};
+      itemMap[i.name].qty += i.qty;
+      itemMap[i.name].sales += i.price * i.qty;
+    });
+    const topItems = Object.entries(itemMap).sort((a,b) => b[1].sales - a[1].sales).slice(0, 5);
+    document.getElementById('rptDtTopItems').innerHTML = topItems.length
+      ? topItems.map(([name,v]) => `<div class="rpt-top-item-row">
+          <div><div class="rpt-top-item-name">${name}</div><div class="rpt-top-item-meta">${v.qty} sold</div></div>
+          <div class="rpt-top-item-sales">$${v.sales.toFixed(2)}</div>
+        </div>`).join('')
+      : `<div class="rpt-empty" style="padding:12px 0;color:var(--text-tertiary);font-size:13px;text-align:center;">No items sold yet</div>`;
+
+    // Profit & wastage
+    const profit = totalSales * 0.65;
+    document.getElementById('rptDtProfit').textContent = '$' + profit.toFixed(2);
+    document.getElementById('rptDtWastageRow').style.display = wastageEntries.length > 0 ? '' : 'none';
+    document.getElementById('rptDtWastage').textContent = wastageEntries.length + ' entries';
   }
 
   function renderRptHourly() {
@@ -3472,13 +3578,55 @@
         </div>
       </div>
       <div class="rpt-breakdown">
-        <div class="rpt-breakdown-title">Summary Breakdown</div>
+        <div class="rpt-breakdown-header">
+          <div class="rpt-breakdown-title">Summary Breakdown</div>
+          <button class="rpt-detail-btn" onclick="toggleRptEodDetail()" id="rptEodDetailBtn">
+            <i class="ti ti-list-details"></i> <span id="rptEodDetailBtnLabel">View Detailed Breakdown</span>
+          </button>
+        </div>
         <div class="rpt-breakdown-row"><span>Gross Sales</span><span id="rptBdGross">$0.00</span></div>
         <div class="rpt-breakdown-row red"><span>Discounts</span><span id="rptBdDisc">-$0.00</span></div>
         <div class="rpt-breakdown-row red" id="rptBdWastageRow" style="display:none;"><span>Wastage (est. cost)</span><span id="rptBdWastage">-$0.00</span></div>
         <div class="rpt-breakdown-row"><span>Tax Collected</span><span id="rptBdTax">$0.00</span></div>
         <div class="rpt-breakdown-row strong"><span>Total Collected</span><span id="rptBdTotal">$0.00</span></div>
         <div class="rpt-breakdown-row green"><span>Estimated Gross Profit (65% margin)</span><span id="rptBdProfit">$0.00</span></div>
+      </div>
+
+      <!-- DETAILED BREAKDOWN (toggled) -->
+      <div class="rpt-breakdown" id="rptEodDetail" style="display:none;">
+        <div class="rpt-breakdown-title">Detailed Breakdown</div>
+
+        <div class="rpt-detail-section-label">Payment Methods</div>
+        <div class="rpt-breakdown-row"><span>Cash</span><span id="rptDtCash">$0.00</span></div>
+        <div class="rpt-breakdown-row"><span>Credit Card</span><span id="rptDtCard">$0.00</span></div>
+        <div class="rpt-breakdown-row"><span>Mobile / PayNow</span><span id="rptDtMobile">$0.00</span></div>
+
+        <div class="rpt-detail-section-label">Sales Analysis</div>
+        <div class="rpt-breakdown-row"><span>Net Sales (excl. tax)</span><span id="rptDtNet">$0.00</span></div>
+        <div class="rpt-breakdown-row"><span>GST Collected</span><span id="rptDtGst">$0.00</span></div>
+        <div class="rpt-breakdown-row strong"><span>Total Sales (incl. tax)</span><span id="rptDtTotalSales">$0.00</span></div>
+
+        <div class="rpt-detail-section-label">Order Stats</div>
+        <div class="rpt-breakdown-row"><span>No. of Sales Orders</span><span id="rptDtOrders">0</span></div>
+        <div class="rpt-breakdown-row"><span>No. of Items Sold</span><span id="rptDtItemsSold">0</span></div>
+        <div class="rpt-breakdown-row"><span>Unique Products Sold</span><span id="rptDtUniqueProducts">0</span></div>
+        <div class="rpt-breakdown-row"><span>Avg. Items per Order</span><span id="rptDtAvgItems">0</span></div>
+        <div class="rpt-breakdown-row"><span>Orders with Customer Attached</span><span id="rptDtOrdersWithCust">0</span></div>
+
+        <div class="rpt-detail-section-label">Item Breakdown by Category</div>
+        <table class="rpt-cat-table">
+          <thead>
+            <tr><th>Category</th><th style="text-align:right;">Sales ($)</th><th style="text-align:right;">Qty Sold</th></tr>
+          </thead>
+          <tbody id="rptDtCatBody"></tbody>
+          <tfoot id="rptDtCatFoot"></tfoot>
+        </table>
+
+        <div class="rpt-detail-section-label">Top Selling Items</div>
+        <div id="rptDtTopItems"></div>
+
+        <div class="rpt-breakdown-row green" style="margin-top:6px;"><span>Estimated Gross Profit (65% margin)</span><span id="rptDtProfit">$0.00</span></div>
+        <div class="rpt-breakdown-row red" id="rptDtWastageRow" style="display:none;"><span>Wastage entries logged today</span><span id="rptDtWastage">0 entries</span></div>
       </div>
     </div>
 
