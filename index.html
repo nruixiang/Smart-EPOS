@@ -238,7 +238,7 @@
     .qty-btn { width: 22px; height: 22px; border: 0.5px solid var(--border); border-radius: 4px; background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; color: var(--text-primary); line-height: 1; font-family: var(--font); }
     .qty-num { font-size: 13px; font-weight: 500; min-width: 16px; text-align: center; color: var(--text-primary); }
     .customer-row { padding: 8px 10px; border-top: 0.5px solid var(--border); display: flex; gap: 6px; flex-shrink: 0; }
-    .customer-input { flex: 1; padding: 7px 10px; font-size: 12px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); outline: none; font-family: var(--font); }
+    .customer-input { flex: 1; padding: 7px 10px; font-size: 12px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); outline: none; font-family: var(--font); cursor: pointer; }
     .icon-btn { width: 32px; height: 32px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); flex-shrink: 0; }
     .totals { padding: 10px 14px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
     .total-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary); margin-bottom: 5px; }
@@ -433,6 +433,79 @@
     .disc-kb-key.done { background: #d97706; color: white; font-size: 13px; font-weight: 600; flex: 2; }
     .disc-kb-key.del { background: var(--bg-tertiary); }
 
+    /* MEMBERS */
+    .mem-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 350; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .mem-overlay.show { opacity: 1; pointer-events: all; }
+    .mem-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 420px; height: 86vh; max-height: 640px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); border: 0.5px solid var(--border); }
+    .mem-modal > div { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+    .mem-header { padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+    .mem-title { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; color: var(--text-primary); }
+    .mem-title i { font-size: 18px; color: var(--green); }
+    .mem-close { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 20px; display: flex; align-items: center; transition: color 0.15s; }
+    .mem-close:hover { color: var(--text-primary); }
+    .mem-body { overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
+    /* List */
+    .mem-search-row { display: flex; gap: 8px; }
+    .mem-search-input { flex: 1; padding: 10px 14px; border: 1px solid var(--green); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-primary); color: var(--text-primary); font-family: var(--font); outline: none; }
+    .mem-add-btn { padding: 10px 16px; background: var(--green); color: white; border: none; border-radius: var(--radius-md); font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: opacity 0.15s; }
+    .mem-add-btn:hover { opacity: 0.88; }
+    .mem-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 0.5px solid var(--border); border-radius: var(--radius-md); cursor: pointer; transition: all 0.15s; background: var(--bg-primary); }
+    .mem-row:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
+    .mem-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: var(--text-secondary); flex-shrink: 0; }
+    .mem-row-info { flex: 1; min-width: 0; }
+    .mem-row-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .mem-row-phone { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+    .mem-row-right { text-align: right; flex-shrink: 0; }
+    .mem-tier { font-size: 11px; font-weight: 700; color: #d97706; }
+    .mem-pts { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-top: 2px; }
+    .mem-spent { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+    .mem-empty { text-align: center; padding: 40px 20px; color: var(--text-tertiary); font-size: 13px; }
+    /* Form */
+    .mem-field-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+    .mem-field-label .req { color: #dc2626; }
+    .mem-field-input { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-primary); color: var(--text-primary); font-family: var(--font); outline: none; margin-bottom: 14px; }
+    .mem-field-input:focus { border-color: var(--blue); }
+    .mem-form-footer { display: flex; gap: 8px; padding: 14px 18px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
+    .mem-btn-cancel { flex: 1; padding: 11px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background 0.15s; }
+    .mem-btn-cancel:hover { background: var(--bg-secondary); }
+    .mem-btn-save { flex: 1; padding: 11px; border-radius: var(--radius-md); border: none; background: var(--green); color: white; font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+    .mem-btn-save:hover { opacity: 0.88; }
+    /* Profile */
+    .mem-profile-head { display: flex; align-items: center; gap: 14px; }
+    .mem-profile-avatar { width: 50px; height: 50px; border-radius: 50%; background: #fef3e8; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #d97706; flex-shrink: 0; }
+    .mem-profile-name-row { display: flex; align-items: center; gap: 8px; }
+    .mem-profile-name { font-size: 16px; font-weight: 800; color: var(--text-primary); }
+    .mem-profile-tier { font-size: 11px; font-weight: 700; color: #d97706; background: #fef3e8; padding: 2px 8px; border-radius: 5px; display: inline-flex; align-items: center; gap: 4px; }
+    .mem-profile-contact { font-size: 12px; color: var(--text-secondary); margin-top: 4px; display: flex; flex-direction: column; gap: 2px; }
+    .mem-profile-contact span { display: flex; align-items: center; gap: 6px; }
+    .mem-points-card { background: linear-gradient(135deg, #16a34a, #15803d); border-radius: var(--radius-md); padding: 16px; color: white; }
+    .mem-points-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .mem-points-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; opacity: 0.85; }
+    .mem-points-val { font-size: 28px; font-weight: 800; line-height: 1; margin-top: 4px; }
+    .mem-points-right { text-align: right; }
+    .mem-points-progress-bg { height: 6px; background: rgba(255,255,255,0.25); border-radius: 3px; overflow: hidden; margin: 8px 0; }
+    .mem-points-progress-fill { height: 100%; background: white; border-radius: 3px; }
+    .mem-points-foot { font-size: 11px; opacity: 0.85; }
+    .mem-attach-btn { padding: 12px; background: #111; color: white; border: none; border-radius: var(--radius-md); font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.15s; }
+    .mem-attach-btn:hover { opacity: 0.85; }
+    .mem-attach-btn.attached { background: var(--green); }
+    .mem-section-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.07em; display: flex; align-items: center; gap: 6px; }
+    .mem-section-label .count-pill { background: var(--bg-tertiary); color: var(--text-secondary); border-radius: 5px; padding: 1px 6px; font-size: 10px; }
+    .mem-no-purchases { font-size: 12px; color: var(--text-tertiary); text-align: center; padding: 14px; background: var(--bg-secondary); border-radius: var(--radius-md); }
+    .mem-purchase-row { font-size: 12px; color: var(--text-primary); padding: 8px 10px; background: var(--bg-secondary); border-radius: var(--radius-md); display: flex; justify-content: space-between; }
+    .mem-recommend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .mem-recommend-chip { padding: 10px 12px; background: #f0fdf4; color: #16a34a; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; text-align: center; cursor: pointer; border: none; font-family: var(--font); transition: opacity 0.15s; }
+    [data-theme="dark"] .mem-recommend-chip { background: rgba(22,163,74,0.15); }
+    [data-theme="dark"] .mem-profile-avatar, [data-theme="dark"] .mem-profile-tier { background: rgba(217,119,6,0.18); }
+    .mem-recommend-chip:hover { opacity: 0.8; }
+    .mem-profile-footer { display: flex; gap: 8px; padding: 14px 18px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
+    .mem-btn-edit { flex: 1; padding: 11px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background 0.15s; }
+    .mem-btn-edit:hover { background: var(--bg-secondary); }
+    .mem-btn-delete { width: 44px; border-radius: var(--radius-md); border: 1px solid #fecaca; background: #fef2f2; color: #dc2626; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    .mem-btn-delete:hover { background: #fee2e2; }
+    [data-theme="dark"] .mem-btn-delete { background: rgba(220,38,38,0.12); border-color: rgba(220,38,38,0.3); }
+    .mem-back-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 18px; display: flex; align-items: center; padding: 0; }
+
     /* HOLD / RECALL */
     .recall-badge { position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--green); color: #ffffff !important; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 4px; pointer-events: none; line-height: 1; }
     .held-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -513,7 +586,7 @@
         <span class="recall-badge" id="discountBadge" style="display:none;background:#e11d48;">✓</span>
       </button>
       <button class="action-btn"><i class="ti ti-chart-bar"></i><span>Reports</span></button>
-      <button class="action-btn"><i class="ti ti-users"></i><span>Members</span></button>
+      <button class="action-btn" onclick="openMembers()"><i class="ti ti-users"></i><span>Members</span></button>
       <button class="action-btn"><i class="ti ti-shopping-cart"></i><span>Orders</span></button>
       <button class="action-btn"><i class="ti ti-building-store"></i><span>Outlets</span></button>
     </div>
@@ -536,10 +609,10 @@
         <p>Order is empty</p>
       </div>
     </div>
-    <div class="customer-row">
-      <input type="text" class="customer-input" placeholder="Phone number..." />
-      <div class="icon-btn"><i class="ti ti-search" style="font-size:16px;"></i></div>
-      <div class="icon-btn"><i class="ti ti-user-plus" style="font-size:16px;"></i></div>
+    <div class="customer-row" id="customerRow">
+      <input type="text" class="customer-input" id="customerDisplay" placeholder="Phone number..." readonly onclick="openMembers()" />
+      <div class="icon-btn" onclick="openMembers()"><i class="ti ti-search" style="font-size:16px;"></i></div>
+      <div class="icon-btn" onclick="openMembers(); openRegister();"><i class="ti ti-user-plus" style="font-size:16px;"></i></div>
     </div>
     <div class="totals">
       <div class="total-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
@@ -963,7 +1036,7 @@
     renderOrder();
   }
 
-  function clearOrder() { order = {}; activeDiscount = null; renderOrder(); updateDiscountBadge(); }
+  function clearOrder() { order = {}; activeDiscount = null; attachedCustomer = null; renderOrder(); updateDiscountBadge(); updateCustomerRowDisplay(); }
 
   // ── Hold / Recall ──
   let heldOrders = [];
@@ -1268,6 +1341,19 @@
     const tax = discounted * 0.09;
     const total = discounted + tax;
 
+    // Award member points & purchase history
+    if (attachedCustomer) {
+      const m = members.find(x => x.id === attachedCustomer.id);
+      if (m) {
+        const earned = Math.floor(discounted);
+        m.points += earned;
+        m.spent += discounted;
+        m.history.push({date: dateStr + ' ' + timeStr, total: total});
+      }
+    }
+
+    const customerRow = attachedCustomer ? `<tr><td>Customer</td><td>${attachedCustomer.name}</td></tr>` : '';
+
     const itemRows = items.map(item => `
       <tr>
         <td><span class="item-qty-label">${item.qty}×</span> ${item.name}</td>
@@ -1285,6 +1371,7 @@
         <tr><td>Date</td><td>${dateStr}</td></tr>
         <tr><td>Time</td><td>${timeStr}</td></tr>
         <tr><td>Cashier</td><td>${currentStaffId || '0000'}</td></tr>
+        ${customerRow}
       </table>
       <hr class="receipt-divider"/>
       <table class="receipt-items">${itemRows}</table>
@@ -1307,6 +1394,206 @@
   function closeReceipt() {
     document.getElementById('receiptOverlay').classList.remove('show');
     clearOrder();
+  }
+
+  // ── Members ──
+  let members = [];
+  let attachedCustomer = null;
+  let memberCounter = 0;
+  let viewingMemberId = null;
+  let editingMemberId = null;
+
+  function openMembers() {
+    backToList();
+    document.getElementById('memOverlay').classList.add('show');
+  }
+  function closeMembers() {
+    document.getElementById('memOverlay').classList.remove('show');
+  }
+  function closeMemIfBg(e) {
+    if (e.target === document.getElementById('memOverlay')) closeMembers();
+  }
+  function showMemPanel(panel) {
+    ['List','Register','Profile','Edit'].forEach(p => {
+      document.getElementById('memPanel'+p).style.display = (p === panel) ? 'flex' : 'none';
+    });
+  }
+  function backToList() {
+    showMemPanel('List');
+    document.getElementById('memSearchInput').value = '';
+    renderMembersList();
+  }
+
+  function getInitial(name) { return (name.trim().charAt(0) || '?').toUpperCase(); }
+
+  function renderMembersList() {
+    const q = document.getElementById('memSearchInput').value.trim().toLowerCase();
+    const filtered = members.filter(m => !q || m.name.toLowerCase().includes(q) || m.phone.includes(q));
+    document.getElementById('memListTitle').textContent = `Members (${members.length})`;
+    const container = document.getElementById('memListContainer');
+    if (!filtered.length) {
+      container.innerHTML = `<div class="mem-empty">No members found</div>`;
+      return;
+    }
+    container.innerHTML = filtered.map(m => `
+      <div class="mem-row" onclick="openProfile(${m.id})">
+        <div class="mem-avatar">${getInitial(m.name)}</div>
+        <div class="mem-row-info">
+          <div class="mem-row-name">${m.name}</div>
+          <div class="mem-row-phone">${formatPhone(m.phone)}</div>
+        </div>
+        <div class="mem-row-right">
+          <div class="mem-tier">Bronze</div>
+          <div class="mem-pts">${m.points} pts</div>
+          <div class="mem-spent">$${m.spent.toFixed(0)} spent</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function formatPhone(phone) {
+    const digits = phone.replace(/\D/g,'');
+    if (digits.length === 8) return digits.slice(0,4) + ' ' + digits.slice(4);
+    return phone;
+  }
+
+  // Register
+  function openRegister() {
+    document.getElementById('regName').value = '';
+    document.getElementById('regPhone').value = '';
+    document.getElementById('regEmail').value = '';
+    document.getElementById('regBday').value = '';
+    showMemPanel('Register');
+  }
+
+  function registerCustomer() {
+    const name = document.getElementById('regName').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const bday = document.getElementById('regBday').value;
+    if (!name || !phone) { showToast('Name and phone are required'); return; }
+    memberCounter++;
+    members.push({id: memberCounter, name, phone, email, bday, points: 0, spent: 0, history: []});
+    showToast('Customer registered: ' + name);
+    openProfile(memberCounter);
+  }
+
+  // Profile
+  function openProfile(id) {
+    const m = members.find(x => x.id === id);
+    if (!m) return;
+    viewingMemberId = id;
+    document.getElementById('profAvatar').textContent = getInitial(m.name);
+    document.getElementById('profName').textContent = m.name;
+    document.getElementById('profPhone').textContent = formatPhone(m.phone);
+    const emailRow = document.getElementById('profEmailRow');
+    if (m.email) { emailRow.style.display = 'flex'; document.getElementById('profEmail').textContent = m.email; }
+    else { emailRow.style.display = 'none'; }
+    document.getElementById('profPoints').textContent = m.points;
+    document.getElementById('profSpend').textContent = '$' + m.spent.toFixed(2);
+    const inCycle = m.points % 100;
+    document.getElementById('profProgress').style.width = inCycle + '%';
+    document.getElementById('profProgressLabel').textContent = `${inCycle} / 100 pts \u00B7 ${100 - inCycle} pts to next voucher`;
+
+    // Attach button state
+    const attachBtn = document.getElementById('attachBtn');
+    const attachLabel = document.getElementById('attachBtnLabel');
+    if (attachedCustomer && attachedCustomer.id === m.id) {
+      attachBtn.classList.add('attached');
+      attachLabel.textContent = 'Attached to Current Order';
+    } else {
+      attachBtn.classList.remove('attached');
+      attachLabel.textContent = 'Attach to Current Order';
+    }
+
+    // Purchase history
+    document.getElementById('profPurchaseCount').textContent = m.history.length;
+    const histEl = document.getElementById('profPurchaseList');
+    if (!m.history.length) {
+      histEl.innerHTML = `<div class="mem-no-purchases">No purchases yet</div>`;
+    } else {
+      histEl.innerHTML = m.history.slice().reverse().slice(0,5).map(h => `
+        <div class="mem-purchase-row"><span>${h.date}</span><span style="font-weight:700;">$${h.total.toFixed(2)}</span></div>
+      `).join('');
+    }
+
+    // Recommend next
+    const recs = ['Espresso','Americano','Latte','Cappuccino'];
+    document.getElementById('profRecommend').innerHTML = recs.map(name => {
+      const p = findProduct(name);
+      return p ? `<button class="mem-recommend-chip" onclick="quickAddRecommend('${name}')">${name}</button>` : '';
+    }).join('');
+
+    showMemPanel('Profile');
+  }
+
+  function quickAddRecommend(name) {
+    const p = findProduct(name);
+    if (!p) return;
+    addItem(p.name, p.price, p.emoji);
+    showToast(p.name + ' added to order');
+  }
+
+  function attachCustomer() {
+    const m = members.find(x => x.id === viewingMemberId);
+    if (!m) return;
+    if (attachedCustomer && attachedCustomer.id === m.id) {
+      attachedCustomer = null;
+      showToast('Customer detached from order');
+    } else {
+      attachedCustomer = m;
+      showToast(m.name + ' attached to current order');
+    }
+    updateCustomerRowDisplay();
+    openProfile(m.id);
+  }
+
+  function updateCustomerRowDisplay() {
+    const el = document.getElementById('customerDisplay');
+    if (attachedCustomer) {
+      el.value = attachedCustomer.name + ' \u00B7 ' + formatPhone(attachedCustomer.phone);
+      el.style.color = 'var(--text-primary)';
+    } else {
+      el.value = '';
+      el.style.color = '';
+    }
+  }
+
+  // Edit
+  function openEditCustomer() {
+    const m = members.find(x => x.id === viewingMemberId);
+    if (!m) return;
+    editingMemberId = m.id;
+    document.getElementById('custEditName').value = m.name;
+    document.getElementById('custEditPhone').value = m.phone;
+    document.getElementById('custEditEmail').value = m.email;
+    document.getElementById('custEditBday').value = m.bday || '';
+    showMemPanel('Edit');
+  }
+
+  function saveEditCustomer() {
+    const m = members.find(x => x.id === editingMemberId);
+    if (!m) return;
+    const name = document.getElementById('custEditName').value.trim();
+    const phone = document.getElementById('custEditPhone').value.trim();
+    if (!name || !phone) { showToast('Name and phone are required'); return; }
+    m.name = name;
+    m.phone = phone;
+    m.email = document.getElementById('custEditEmail').value.trim();
+    m.bday = document.getElementById('custEditBday').value;
+    if (attachedCustomer && attachedCustomer.id === m.id) { attachedCustomer = m; updateCustomerRowDisplay(); }
+    showToast('Customer updated');
+    openProfile(m.id);
+  }
+
+  function deleteCustomer() {
+    const m = members.find(x => x.id === viewingMemberId);
+    if (!m) return;
+    if (!confirm('Delete customer "' + m.name + '"? This cannot be undone.')) return;
+    members = members.filter(x => x.id !== m.id);
+    if (attachedCustomer && attachedCustomer.id === m.id) { attachedCustomer = null; updateCustomerRowDisplay(); }
+    showToast('Customer deleted');
+    backToList();
   }
 
   // ── Discount ──
@@ -1345,6 +1632,11 @@
   function openDiscount() {
     switchDiscTab('manual');
     updateDiscountBanner();
+    // Clear membership fields
+    ['discMemberName','discMemberPhone','discMemberEmail'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
     document.getElementById('discOverlay').classList.add('show');
   }
 
@@ -1385,8 +1677,8 @@
   }
 
   function applyMemberDiscount() {
-    const phone = discKbBuffer && discKbTarget === 'phone' ? discKbBuffer : document.getElementById('discPhoneDisplay').dataset.val || '';
-    if (phone.replace(/\D/g,'').length < 8) { showToast('Please enter a valid 8-digit phone number'); return; }
+    const phone = (document.getElementById('discMemberPhone')?.value || '').replace(/\D/g,'');
+    if (phone.length < 8) { showToast('Please enter a valid 8-digit phone number'); return; }
     activeDiscount = { label: 'Member (15%)', type: 'percent', value: 15 };
     updateDiscountBadge();
     updateDiscountBanner();
@@ -1470,6 +1762,73 @@
       const digits = discKbBuffer.replace(/\D/g,'');
       if (digits.length < 8) { showToast('Phone number must be 8 digits'); return; }
     }
+  }
+
+  // ── Generic Field Keyboard (Register / Edit Customer fields) ──
+  let fieldKbTargetId = null;
+  let fieldKbMode = 'text'; // 'text' | 'email' | 'phone'
+  let fieldKbBuffer = '';
+  let fieldKbShift = false;
+
+  function fieldKbChar(lower) {
+    return fieldKbShift ? lower.toUpperCase() : lower;
+  }
+
+  function fieldKbToggleShift() {
+    fieldKbShift = !fieldKbShift;
+    document.getElementById('fieldKbShift').classList.toggle('active', fieldKbShift);
+    document.getElementById('fieldKbShift').style.background = fieldKbShift ? 'var(--blue)' : '#374151';
+  }
+
+  function openFieldKb(inputId, mode, label) {
+    fieldKbTargetId = inputId;
+    fieldKbMode = mode;
+    fieldKbShift = false;
+    const input = document.getElementById(inputId);
+    fieldKbBuffer = input.value || '';
+    document.getElementById('fieldKbLabel').textContent = label;
+    document.getElementById('fieldKbVal').value = fieldKbBuffer;
+    const shiftBtn = document.getElementById('fieldKbShift');
+    shiftBtn.style.background = '#374151';
+    document.getElementById('fieldKbSheet').classList.add('show');
+  }
+
+  function closeFieldKb() {
+    document.getElementById('fieldKbSheet').classList.remove('show');
+  }
+
+  function closeFieldKbIfBg(e) {
+    if (e.target === document.getElementById('fieldKbSheet')) closeFieldKb();
+  }
+
+  function fieldKbPress(ch) {
+    if (fieldKbMode === 'phone') {
+      if (!/[0-9]/.test(ch)) return;
+      if (fieldKbBuffer.length >= 8) return;
+    } else {
+      if (fieldKbBuffer.length >= 60) return;
+    }
+    fieldKbBuffer += ch;
+    syncFieldKb();
+  }
+
+  function fieldKbDel() {
+    fieldKbBuffer = fieldKbBuffer.slice(0, -1);
+    syncFieldKb();
+  }
+
+  function syncFieldKb() {
+    document.getElementById('fieldKbVal').value = fieldKbBuffer;
+    const input = document.getElementById(fieldKbTargetId);
+    if (input) input.value = fieldKbBuffer;
+  }
+
+  function fieldKbDone() {
+    if (fieldKbMode === 'phone' && fieldKbBuffer.length > 0 && fieldKbBuffer.length < 8) {
+      showToast('Phone number must be 8 digits');
+      return;
+    }
+    closeFieldKb();
   }
 
   // ── Clock In / Staff ──
@@ -2030,10 +2389,21 @@
           <div class="disc-qr-label">Scan customer QR code using scanner</div>
           <button class="disc-sim-btn" onclick="simulateMemberScan()">Simulate Scan</button>
         </div>
-        <div class="disc-or">OR ENTER PHONE NUMBER</div>
-        <div class="disc-phone-row">
-          <div class="disc-phone-input" id="discPhoneDisplay" onclick="openDiscKb('phone')" style="color:var(--text-tertiary);">Tap to enter phone...</div>
-          <button class="disc-lookup-btn" onclick="applyMemberDiscount()">Lookup</button>
+        <div class="disc-or">OR ENTER MEMBER DETAILS</div>
+        <div style="width:100%;display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;">Full Name</div>
+            <input type="text" class="disc-phone-input" id="discMemberName" placeholder="Tap to enter name..." readonly style="width:100%;cursor:pointer;" onclick="openFieldKb('discMemberName','text','ENTER FULL NAME:')" />
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;">Phone Number <span style="color:var(--red);">*</span></div>
+            <input type="text" class="disc-phone-input" id="discMemberPhone" placeholder="Tap to enter phone..." readonly style="width:100%;cursor:pointer;" onclick="openFieldKb('discMemberPhone','phone','ENTER PHONE NUMBER:')" />
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;">Email</div>
+            <input type="text" class="disc-phone-input" id="discMemberEmail" placeholder="Tap to enter email..." readonly style="width:100%;cursor:pointer;" onclick="openFieldKb('discMemberEmail','email','ENTER EMAIL:')" />
+          </div>
+          <button class="disc-lookup-btn" style="width:100%;margin-top:4px;" onclick="applyMemberDiscount()">Look Up Member</button>
         </div>
       </div>
       <!-- Voucher -->
@@ -2145,6 +2515,192 @@
         <button class="disc-kb-key done" onclick="discKbDone()">↵ Done</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Generic Field Keyboard Sheet -->
+<div class="disc-kb-sheet" id="fieldKbSheet" onclick="closeFieldKbIfBg(event)">
+  <div class="disc-kb-inner">
+    <div class="disc-kb-field-row">
+      <span class="disc-kb-field-label" id="fieldKbLabel">ENTER TEXT:</span>
+      <input class="disc-kb-field-val" id="fieldKbVal" readonly />
+      <button class="disc-kb-dismiss" onclick="closeFieldKb()"><i class="ti ti-chevron-down" style="font-size:18px;"></i></button>
+    </div>
+    <div class="disc-kb-rows">
+      <div class="disc-kb-row">
+        <button class="disc-kb-key" onclick="fieldKbPress('1')">1</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('2')">2</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('3')">3</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('4')">4</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('5')">5</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('6')">6</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('7')">7</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('8')">8</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('9')">9</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('0')">0</button>
+        <button class="disc-kb-key del" onclick="fieldKbDel()"><i class="ti ti-backspace"></i></button>
+      </div>
+      <div class="disc-kb-row">
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('q'))">Q</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('w'))">W</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('e'))">E</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('r'))">R</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('t'))">T</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('y'))">Y</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('u'))">U</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('i'))">I</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('o'))">O</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('p'))">P</button>
+      </div>
+      <div class="disc-kb-row">
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('a'))">A</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('s'))">S</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('d'))">D</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('f'))">F</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('g'))">G</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('h'))">H</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('j'))">J</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('k'))">K</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('l'))">L</button>
+        <button class="disc-kb-key del" onclick="fieldKbDel()"><i class="ti ti-backspace"></i></button>
+      </div>
+      <div class="disc-kb-row">
+        <button class="disc-kb-key action" id="fieldKbShift" onclick="fieldKbToggleShift()">⇧</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('z'))">Z</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('x'))">X</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('c'))">C</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('v'))">V</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('b'))">B</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('n'))">N</button>
+        <button class="disc-kb-key" onclick="fieldKbPress(fieldKbChar('m'))">M</button>
+        <button class="disc-kb-key del" onclick="fieldKbDel()"><i class="ti ti-backspace"></i></button>
+        <button class="disc-kb-key del" onclick="fieldKbDel()"><i class="ti ti-backspace"></i></button>
+      </div>
+      <div class="disc-kb-row">
+        <button class="disc-kb-key" onclick="fieldKbPress('@')">@</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('.')">.</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('-')">-</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('_')">_</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('/')"> /</button>
+        <button class="disc-kb-key" onclick="fieldKbPress('#')">#</button>
+        <button class="disc-kb-key wide" onclick="fieldKbPress(' ')">SPACE</button>
+        <button class="disc-kb-key done" onclick="fieldKbDone()">↵ Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Members Modal -->
+<div class="mem-overlay" id="memOverlay" onclick="closeMemIfBg(event)">
+  <div class="mem-modal">
+
+    <!-- LIST -->
+    <div id="memPanelList">
+      <div class="mem-header">
+        <div class="mem-title"><i class="ti ti-users"></i><span id="memListTitle">Members (0)</span></div>
+        <button class="mem-close" onclick="closeMembers()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="mem-body">
+        <div class="mem-search-row">
+          <input type="text" class="mem-search-input" id="memSearchInput" placeholder="Search by name or phone..." oninput="renderMembersList()" />
+          <button class="mem-add-btn" onclick="openRegister()"><i class="ti ti-plus"></i> Add</button>
+        </div>
+        <div id="memListContainer" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="memPanelRegister" style="display:none;">
+      <div class="mem-header">
+        <div class="mem-title"><i class="ti ti-user-plus"></i> Register New Customer</div>
+        <button class="mem-close" onclick="closeMembers()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="mem-body">
+        <div><div class="mem-field-label">Full Name <span class="req">*</span></div><input type="text" class="mem-field-input" id="regName" placeholder="e.g. Jane Smith" readonly onclick="openFieldKb('regName','text','ENTER FULL NAME:')" /></div>
+        <div><div class="mem-field-label">Phone <span class="req">*</span></div><input type="tel" class="mem-field-input" id="regPhone" placeholder="e.g. 91234567" readonly onclick="openFieldKb('regPhone','phone','ENTER PHONE NUMBER:')" /></div>
+        <div><div class="mem-field-label">Email (for receipts)</div><input type="email" class="mem-field-input" id="regEmail" placeholder="e.g. jane@email.com" readonly onclick="openFieldKb('regEmail','email','ENTER EMAIL:')" /></div>
+        <div><div class="mem-field-label">Birthday (optional)</div><input type="date" class="mem-field-input" id="regBday" style="margin-bottom:0;" /></div>
+      </div>
+      <div class="mem-form-footer">
+        <button class="mem-btn-cancel" onclick="backToList()">Cancel</button>
+        <button class="mem-btn-save" onclick="registerCustomer()">Register Customer</button>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="memPanelProfile" style="display:none;">
+      <div class="mem-header">
+        <div class="mem-title"><i class="ti ti-users"></i> Customer Profile</div>
+        <button class="mem-close" onclick="closeMembers()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="mem-body">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <button class="mem-back-btn" onclick="backToList()"><i class="ti ti-arrow-left"></i></button>
+          <div class="mem-profile-head">
+            <div class="mem-profile-avatar" id="profAvatar"></div>
+            <div>
+              <div class="mem-profile-name-row">
+                <span class="mem-profile-name" id="profName"></span>
+                <span class="mem-profile-tier"><i class="ti ti-medal" style="font-size:12px;"></i> Bronze</span>
+              </div>
+              <div class="mem-profile-contact">
+                <span><i class="ti ti-phone" style="font-size:13px;"></i> <span id="profPhone"></span></span>
+                <span id="profEmailRow"><i class="ti ti-mail" style="font-size:13px;"></i> <span id="profEmail"></span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mem-points-card">
+          <div class="mem-points-row">
+            <div>
+              <div class="mem-points-label">POINTS BALANCE</div>
+              <div class="mem-points-val" id="profPoints">0</div>
+            </div>
+            <div class="mem-points-right">
+              <div class="mem-points-label">LIFETIME SPEND</div>
+              <div style="font-size:18px;font-weight:800;margin-top:4px;" id="profSpend">$0.00</div>
+            </div>
+          </div>
+          <div class="mem-points-progress-bg"><div class="mem-points-progress-fill" id="profProgress" style="width:0%;"></div></div>
+          <div class="mem-points-foot" id="profProgressLabel">0 / 100 pts &nbsp;·&nbsp; 100 pts to next voucher</div>
+          <div class="mem-points-foot" style="margin-top:4px;">$1 spent = 1 point · 100 points = $10 voucher</div>
+        </div>
+
+        <button class="mem-attach-btn" id="attachBtn" onclick="attachCustomer()">
+          <i class="ti ti-link"></i><span id="attachBtnLabel">Attach to Current Order</span>
+        </button>
+
+        <div class="mem-section-label"><i class="ti ti-receipt-2"></i> Purchase History <span class="count-pill" id="profPurchaseCount">0</span></div>
+        <div id="profPurchaseList"><div class="mem-no-purchases">No purchases yet</div></div>
+
+        <div class="mem-section-label"><i class="ti ti-trending-up"></i> Recommend Next</div>
+        <div class="mem-recommend-grid" id="profRecommend"></div>
+      </div>
+      <div class="mem-profile-footer">
+        <button class="mem-btn-edit" onclick="openEditCustomer()">Edit Profile</button>
+        <button class="mem-btn-delete" onclick="deleteCustomer()"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>
+
+    <!-- EDIT -->
+    <div id="memPanelEdit" style="display:none;">
+      <div class="mem-header">
+        <div class="mem-title"><i class="ti ti-users"></i> Edit Customer</div>
+        <button class="mem-close" onclick="closeMembers()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="mem-body">
+        <div><div class="mem-field-label">Full Name <span class="req">*</span></div><input type="text" class="mem-field-input" id="custEditName" readonly onclick="openFieldKb('custEditName','text','ENTER FULL NAME:')" /></div>
+        <div><div class="mem-field-label">Phone <span class="req">*</span></div><input type="tel" class="mem-field-input" id="custEditPhone" readonly onclick="openFieldKb('custEditPhone','phone','ENTER PHONE NUMBER:')" /></div>
+        <div><div class="mem-field-label">Email (for receipts)</div><input type="email" class="mem-field-input" id="custEditEmail" readonly onclick="openFieldKb('custEditEmail','email','ENTER EMAIL:')" /></div>
+        <div><div class="mem-field-label">Birthday (optional)</div><input type="date" class="mem-field-input" id="custEditBday" style="margin-bottom:0;" /></div>
+      </div>
+      <div class="mem-form-footer">
+        <button class="mem-btn-cancel" onclick="openProfile(editingMemberId)">Cancel</button>
+        <button class="mem-btn-save" onclick="saveEditCustomer()">Save Changes</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
