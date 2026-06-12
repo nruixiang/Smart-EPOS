@@ -784,8 +784,8 @@
   </div>
   <div class="header-right">
     <div class="header-pill"><i class="ti ti-clock" style="font-size:13px;"></i><span id="clock"></span></div>
-    <div class="header-pill header-pill-btn" id="adminPill" onclick="openAdminPinModal()"><i class="ti ti-shield" style="font-size:13px;"></i><span id="headerRole">Admin</span></div>
-    <div class="header-pill header-pill-btn" onclick="openClockIn()" id="staffPill"><i class="ti ti-user" style="font-size:13px;"></i><span id="headerStaffId">0000 · Administrator</span></div>
+    <div class="header-pill" id="adminPill" style="cursor:default;" onclick="openAdminPinModal()"><i class="ti ti-shield" style="font-size:13px;"></i><span id="headerRole">Staff</span></div>
+    <div class="header-pill header-pill-btn" onclick="openClockIn()" id="staffPill"><i class="ti ti-user" style="font-size:13px;"></i><span id="headerStaffId">Not clocked in</span></div>
     <div class="badge" id="headerBadge">0</div>
   </div>
 </header>
@@ -2358,7 +2358,7 @@
   let pinValue = '';
 
   function openAdminPinModal() {
-    if (currentStaffId !== '0000') return; // only admin
+    if (!currentStaffId || currentStaffId !== '0000') return; // only admin
     pinValue = '';
     updatePinDots();
     document.getElementById('pinError').textContent = '';
@@ -2535,6 +2535,11 @@
 
   // If no saved session, render products in default (non-admin) state
   if (!localStorage.getItem('epos_staff_id')) renderProducts();
+  // Ensure header pill reflects correct initial state
+  if (!localStorage.getItem('epos_staff_id')) {
+    document.getElementById('adminPill').classList.remove('header-pill-btn');
+    document.getElementById('adminPill').style.cursor = 'default';
+  }
 
   // ── Product Info Modal ──
   function findProduct(name) {
@@ -2603,6 +2608,8 @@
     document.getElementById('editValidFrom').value = p.validFrom || '';
     document.getElementById('editValidTo').value = p.validTo || '';
     document.getElementById('editDesc').value = p.desc || '';
+    document.getElementById('editAllergens').value = p.allergens || '';
+    document.getElementById('editIngredients').value = p.ingredients || '';
 
     // Load current image into preview
     editImgData = null;
@@ -2625,6 +2632,8 @@
     const newName = document.getElementById('editName').value.trim();
     const newPrice = parseFloat(document.getElementById('editPrice').value);
     const newDesc = document.getElementById('editDesc').value.trim();
+    const newAllergens = document.getElementById('editAllergens').value.trim();
+    const newIngredients = document.getElementById('editIngredients').value.trim();
     const newSub = document.getElementById('editCategoryTag').value.trim();
     const newValidFrom = document.getElementById('editValidFrom').value;
     const newValidTo = document.getElementById('editValidTo').value;
@@ -2644,6 +2653,8 @@
       editTarget.name = newName;
       editTarget.price = newPrice;
       editTarget.desc = newDesc;
+      editTarget.allergens = newAllergens || editTarget.allergens;
+      editTarget.ingredients = newIngredients || editTarget.ingredients;
       editTarget.sub = newSub || editTarget.sub;
       editTarget.validFrom = newValidFrom;
       editTarget.validTo = newValidTo;
@@ -2652,6 +2663,8 @@
       editTarget.name = newName;
       editTarget.price = newPrice;
       editTarget.desc = newDesc;
+      editTarget.allergens = newAllergens;
+      editTarget.ingredients = newIngredients;
       if (newSub) editTarget.sub = newSub;
       editTarget.validFrom = newValidFrom;
       editTarget.validTo = newValidTo;
@@ -3602,6 +3615,17 @@
       <div>
         <div class="edit-field-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
         <textarea id="editDesc" rows="3" class="edit-input" placeholder="Short description shown on receipt" style="resize:vertical;line-height:1.5;"></textarea>
+      </div>
+
+      <!-- Allergens + Ingredients -->
+      <div>
+        <div class="edit-field-label">Allergens <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
+        <input id="editAllergens" class="edit-input" placeholder="e.g. Contains dairy (milk)" />
+      </div>
+
+      <div>
+        <div class="edit-field-label">Ingredients <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
+        <input id="editIngredients" class="edit-input" placeholder="e.g. Espresso · Steamed Milk · Foam" />
       </div>
 
       <!-- Product Photo -->
