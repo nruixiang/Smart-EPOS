@@ -2454,6 +2454,13 @@
     const avgReceipt = txs.length ? net / txs.length : 0;
     const profit = net * 0.65;
 
+    const today = new Date();
+    const wastageEntries = getWastageLog().filter(e => {
+      const d = new Date(e.date);
+      return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+    });
+    const wastageCost = wastageEntries.reduce((a, e) => a + (e.cost || 0), 0);
+
     document.getElementById('rptEodGross').textContent  = '$' + gross.toFixed(2);
     document.getElementById('rptEodNet').textContent    = '$' + net.toFixed(2);
     document.getElementById('rptEodCust').textContent   = customers;
@@ -2461,6 +2468,8 @@
     document.getElementById('rptEodTx').textContent     = txs.length;
     document.getElementById('rptBdGross').textContent   = '$' + gross.toFixed(2);
     document.getElementById('rptBdDisc').textContent    = '-$' + disc.toFixed(2);
+    document.getElementById('rptBdWastage').textContent = '-$' + wastageCost.toFixed(2);
+    document.getElementById('rptBdWastageRow').style.display = wastageCost > 0 ? '' : 'none';
     document.getElementById('rptBdTax').textContent     = '$' + tax.toFixed(2);
     document.getElementById('rptBdTotal').textContent   = '$' + net.toFixed(2);
     document.getElementById('rptBdProfit').textContent  = '$' + profit.toFixed(2);
@@ -3348,6 +3357,7 @@
         <div class="rpt-breakdown-title">Summary Breakdown</div>
         <div class="rpt-breakdown-row"><span>Gross Sales</span><span id="rptBdGross">$0.00</span></div>
         <div class="rpt-breakdown-row red"><span>Discounts</span><span id="rptBdDisc">-$0.00</span></div>
+        <div class="rpt-breakdown-row red" id="rptBdWastageRow" style="display:none;"><span>Wastage (est. cost)</span><span id="rptBdWastage">-$0.00</span></div>
         <div class="rpt-breakdown-row"><span>Tax Collected</span><span id="rptBdTax">$0.00</span></div>
         <div class="rpt-breakdown-row strong"><span>Total Collected</span><span id="rptBdTotal">$0.00</span></div>
         <div class="rpt-breakdown-row green"><span>Estimated Gross Profit (65% margin)</span><span id="rptBdProfit">$0.00</span></div>
