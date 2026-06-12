@@ -239,6 +239,22 @@
     .qty-btn { width: 22px; height: 22px; border: 0.5px solid var(--border); border-radius: 4px; background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; color: var(--text-primary); line-height: 1; font-family: var(--font); }
     .qty-num { font-size: 13px; font-weight: 500; min-width: 16px; text-align: center; color: var(--text-primary); }
     .customer-row { padding: 8px 10px; border-top: 0.5px solid var(--border); display: flex; gap: 6px; flex-shrink: 0; }
+    .attached-customer-chip { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #f0fdf4; border: 0.5px solid #bbf7d0; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .acc-avatar { width: 32px; height: 32px; border-radius: 50%; background: #16a34a; color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .acc-info { flex: 1; min-width: 0; }
+    .acc-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .acc-meta { font-size: 11px; color: #16a34a; margin-top: 1px; }
+    .acc-close { color: var(--text-tertiary); cursor: pointer; font-size: 14px; flex-shrink: 0; padding: 2px; display: flex; align-items: center; }
+    .acc-close:hover { color: var(--text-primary); }
+    .suggest-today { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #fffbeb; border: 0.5px solid #fde68a; flex-shrink: 0; }
+    .suggest-today-label { font-size: 10px; font-weight: 700; color: #d97706; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+    .suggest-today-items { display: flex; gap: 6px; flex-wrap: wrap; }
+    .suggest-today-chip { padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: 14px; background: var(--bg-primary); border: 0.5px solid #fde68a; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.15s; }
+    .suggest-today-chip:hover { background: #fef3c7; }
+    .customer-match-card { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #f0fdf4; border: 0.5px solid #bbf7d0; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .match-attach-btn { padding: 7px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--font); flex-shrink: 0; transition: opacity 0.15s; }
+    .match-attach-btn:hover { opacity: 0.85; }
+    .match-attach-btn.attached { background: var(--text-tertiary); }
     .customer-input { flex: 1; padding: 7px 10px; font-size: 12px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); outline: none; font-family: var(--font); cursor: pointer; }
     .icon-btn { width: 32px; height: 32px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); flex-shrink: 0; }
     .totals { padding: 10px 14px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
@@ -828,10 +844,30 @@
         <p>Order is empty</p>
       </div>
     </div>
+    <div class="attached-customer-chip" id="attachedCustomerChip" style="display:none;">
+      <div class="acc-avatar" id="accAvatar">J</div>
+      <div class="acc-info">
+        <div class="acc-name" id="accName">Jane Text</div>
+        <div class="acc-meta" id="accMeta">0 pts · will earn +0 pts</div>
+      </div>
+      <div class="acc-close" onclick="detachCustomer()"><i class="ti ti-x"></i></div>
+    </div>
+    <div class="suggest-today" id="suggestToday" style="display:none;">
+      <div class="suggest-today-label"><i class="ti ti-bulb"></i> SUGGEST TODAY</div>
+      <div class="suggest-today-items" id="suggestTodayItems"></div>
+    </div>
     <div class="customer-row" id="customerRow">
-      <input type="text" class="customer-input" id="customerDisplay" placeholder="Phone number..." readonly onclick="openMembers()" />
+      <input type="text" class="customer-input" id="customerDisplay" placeholder="Phone number..." readonly onclick="openCustomerPhoneKb()" />
       <div class="icon-btn" onclick="openMembers()"><i class="ti ti-search" style="font-size:16px;"></i></div>
       <div class="icon-btn" onclick="openMembers(); openRegister();"><i class="ti ti-user-plus" style="font-size:16px;"></i></div>
+    </div>
+    <div class="customer-match-card" id="customerMatchCard" style="display:none;">
+      <div class="acc-avatar" id="matchAvatar">J</div>
+      <div class="acc-info">
+        <div class="acc-name" id="matchName">Jane Text</div>
+        <div class="acc-meta" id="matchMeta" style="color:var(--text-tertiary);">0 pts</div>
+      </div>
+      <button class="match-attach-btn" id="matchAttachBtn" onclick="attachMatchedCustomer()">Attach</button>
     </div>
     <div class="totals">
       <div class="total-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
@@ -1389,6 +1425,12 @@
     const tax = discounted * 0.09;
     document.getElementById('taxAmt').textContent = '$' + tax.toFixed(2);
     document.getElementById('totalAmt').textContent = '$' + (discounted + tax).toFixed(2);
+
+    if (attachedCustomer) {
+      const willEarn = Math.floor(discounted);
+      const accMeta = document.getElementById('accMeta');
+      if (accMeta) accMeta.textContent = `${attachedCustomer.points} pts \u00B7 will earn +${willEarn} pts`;
+    }
   }
 
   function showToast(msg) {
@@ -1577,7 +1619,7 @@
         const earned = Math.floor(discounted);
         m.points += earned;
         m.spent += discounted;
-        m.history.push({date: dateStr + ' ' + timeStr, total: total});
+        m.history.push({date: dateStr + ' ' + timeStr, total: total, items: items.map(i => ({name: i.name, qty: i.qty}))});
       }
     }
 
@@ -1777,15 +1819,108 @@
     openProfile(m.id);
   }
 
+  function openCustomerPhoneKb() {
+    fieldKbTargetId = 'customerDisplay';
+    fieldKbMode = 'phone';
+    fieldKbBuffer = '';
+    document.getElementById('customerDisplay').value = '';
+    document.getElementById('customerMatchCard').style.display = 'none';
+    openNumpad('customerPhone');
+  }
+
+  function updateCustomerMatchCard() {
+    const card = document.getElementById('customerMatchCard');
+    const digits = fieldKbBuffer.replace(/\D/g, '');
+    if (digits.length < 8) { card.style.display = 'none'; return; }
+    const match = members.find(m => m.phone.replace(/\D/g,'') === digits);
+    if (!match) { card.style.display = 'none'; return; }
+    document.getElementById('matchAvatar').textContent = getInitial(match.name);
+    document.getElementById('matchName').textContent = match.name;
+    document.getElementById('matchMeta').textContent = match.points + ' pts';
+    const btn = document.getElementById('matchAttachBtn');
+    const isAttached = attachedCustomer && attachedCustomer.id === match.id;
+    btn.textContent = isAttached ? 'Attached' : 'Attach';
+    btn.classList.toggle('attached', isAttached);
+    card.dataset.memberId = match.id;
+    card.style.display = 'flex';
+  }
+
+  function attachMatchedCustomer() {
+    const card = document.getElementById('customerMatchCard');
+    const id = Number(card.dataset.memberId);
+    const m = members.find(x => x.id === id);
+    if (!m) return;
+    if (attachedCustomer && attachedCustomer.id === m.id) {
+      attachedCustomer = null;
+      showToast('Customer detached from order');
+    } else {
+      attachedCustomer = m;
+      showToast(m.name + ' attached to current order');
+    }
+    closeNumpad();
+    card.style.display = 'none';
+    fieldKbBuffer = '';
+    numpadValue = '';
+    updateCustomerRowDisplay();
+  }
+  function detachCustomer() {
+    attachedCustomer = null;
+    updateCustomerRowDisplay();
+    showToast('Customer detached from order');
+  }
+
+  function getSuggestedItems(member) {
+    const freq = {};
+    (member.history || []).forEach(h => {
+      (h.items || []).forEach(i => { freq[i.name] = (freq[i.name] || 0) + i.qty; });
+    });
+    let names = Object.entries(freq).sort((a,b) => b[1] - a[1]).map(([name]) => name);
+    if (names.length < 3) {
+      const fallback = ['Espresso', 'Americano', 'Latte'];
+      fallback.forEach(n => { if (!names.includes(n)) names.push(n); });
+    }
+    return names.slice(0, 3);
+  }
+
+  function suggestAddItem(name) {
+    const p = getAllProducts().find(x => x.name === name);
+    if (!p) return;
+    addItem(p.name, p.price, p.emoji);
+  }
+
   function updateCustomerRowDisplay() {
     const el = document.getElementById('customerDisplay');
+    const chip = document.getElementById('attachedCustomerChip');
+    const suggestBox = document.getElementById('suggestToday');
     if (attachedCustomer) {
       el.value = attachedCustomer.name + ' \u00B7 ' + formatPhone(attachedCustomer.phone);
       el.style.color = 'var(--text-primary)';
+
+      const sub = Object.values(order).reduce((a,i) => a + i.price * i.qty, 0);
+      let discounted = sub;
+      if (activeDiscount && sub > 0) {
+        if (activeDiscount.type === 'percent') discounted = sub - (sub * activeDiscount.value / 100);
+        else if (activeDiscount.type === 'fixed') discounted = Math.max(0, sub - activeDiscount.value);
+      }
+      const willEarn = Math.floor(discounted);
+
+      document.getElementById('accAvatar').textContent = attachedCustomer.name.charAt(0).toUpperCase();
+      document.getElementById('accName').textContent = attachedCustomer.name;
+      document.getElementById('accMeta').textContent = `${attachedCustomer.points} pts \u00B7 will earn +${willEarn} pts`;
+      chip.style.display = 'flex';
+
+      const suggestions = getSuggestedItems(attachedCustomer);
+      document.getElementById('suggestTodayItems').innerHTML = suggestions.map(name =>
+        `<button class="suggest-today-chip" onclick="suggestAddItem('${name.replace(/'/g, "\\'")}')">${name}</button>`
+      ).join('');
+      suggestBox.style.display = suggestions.length ? 'block' : 'none';
     } else {
       el.value = '';
       el.style.color = '';
+      chip.style.display = 'none';
+      suggestBox.style.display = 'none';
     }
+    document.getElementById('customerMatchCard').style.display = 'none';
   }
 
   // Edit
@@ -2045,10 +2180,12 @@
     document.getElementById('fieldKbVal').value = fieldKbBuffer;
     const input = document.getElementById(fieldKbTargetId);
     if (input) input.value = fieldKbBuffer;
+    if (fieldKbTargetId === 'customerDisplay') updateCustomerMatchCard();
+    if (fieldKbTargetId === 'memSearchInput') renderMembersList();
   }
 
   function fieldKbDone() {
-    if (fieldKbMode === 'phone' && fieldKbBuffer.length > 0 && fieldKbBuffer.length < 8) {
+    if (fieldKbMode === 'phone' && fieldKbTargetId !== 'customerDisplay' && fieldKbBuffer.length > 0 && fieldKbBuffer.length < 8) {
       showToast('Phone number must be 8 digits');
       return;
     }
@@ -2058,8 +2195,9 @@
   // ── Clock In / Staff ──
   let currentStaffId = '';
   let currentStaffRole = 'Administrator';
-  let numpadTarget = null; // 'staffId' | 'password'
+  let numpadTarget = null; // 'staffId' | 'password' | 'customerPhone' | 'phoneField'
   let numpadValue = '';
+  let numpadFieldId = null;
   let clockinStaffId = '';
   let clockinPassword = '';
 
@@ -2244,10 +2382,17 @@
   })();
 
   // ── Numpad Sheet ──
-  function openNumpad(target) {
+  function openNumpad(target, fieldId) {
     numpadTarget = target;
-    numpadValue = target === 'staffId' ? clockinStaffId : clockinPassword;
-    document.getElementById('numpadLabel').textContent = target === 'staffId' ? 'STAFF ID' : 'PASSWORD';
+    if (target === 'staffId') numpadValue = clockinStaffId;
+    else if (target === 'password') numpadValue = clockinPassword;
+    else if (target === 'customerPhone') numpadValue = fieldKbBuffer || '';
+    else if (target === 'phoneField') {
+      numpadFieldId = fieldId;
+      const input = document.getElementById(fieldId);
+      numpadValue = (input && input.value) ? input.value.replace(/\D/g,'') : '';
+    }
+    document.getElementById('numpadLabel').textContent = target === 'staffId' ? 'STAFF ID' : (target === 'password' ? 'PASSWORD' : 'PHONE NUMBER');
     updateNumpadDisplay();
     document.getElementById('staffIdBox').classList.toggle('active', target === 'staffId');
     document.getElementById('passwordBox').classList.toggle('active', target === 'password');
@@ -2258,10 +2403,24 @@
     document.getElementById('numpadSheet').classList.remove('show');
     document.getElementById('staffIdBox').classList.remove('active');
     document.getElementById('passwordBox').classList.remove('active');
-    if (numpadTarget === 'staffId') clockinStaffId = numpadValue;
-    else clockinPassword = numpadValue;
-    updateClockInFields();
-    updateClockInBtn();
+    if (numpadTarget === 'staffId') {
+      clockinStaffId = numpadValue;
+      updateClockInFields();
+      updateClockInBtn();
+    } else if (numpadTarget === 'password') {
+      clockinPassword = numpadValue;
+      updateClockInFields();
+      updateClockInBtn();
+    } else if (numpadTarget === 'customerPhone') {
+      fieldKbBuffer = numpadValue;
+      const input = document.getElementById('customerDisplay');
+      if (input) input.value = fieldKbBuffer;
+      updateCustomerMatchCard();
+    } else if (numpadTarget === 'phoneField') {
+      const input = document.getElementById(numpadFieldId);
+      if (input) input.value = numpadValue;
+      numpadFieldId = null;
+    }
     numpadTarget = null;
   }
 
@@ -2273,11 +2432,29 @@
     if (numpadValue.length >= 8) return;
     numpadValue += val;
     updateNumpadDisplay();
+    if (numpadTarget === 'customerPhone') {
+      fieldKbBuffer = numpadValue;
+      const input = document.getElementById('customerDisplay');
+      if (input) input.value = fieldKbBuffer;
+      updateCustomerMatchCard();
+    } else if (numpadTarget === 'phoneField') {
+      const input = document.getElementById(numpadFieldId);
+      if (input) input.value = numpadValue;
+    }
   }
 
   function numpadDel() {
     numpadValue = numpadValue.slice(0, -1);
     updateNumpadDisplay();
+    if (numpadTarget === 'customerPhone') {
+      fieldKbBuffer = numpadValue;
+      const input = document.getElementById('customerDisplay');
+      if (input) input.value = fieldKbBuffer;
+      updateCustomerMatchCard();
+    } else if (numpadTarget === 'phoneField') {
+      const input = document.getElementById(numpadFieldId);
+      if (input) input.value = numpadValue;
+    }
   }
 
   function updateNumpadDisplay() {
@@ -3552,7 +3729,7 @@
       </div>
       <div class="mem-body">
         <div class="mem-search-row">
-          <input type="text" class="mem-search-input" id="memSearchInput" placeholder="Search by name or phone..." oninput="renderMembersList()" />
+          <input type="text" class="mem-search-input" id="memSearchInput" placeholder="Search by name or phone..." readonly onclick="openFieldKb('memSearchInput','text','SEARCH MEMBERS:')" />
           <button class="mem-add-btn" onclick="openRegister()"><i class="ti ti-plus"></i> Add</button>
         </div>
         <div id="memListContainer" style="display:flex;flex-direction:column;gap:10px;"></div>
@@ -3567,7 +3744,7 @@
       </div>
       <div class="mem-body">
         <div><div class="mem-field-label">Full Name <span class="req">*</span></div><input type="text" class="mem-field-input" id="regName" placeholder="e.g. Jane Smith" readonly onclick="openFieldKb('regName','text','ENTER FULL NAME:')" /></div>
-        <div><div class="mem-field-label">Phone <span class="req">*</span></div><input type="tel" class="mem-field-input" id="regPhone" placeholder="e.g. 91234567" readonly onclick="openFieldKb('regPhone','phone','ENTER PHONE NUMBER:')" /></div>
+        <div><div class="mem-field-label">Phone <span class="req">*</span></div><input type="tel" class="mem-field-input" id="regPhone" placeholder="e.g. 91234567" readonly onclick="openNumpad('phoneField','regPhone')" /></div>
         <div><div class="mem-field-label">Email (for receipts)</div><input type="email" class="mem-field-input" id="regEmail" placeholder="e.g. jane@email.com" readonly onclick="openFieldKb('regEmail','email','ENTER EMAIL:')" /></div>
         <div><div class="mem-field-label">Birthday (optional)</div><input type="date" class="mem-field-input" id="regBday" style="margin-bottom:0;" /></div>
       </div>
@@ -3641,7 +3818,7 @@
       </div>
       <div class="mem-body">
         <div><div class="mem-field-label">Full Name <span class="req">*</span></div><input type="text" class="mem-field-input" id="custEditName" readonly onclick="openFieldKb('custEditName','text','ENTER FULL NAME:')" /></div>
-        <div><div class="mem-field-label">Phone <span class="req">*</span></div><input type="tel" class="mem-field-input" id="custEditPhone" readonly onclick="openFieldKb('custEditPhone','phone','ENTER PHONE NUMBER:')" /></div>
+        <div><div class="mem-field-label">Phone <span class="req">*</span></div><input type="tel" class="mem-field-input" id="custEditPhone" readonly onclick="openNumpad('phoneField','custEditPhone')" /></div>
         <div><div class="mem-field-label">Email (for receipts)</div><input type="email" class="mem-field-input" id="custEditEmail" readonly onclick="openFieldKb('custEditEmail','email','ENTER EMAIL:')" /></div>
         <div><div class="mem-field-label">Birthday (optional)</div><input type="date" class="mem-field-input" id="custEditBday" style="margin-bottom:0;" /></div>
       </div>
