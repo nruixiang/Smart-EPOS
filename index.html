@@ -543,6 +543,9 @@
     .rpt-detail-btn.active { background: #111; color: white; border-color: #111; }
     .rpt-detail-section-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin: 16px 0 6px; }
     .rpt-detail-section-label:first-of-type { margin-top: 10px; }
+    .rpt-export-btn { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; padding: 12px; font-size: 13px; font-weight: 600; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--bg-primary); color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.15s; }
+    .rpt-export-btn:hover { background: var(--bg-secondary); }
+    .rpt-export-btn i { font-size: 16px; color: var(--green); }
     .rpt-cat-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
     .rpt-cat-table th { text-align: left; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; padding: 6px 4px; border-bottom: 0.5px solid var(--border); }
     .rpt-cat-table td { padding: 8px 4px; border-top: 0.5px solid var(--border); color: var(--text-secondary); }
@@ -749,6 +752,7 @@
     .toast.show { opacity: 1; }
 
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -2608,6 +2612,125 @@
     document.getElementById('rptDtWastage').textContent = wastageEntries.length + ' entries';
   }
 
+  function exportMonthToExcel() {
+    const now = new Date();
+    const viewDate = new Date(now.getFullYear(), now.getMonth() + rptMonthOffset, 1);
+    const yr = viewDate.getFullYear(), mo = viewDate.getMonth();
+    const daysInMonth = new Date(yr, mo + 1, 0).getDate();
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const wastageLog = getWastageLog();
+
+    const dailySummary = [];
+    const categoryRows = [];
+    const topItemRows = [];
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayTxs = salesLog.filter(t => !t.voided && t.date.getFullYear() === yr && t.date.getMonth() === mo && t.date.getDate() === day);
+      if (dayTxs.length === 0) continue;
+
+      const gross = dayTxs.reduce((a,t) => a + t.gross, 0);
+      const disc  = dayTxs.reduce((a,t) => a + t.discount, 0);
+      const tax   = dayTxs.reduce((a,t) => a + t.tax, 0);
+      const net   = dayTxs.reduce((a,t) => a + t.total, 0);
+      const customers = dayTxs.filter(t => t.customer).length;
+      const profit = net * 0.65;
+
+      const cash = dayTxs.filter(t => t.method === 'Cash').reduce((a,t) => a + t.total, 0);
+      const card = dayTxs.filter(t => t.method === 'Card').reduce((a,t) => a + t.total, 0);
+      const mobile = dayTxs.filter(t => t.method === 'Mobile').reduce((a,t) => a + t.total, 0);
+
+      const allItems = dayTxs.flatMap(t => t.items);
+      const itemsSold = allItems.reduce((a,i) => a + i.qty, 0);
+      const uniqueProducts = new Set(allItems.map(i => i.name)).size;
+      const avgItems = dayTxs.length ? (itemsSold / dayTxs.length) : 0;
+
+      const dayWastage = wastageLog.filter(e => {
+        const d = new Date(e.date);
+        return d.getFullYear() === yr && d.getMonth() === mo && d.getDate() === day;
+      });
+      const wastageCost = dayWastage.reduce((a,e) => a + (e.cost || 0), 0);
+
+      const dateLabel = `${String(day).padStart(2,'0')}/${String(mo+1).padStart(2,'0')}/${yr}`;
+
+      dailySummary.push({
+        'Date': dateLabel,
+        'Gross Sales': gross,
+        'Discounts': disc,
+        'Wastage (est. cost)': wastageCost,
+        'GST Collected': tax,
+        'Total Collected': net,
+        'Est. Gross Profit (65%)': profit,
+        'Cash': cash,
+        'Credit Card': card,
+        'Mobile / PayNow': mobile,
+        'No. of Orders': dayTxs.length,
+        'No. of Customers': customers,
+        'Items Sold': itemsSold,
+        'Unique Products Sold': uniqueProducts,
+        'Avg Items per Order': Number(avgItems.toFixed(2)),
+        'Wastage Entries': dayWastage.length
+      });
+
+      // Category breakdown
+      const catMap = {};
+      allItems.forEach(i => {
+        const cat = getProductCategory(i.name);
+        if (!catMap[cat]) catMap[cat] = {sales: 0, qty: 0};
+        catMap[cat].sales += i.price * i.qty;
+        catMap[cat].qty += i.qty;
+      });
+      Object.entries(catMap).forEach(([cat, v]) => {
+        categoryRows.push({ 'Date': dateLabel, 'Category': cat, 'Sales ($)': Number(v.sales.toFixed(2)), 'Qty Sold': v.qty });
+      });
+
+      // Top items
+      const itemMap = {};
+      allItems.forEach(i => {
+        if (!itemMap[i.name]) itemMap[i.name] = {qty: 0, sales: 0};
+        itemMap[i.name].qty += i.qty;
+        itemMap[i.name].sales += i.price * i.qty;
+      });
+      Object.entries(itemMap)
+        .sort((a,b) => b[1].sales - a[1].sales)
+        .forEach(([name, v]) => {
+          topItemRows.push({ 'Date': dateLabel, 'Item': name, 'Qty Sold': v.qty, 'Sales ($)': Number(v.sales.toFixed(2)) });
+        });
+    }
+
+    if (dailySummary.length === 0) {
+      showToast('No sales data to export for this month');
+      return;
+    }
+
+    // Month totals row
+    const totals = { 'Date': 'TOTAL' };
+    ['Gross Sales','Discounts','Wastage (est. cost)','GST Collected','Total Collected','Est. Gross Profit (65%)','Cash','Credit Card','Mobile / PayNow','No. of Orders','No. of Customers','Items Sold','Wastage Entries'].forEach(key => {
+      totals[key] = dailySummary.reduce((a,r) => a + (r[key] || 0), 0);
+    });
+    totals['Unique Products Sold'] = '';
+    totals['Avg Items per Order'] = '';
+
+    const wb = XLSX.utils.book_new();
+
+    const wsDaily = XLSX.utils.json_to_sheet([...dailySummary, totals]);
+    wsDaily['!cols'] = [
+      {wch:12},{wch:12},{wch:11},{wch:14},{wch:13},{wch:14},{wch:18},
+      {wch:10},{wch:12},{wch:14},{wch:11},{wch:13},{wch:10},{wch:16},{wch:16},{wch:14}
+    ];
+    XLSX.utils.book_append_sheet(wb, wsDaily, 'Daily Summary');
+
+    const wsCat = XLSX.utils.json_to_sheet(categoryRows);
+    wsCat['!cols'] = [{wch:12},{wch:18},{wch:10},{wch:10}];
+    XLSX.utils.book_append_sheet(wb, wsCat, 'Category Breakdown');
+
+    const wsItems = XLSX.utils.json_to_sheet(topItemRows);
+    wsItems['!cols'] = [{wch:12},{wch:22},{wch:10},{wch:10}];
+    XLSX.utils.book_append_sheet(wb, wsItems, 'Item Breakdown');
+
+    XLSX.writeFile(wb, `Month_To_Date_Report_${monthNames[mo]}_${yr}.xlsx`);
+    showToast('Excel report downloaded');
+  }
+
   function renderRptHourly() {
     const txs = todaySales();
     const hours = {};
@@ -3684,6 +3807,9 @@
           <span id="rptMonthBannerAvgOrder">$0.00 avg/order</span>
         </div>
       </div>
+      <button class="rpt-export-btn" onclick="exportMonthToExcel()">
+        <i class="ti ti-file-spreadsheet"></i> Export Month to Date Report (Excel)
+      </button>
       <div id="rptCalendar"></div>
     </div>
 
