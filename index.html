@@ -2580,8 +2580,9 @@
 
   function renderRptWastage() {
     const today = new Date();
-    const todayEntries = wastageLog.filter(e => {
-      const d = e.date;
+    const log = getWastageLog();
+    const todayEntries = log.filter(e => {
+      const d = new Date(e.date);
       return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
     });
     document.getElementById('rptWastageCount').textContent = todayEntries.length;
@@ -2599,7 +2600,6 @@
     const empty = document.getElementById('rptWastageEmpty');
     if (!todayEntries.length) {
       empty.style.display = 'flex';
-      // remove old entries if any
       [...logContainer.children].forEach(c => { if (c !== empty) c.remove(); });
       return;
     }
@@ -2614,8 +2614,9 @@
       const imgUrl = PRODUCT_IMGS[e.itemName] || '';
       const imgHtml = imgUrl
         ? `<img src="${imgUrl}" alt="${e.itemName}">`
-        : `<span>${e.emoji || '📦'}</span>`;
-      const timeStr = e.date.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+        : `<span>📦</span>`;
+      const d = new Date(e.date);
+      const timeStr = d.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
       const el = document.createElement('div');
       el.className = 'rpt-wastage-log-entry';
       el.innerHTML = `
@@ -2630,7 +2631,13 @@
   }
 
   // ── Log Wastage Modal ──
-  let wastageLog = [];
+  const WASTAGE_STORAGE_KEY = 'smartepos_wastage_log';
+  function getWastageLog() {
+    try { return JSON.parse(localStorage.getItem(WASTAGE_STORAGE_KEY) || '[]'); } catch(e) { return []; }
+  }
+  function saveWastageLog(entries) {
+    try { localStorage.setItem(WASTAGE_STORAGE_KEY, JSON.stringify(entries)); } catch(e) {}
+  }
   let wastageSelectedItems = {}; // { itemName: qty }
   let wastageSelectedReason = null;
   let wastageCurrentStep = 1;
@@ -2647,8 +2654,8 @@
     wastageCurrentStep = 1;
     document.getElementById('wastageSearchInput').value = '';
     document.getElementById('wastageNote').value = '';
-    ['Expired','Overproduction','Damaged','Wrong order'].forEach(r => {
-      const btn = document.getElementById('wr' + r.replace(' ',''));
+    ['wrExpired','wrOverproduction','wrDamaged','wrWrongOrder'].forEach(id => {
+      const btn = document.getElementById(id);
       if (btn) btn.classList.remove('active');
     });
     const now = new Date();
@@ -2778,8 +2785,9 @@
 
   function selectWastageReason(reason) {
     wastageSelectedReason = reason;
-    ['Expired','Overproduction','Damaged','Wrong order'].forEach(r => {
-      document.getElementById('wr' + r.replace(' ','')).classList.toggle('active', r === reason);
+    const reasonIdMap = { 'Expired': 'wrExpired', 'Overproduction': 'wrOverproduction', 'Damaged': 'wrDamaged', 'Wrong order': 'wrWrongOrder' };
+    Object.entries(reasonIdMap).forEach(([r, id]) => {
+      document.getElementById(id).classList.toggle('active', r === reason);
     });
     document.getElementById('wastageRightBtn').disabled = false;
     updateWastageSummary();
@@ -2802,10 +2810,13 @@
     const entries = Object.entries(wastageSelectedItems);
     if (!entries.length || !wastageSelectedReason) return;
     const now = new Date();
+    const note = document.getElementById('wastageNote').value.trim();
+    const log = getWastageLog();
     entries.forEach(([name, qty]) => {
       const p = getAllProducts().find(x => x.name === name);
-      wastageLog.push({ itemName: name, qty, reason: wastageSelectedReason, note: document.getElementById('wastageNote').value.trim(), date: now, cost: p ? p.price * qty : 0 });
+      log.push({ itemName: name, qty, reason: wastageSelectedReason, note, date: now.toISOString(), cost: p ? p.price * qty : 0 });
     });
+    saveWastageLog(log);
     closeLogWastage();
     renderRptWastage();
     const total = entries.reduce((a,[,q]) => a+q, 0);
