@@ -1247,6 +1247,7 @@
       ingredients: row.ingredients || '',
       validFrom: row.valid_from || '',
       validTo: row.valid_to || '',
+      image_url: row.image_url || '',
     };
   }
 
@@ -1261,6 +1262,7 @@
       ingredients: p.ingredients || '',
       valid_from: p.validFrom || '',
       valid_to: p.validTo || '',
+      image_url: p.image_url || '',
     };
     if (p.id) row.id = p.id;
     return row;
@@ -2817,18 +2819,22 @@
       if (url) {
         customImgs[newName] = url;
         if (oldName !== newName) delete customImgs[oldName];
-        await updateProductImageUrl(editTarget, url);
+        editTarget.image_url = url;
         editImgFile = null;
+      } else {
+        // Upload failed — toast already shown inside uploadProductImage
+        return;
       }
     } else if (editImgData === '') {
       delete customImgs[newName]; delete customImgs[oldName];
-      await updateProductImageUrl(editTarget, '');
+      editTarget.image_url = '';
     } else if (oldName !== newName && customImgs[oldName]) {
       customImgs[newName] = customImgs[oldName];
       delete customImgs[oldName];
+      editTarget.image_url = customImgs[newName] || editTarget.image_url || '';
     }
 
-    // Save all product fields to DB
+    // Save all product fields (including image_url) to DB in one call
     await saveProductToDb(editTarget, newCat || editTargetCat);
 
     closeEdit();
