@@ -2778,6 +2778,7 @@
       items: t.items || []
     }));
     renderOrdersTab();
+    renderRptEod();
   }
   async function saveSalesEntry(entry) {
     const { error } = await db.from('sales_log').upsert({
@@ -2793,12 +2794,7 @@
     if (error) console.error('updateSalesEntry error:', JSON.stringify(error));
   }
   let salesLog = [];
-  // Load both sales + wastage together so reports always have fresh data
-  async function initReportsData() {
-    await Promise.all([loadSalesLog(), getWastageLog()]);
-    renderRptEod();
-  }
-  initReportsData();
+  loadSalesLog();
   let rptMonthOffset = 0; // 0 = current month
   let rptSalesTarget = 15000;
 
@@ -2818,8 +2814,6 @@
     rptMonthOffset = 0;
     document.getElementById('rptOverlay').classList.add('show');
     switchRptTab('eod');
-    // Always refresh from DB when opening
-    initReportsData();
   }
 
   function closeReports() {
@@ -2838,7 +2832,7 @@
     if (tab === 'eod') renderRptEod();
     if (tab === 'hourly') renderRptHourly();
     if (tab === 'month') renderRptMonth();
-    if (tab === 'wastage') { getWastageLog().then(() => renderRptWastage()); }
+    if (tab === 'wastage') renderRptWastage();
   }
 
   function todayKey() {
@@ -3116,8 +3110,8 @@
     const daysInMonth = new Date(yr, mo + 1, 0).getDate();
     const isCurrentMonth = yr === now.getFullYear() && mo === now.getMonth();
 
-    // Month sales
-    const monthTxs = salesLog.filter(t => t.date.getFullYear() === yr && t.date.getMonth() === mo);
+    // Month sales — exclude voided
+    const monthTxs = salesLog.filter(t => !t.voided && t.date.getFullYear() === yr && t.date.getMonth() === mo);
     const monthTotal = monthTxs.reduce((a, t) => a + t.total, 0);
     const monthOrders = monthTxs.length;
 
@@ -3261,7 +3255,6 @@
     if (error) { console.error('deleteWastageEntry error:', JSON.stringify(error)); return; }
     wastageLog = wastageLog.filter(e => String(e.id) !== String(id));
     renderRptWastage();
-    renderRptEod();
   }
 
   // ── Log Wastage Modal ──
@@ -3273,8 +3266,6 @@
     wastageLog = (data || []).map(e => ({...e, itemName: e.item_name, date: e.date}));
     return wastageLog;
   }
-  // Load wastage on startup so reports have data
-  getWastageLog();
   async function saveWastageEntry(entry) {
     const { error } = await db.from('wastage_log').upsert({
       id: String(entry.id), item_name: entry.itemName,
@@ -3469,10 +3460,7 @@
       await saveWastageEntry(entry);
     }
     closeLogWastage();
-    // Reload from DB to ensure accuracy, then refresh views
-    await getWastageLog();
     renderRptWastage();
-    renderRptEod(); // EOD also shows wastage cost
     const total = newEntries.reduce((a, e) => a + e.qty, 0);
     showToast(`Wastage logged: ${total} unit${total!==1?'s':''} · ${wastageSelectedReason}`);
   }  // ── Orders Tab ──
