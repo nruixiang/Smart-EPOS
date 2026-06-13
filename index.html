@@ -1667,13 +1667,15 @@
     // Log transaction for reports
     const txHour = now.getHours();
     const txDay = now.getDate();
-    salesLog.push({
+    const newEntry = {
       ref, method, date: now, hour: txHour, day: txDay,
       gross: sub, discount: discountAmt, tax, total,
       items: items.map(i => ({name: i.name, qty: i.qty, price: i.price})),
-      customer: attachedCustomer ? attachedCustomer.name : null
-    });
-    saveSalesLog();
+      customer: attachedCustomer ? attachedCustomer.name : null,
+      voided: false
+    };
+    salesLog.push(newEntry);
+    saveSalesEntry(newEntry);
 
     // Award member points & purchase history
     if (attachedCustomer) {
@@ -2767,18 +2769,36 @@
 
   // ── Reports ──
   const SALES_STORAGE_KEY = 'smartepos_sales_log';
-  function loadSalesLog() {
-    try {
-      const raw = localStorage.getItem(SALES_STORAGE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      return parsed.map(t => ({ ...t, date: new Date(t.date) }));
-    } catch(e) { return []; }
+  async function loadSalesLog() {
+    const { data, error } = await db.from('sales_log').select('*').order('date', {ascending: false});
+    if (error) { console.error('loadSalesLog error:', JSON.stringify(error)); return; }
+    salesLog = (data || []).map(t => ({
+      ...t, date: new Date(t.date),
+      hour: t.hour, day: t.day,
+      items: t.items || []
+    }));
+    renderOrdersTab();
   }
-  function saveSalesLog() {
-    try { localStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(salesLog)); } catch(e) {}
+  async function saveSalesEntry(entry) {
+    const { error } = await db.from('sales_log').upsert({
+      ref: entry.ref, method: entry.method, date: entry.date.toISOString(),
+      hour: entry.hour, day: entry.day, gross: entry.gross,
+      discount: entry.discount, tax: entry.tax, total: entry.total,
+      items: entry.items, customer: entry.customer || null, voided: entry.voided || false
+    });
+    if (error) console.error('saveSalesEntry error:', JSON.stringify(error));
   }
-  let salesLog = loadSalesLog();
+  async function updateSalesEntry(ref, updates) {
+    const { error } = await db.from('sales_log').update(updates).eq('ref', ref);
+    if (error) console.error('updateSalesEntry error:', JSON.stringify(error));
+  }
+  let salesLog = [];
+  // Load both sales + wastage together so reports always have fresh data
+  async function initReportsData() {
+    await Promise.all([loadSalesLog(), getWastageLog()]);
+    renderRptEod();
+  }
+  initReportsData();
   let rptMonthOffset = 0; // 0 = current month
   let rptSalesTarget = 15000;
 
@@ -2798,6 +2818,8 @@
     rptMonthOffset = 0;
     document.getElementById('rptOverlay').classList.add('show');
     switchRptTab('eod');
+    // Always refresh from DB when opening
+    initReportsData();
   }
 
   function closeReports() {
@@ -2816,7 +2838,7 @@
     if (tab === 'eod') renderRptEod();
     if (tab === 'hourly') renderRptHourly();
     if (tab === 'month') renderRptMonth();
-    if (tab === 'wastage') renderRptWastage();
+    if (tab === 'wastage') { getWastageLog().then(() => renderRptWastage()); }
   }
 
   function todayKey() {
@@ -2843,7 +2865,7 @@
     const profit = net * 0.65;
 
     const today = new Date();
-    const wastageEntries = getWastageLog().filter(e => {
+    const wastageEntries = wastageLog.filter(e => {
       const d = new Date(e.date);
       return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
     });
@@ -2957,7 +2979,6 @@
     const yr = viewDate.getFullYear(), mo = viewDate.getMonth();
     const daysInMonth = new Date(yr, mo + 1, 0).getDate();
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    const wastageLog = getWastageLog();
 
     const dailySummary = [];
     const categoryRows = [];
@@ -3184,7 +3205,7 @@
 
   function renderRptWastage() {
     const today = new Date();
-    const log = getWastageLog();
+    const log = wastageLog;
     const todayEntries = log.filter(e => {
       const d = new Date(e.date);
       return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
@@ -3235,19 +3256,36 @@
     });
   }
 
-  function deleteWastageEntry(id) {
-    const log = getWastageLog();
-    saveWastageLog(log.filter(e => String(e.id) !== String(id)));
+  async function deleteWastageEntry(id) {
+    const { error } = await db.from('wastage_log').delete().eq('id', String(id));
+    if (error) { console.error('deleteWastageEntry error:', JSON.stringify(error)); return; }
+    wastageLog = wastageLog.filter(e => String(e.id) !== String(id));
     renderRptWastage();
+    renderRptEod();
   }
 
   // ── Log Wastage Modal ──
   const WASTAGE_STORAGE_KEY = 'smartepos_wastage_log';
-  function getWastageLog() {
-    try { return JSON.parse(localStorage.getItem(WASTAGE_STORAGE_KEY) || '[]'); } catch(e) { return []; }
+  let wastageLog = [];
+  async function getWastageLog() {
+    const { data, error } = await db.from('wastage_log').select('*').order('date', {ascending: false});
+    if (error) { console.error('getWastageLog error:', JSON.stringify(error)); return []; }
+    wastageLog = (data || []).map(e => ({...e, itemName: e.item_name, date: e.date}));
+    return wastageLog;
   }
-  function saveWastageLog(entries) {
-    try { localStorage.setItem(WASTAGE_STORAGE_KEY, JSON.stringify(entries)); } catch(e) {}
+  // Load wastage on startup so reports have data
+  getWastageLog();
+  async function saveWastageEntry(entry) {
+    const { error } = await db.from('wastage_log').upsert({
+      id: String(entry.id), item_name: entry.itemName,
+      qty: entry.qty, reason: entry.reason, note: entry.note,
+      date: entry.date, cost: entry.cost
+    });
+    if (error) console.error('saveWastageEntry error:', JSON.stringify(error));
+  }
+  async function deleteWastageEntry(id) {
+    const { error } = await db.from('wastage_log').delete().eq('id', String(id));
+    if (error) console.error('deleteWastageEntry error:', JSON.stringify(error));
   }
   let wastageSelectedItems = {}; // { itemName: qty }
   let wastageSelectedReason = null;
@@ -3417,20 +3455,25 @@
     document.getElementById('wsCost').textContent = '–$' + totalCost.toFixed(2);
   }
 
-  function confirmWastage() {
+  async function confirmWastage() {
     const entries = Object.entries(wastageSelectedItems);
     if (!entries.length || !wastageSelectedReason) return;
     const now = new Date();
     const note = document.getElementById('wastageNote').value.trim();
-    const log = getWastageLog();
-    entries.forEach(([name, qty]) => {
+    const newEntries = entries.map(([name, qty]) => {
       const p = getAllProducts().find(x => x.name === name);
-      log.push({ id: Date.now() + Math.random(), itemName: name, qty, reason: wastageSelectedReason, note, date: now.toISOString(), cost: p ? p.price * qty : 0 });
+      return { id: String(Date.now() + Math.random()), itemName: name, qty, reason: wastageSelectedReason, note, date: now.toISOString(), cost: p ? p.price * qty : 0 };
     });
-    saveWastageLog(log);
+    for (const entry of newEntries) {
+      wastageLog.push(entry);
+      await saveWastageEntry(entry);
+    }
     closeLogWastage();
+    // Reload from DB to ensure accuracy, then refresh views
+    await getWastageLog();
     renderRptWastage();
-    const total = entries.reduce((a,[,q]) => a+q, 0);
+    renderRptEod(); // EOD also shows wastage cost
+    const total = newEntries.reduce((a, e) => a + e.qty, 0);
     showToast(`Wastage logged: ${total} unit${total!==1?'s':''} · ${wastageSelectedReason}`);
   }  // ── Orders Tab ──
   let ordersFilter = 'all';
@@ -3520,7 +3563,7 @@
     const tx = salesLog.find(t => t.ref === fullRef);
     if (!tx) return;
     tx.voided = true;
-    saveSalesLog();
+    updateSalesEntry(fullRef, { voided: true });
     renderOrdersTab();
     renderRptEod();
     showToast(`Order ${fullRef} voided`);
