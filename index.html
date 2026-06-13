@@ -1239,20 +1239,24 @@
   }
 
   // ── Custom Product Images ──
-  const CUSTOM_IMGS_KEY = 'smartepos_custom_imgs';
-  function loadCustomImgs() {
-    try { return JSON.parse(localStorage.getItem(CUSTOM_IMGS_KEY) || '{}'); } catch(e) { return {}; }
+  // ── Product Images (Supabase Storage) ──
+  let customImgs = {}; // { productName: publicUrl }
+
+  async function loadProductImages() {
+    const { data, error } = await db.from('product_images').select('*');
+    if (error) { console.error('loadProductImages error:', JSON.stringify(error)); return; }
+    customImgs = {};
+    (data || []).forEach(row => { customImgs[row.name] = row.url; });
+    renderProducts(); // re-render once images are loaded
   }
-  function saveCustomImgs(obj) {
-    try { localStorage.setItem(CUSTOM_IMGS_KEY, JSON.stringify(obj)); } catch(e) {}
-  }
-  let customImgs = loadCustomImgs();
+  loadProductImages();
 
   function getProductImg(name) {
     return customImgs[name] || PRODUCT_IMGS[name] || '';
   }
 
-  let editImgData = null; // base64 string or null (no change) or '' (remove)
+  let editImgData = null;   // base64 preview only
+  let editImgFile = null;   // raw File object for upload
 
   function triggerImgUpload() {
     document.getElementById('editImgInput').click();
@@ -1262,6 +1266,7 @@
     const file = event.target.files[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { showToast('Image too large — max 5 MB'); event.target.value = ''; return; }
+    editImgFile = file;
     const reader = new FileReader();
     reader.onload = function(e) {
       editImgData = e.target.result;
@@ -1269,6 +1274,32 @@
     };
     reader.readAsDataURL(file);
     event.target.value = '';
+  }
+
+  async function uploadProductImage(productName, file) {
+    // Use product name as filename (sanitised), overwrite if exists
+    const ext = file.name.split('.').pop().toLowerCase();
+    const safeName = productName.replace(/[^a-zA-Z0-9_-]/g, '_') + '.' + ext;
+    const { error: upErr } = await db.storage
+      .from('product-images')
+      .upload(safeName, file, { upsert: true, contentType: file.type });
+    if (upErr) { console.error('Image upload error:', JSON.stringify(upErr)); showToast('Image upload failed'); return null; }
+    const { data } = db.storage.from('product-images').getPublicUrl(safeName);
+    const url = data.publicUrl;
+    // Save URL to product_images table
+    const { error: dbErr } = await db.from('product_images').upsert({ name: productName, url });
+    if (dbErr) console.error('saveProductImage DB error:', JSON.stringify(dbErr));
+    return url;
+  }
+
+  async function deleteProductImage(productName) {
+    await db.from('product_images').delete().eq('name', productName);
+    // Optionally delete from storage too (best effort)
+    const exts = ['jpg','jpeg','png','webp'];
+    const safeName = productName.replace(/[^a-zA-Z0-9_-]/g, '_');
+    for (const ext of exts) {
+      await db.storage.from('product-images').remove([safeName + '.' + ext]);
+    }
   }
 
   function showEditImgPreview(src) {
@@ -2646,6 +2677,7 @@
 
     // Load current image into preview
     editImgData = null;
+    editImgFile = null;
     const currentImg = getProductImg(p.name);
     showEditImgPreview(currentImg);
 
@@ -2660,7 +2692,7 @@
   function closeEdit() { document.getElementById('editOverlay').classList.remove('show'); editTarget = null; }
   function closeEditIfBg(e) { if (e.target === document.getElementById('editOverlay')) closeEdit(); }
 
-  function saveEdit() {
+  async function saveEdit() {
     if (!editTarget) return;
     const newName = document.getElementById('editName').value.trim();
     const newPrice = parseFloat(document.getElementById('editPrice').value);
@@ -2677,12 +2709,10 @@
 
     // If category changed, move the item
     if (newCat && newCat !== editTargetCat && PRODUCTS[newCat]) {
-      // Remove from old
       for (const cat of Object.values(PRODUCTS)) {
         const idx = cat.All.findIndex(x => x === editTarget);
         if (idx !== -1) { cat.All.splice(idx, 1); break; }
       }
-      // Add to new
       editTarget.name = newName;
       editTarget.price = newPrice;
       editTarget.desc = newDesc;
@@ -2704,23 +2734,30 @@
     }
 
     // Handle image changes
-    if (editImgData !== null) {
-      if (editImgData === '') {
-        delete customImgs[newName];
-        // also remove old name key in case name changed
-        delete customImgs[editTarget.name];
-      } else {
-        // If name changed, remove old key
-        if (editTarget.name !== newName) delete customImgs[editTarget.name];
-        customImgs[newName] = editImgData;
+    if (editImgData === '') {
+      // User explicitly removed the image
+      delete customImgs[newName];
+      delete customImgs[editTarget.name];
+      await deleteProductImage(newName);
+      if (editTarget.name !== newName) await deleteProductImage(editTarget.name);
+    } else if (editImgFile) {
+      // New image uploaded — push to Supabase Storage
+      showToast('Uploading image...');
+      // If name changed, remove old DB entry
+      if (editTarget.name !== newName) await deleteProductImage(editTarget.name);
+      const url = await uploadProductImage(newName, editImgFile);
+      if (url) {
+        customImgs[newName] = url;
+        showToast('Item updated');
       }
-      saveCustomImgs(customImgs);
     } else if (editTarget.name !== newName) {
-      // Name changed, move image key
-      if (customImgs[editTarget.name]) {
-        customImgs[newName] = customImgs[editTarget.name];
+      // Name changed but no new image — re-key the DB entry
+      const oldUrl = customImgs[editTarget.name];
+      if (oldUrl) {
+        await db.from('product_images').delete().eq('name', editTarget.name);
+        await db.from('product_images').upsert({ name: newName, url: oldUrl });
+        customImgs[newName] = oldUrl;
         delete customImgs[editTarget.name];
-        saveCustomImgs(customImgs);
       }
     }
 
@@ -3110,8 +3147,8 @@
     const daysInMonth = new Date(yr, mo + 1, 0).getDate();
     const isCurrentMonth = yr === now.getFullYear() && mo === now.getMonth();
 
-    // Month sales — exclude voided
-    const monthTxs = salesLog.filter(t => !t.voided && t.date.getFullYear() === yr && t.date.getMonth() === mo);
+    // Month sales
+    const monthTxs = salesLog.filter(t => t.date.getFullYear() === yr && t.date.getMonth() === mo);
     const monthTotal = monthTxs.reduce((a, t) => a + t.total, 0);
     const monthOrders = monthTxs.length;
 
