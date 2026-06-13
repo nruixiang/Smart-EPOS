@@ -1155,6 +1155,11 @@
   }
   updateClock(); setInterval(updateClock, 1000);
 
+  // ── Supabase client (initialised first — required by loadProducts & loadMembers) ──
+  const SUPABASE_URL = 'https://bzpcjpwkmwowvpxyoitz.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_HKnoQB5XhK-MfHNwpaTmXA_3479YHTE';
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
   // ── Products ──
   // ── Product image URLs ──
   const PRODUCT_IMGS = {
@@ -1189,7 +1194,7 @@
   };
 
   // ── Products ──
-  const PRODUCTS = {
+  let PRODUCTS = {
     "Hot Drinks": { All: [
       {name:"Espresso",price:3.00,sub:"Coffee",desc:"A concentrated shot of espresso with a rich, bold crema. Intense and full-bodied.",allergens:"No common allergens",ingredients:"Espresso"},
       {name:"Americano",price:3.50,sub:"Coffee",desc:"Espresso diluted with hot water for a smooth, lighter brew. Clean and balanced.",allergens:"No common allergens",ingredients:"Espresso • Hot Water"},
@@ -1230,6 +1235,94 @@
     ]},
   };
 
+  // ── Products DB sync ──
+  function dbRowToProduct(row) {
+    return {
+      id: row.id,
+      name: row.name,
+      price: parseFloat(row.price),
+      sub: row.sub || 'All',
+      desc: row.description || '',
+      allergens: row.allergens || '',
+      ingredients: row.ingredients || '',
+      validFrom: row.valid_from || '',
+      validTo: row.valid_to || '',
+    };
+  }
+
+  function productToDbRow(p, category) {
+    const row = {
+      name: p.name,
+      category,
+      price: p.price,
+      sub: p.sub || 'All',
+      description: p.desc || '',
+      allergens: p.allergens || '',
+      ingredients: p.ingredients || '',
+      valid_from: p.validFrom || '',
+      valid_to: p.validTo || '',
+    };
+    if (p.id) row.id = p.id;
+    return row;
+  }
+
+  async function loadProducts() {
+    const { data, error } = await db.from('products').select('*').order('id', { ascending: true });
+    if (error) { console.error('loadProducts error:', JSON.stringify(error)); return; }
+    if (!data || data.length === 0) {
+      // First run — seed DB from hardcoded PRODUCTS
+      await seedProductsToDb();
+      return;
+    }
+    // Rebuild PRODUCTS from DB rows
+    const freshProducts = {};
+    for (const cat of Object.keys(PRODUCTS)) freshProducts[cat] = { All: [] };
+    for (const row of data) {
+      if (!freshProducts[row.category]) freshProducts[row.category] = { All: [] };
+      const p = dbRowToProduct(row);
+      freshProducts[row.category].All.push(p);
+      // Populate image from image_url column
+      if (row.image_url) customImgs[row.name] = row.image_url;
+    }
+    PRODUCTS = freshProducts;
+    renderProducts();
+  }
+
+  async function seedProductsToDb() {
+    const rows = [];
+    for (const [cat, val] of Object.entries(PRODUCTS)) {
+      for (const p of val.All) {
+        rows.push(productToDbRow(p, cat));
+      }
+    }
+    const { error } = await db.from('products').insert(rows);
+    if (error) console.error('seedProductsToDb error:', JSON.stringify(error));
+    else await loadProducts(); // reload to get generated IDs
+  }
+
+  async function saveProductToDb(p, category) {
+    const row = productToDbRow(p, category);
+    if (p.id) {
+      const { error } = await db.from('products').update(row).eq('id', p.id);
+      if (error) console.error('saveProductToDb update error:', JSON.stringify(error));
+    } else {
+      const { data, error } = await db.from('products').insert(row).select().single();
+      if (error) console.error('saveProductToDb insert error:', JSON.stringify(error));
+      else if (data) p.id = data.id;
+    }
+  }
+
+  async function deleteProductFromDb(p) {
+    if (!p.id) return;
+    const { error } = await db.from('products').delete().eq('id', p.id);
+    if (error) console.error('deleteProductFromDb error:', JSON.stringify(error));
+  }
+
+  async function updateProductImageUrl(p, url) {
+    if (!p.id) return;
+    await db.from('products').update({ image_url: url }).eq('id', p.id);
+  }
+
   let currentCat = "Hot Drinks", currentSub = "All", order = {};
 
   function getProducts() {
@@ -1238,25 +1331,15 @@
     return all.filter(p => (currentSub==='All'||p.sub===currentSub) && (!search||p.name.toLowerCase().includes(search)));
   }
 
-  // ── Custom Product Images ──
-  // ── Product Images (Supabase Storage) ──
-  let customImgs = {}; // { productName: publicUrl }
-
-  async function loadProductImages() {
-    const { data, error } = await db.from('product_images').select('*');
-    if (error) { console.error('loadProductImages error:', JSON.stringify(error)); return; }
-    customImgs = {};
-    (data || []).forEach(row => { customImgs[row.name] = row.url; });
-    renderProducts(); // re-render once images are loaded
-  }
-  loadProductImages();
+  // ── Product Images (stored in products.image_url) ──
+  let customImgs = {}; // populated by loadProducts()
 
   function getProductImg(name) {
     return customImgs[name] || PRODUCT_IMGS[name] || '';
   }
 
-  let editImgData = null;   // base64 preview only
-  let editImgFile = null;   // raw File object for upload
+  let editImgData = null; // base64 preview
+  let editImgFile = null; // raw File for upload
 
   function triggerImgUpload() {
     document.getElementById('editImgInput').click();
@@ -1277,7 +1360,6 @@
   }
 
   async function uploadProductImage(productName, file) {
-    // Use product name as filename (sanitised), overwrite if exists
     const ext = file.name.split('.').pop().toLowerCase();
     const safeName = productName.replace(/[^a-zA-Z0-9_-]/g, '_') + '.' + ext;
     const { error: upErr } = await db.storage
@@ -1285,22 +1367,11 @@
       .upload(safeName, file, { upsert: true, contentType: file.type });
     if (upErr) { console.error('Image upload error:', JSON.stringify(upErr)); showToast('Image upload failed'); return null; }
     const { data } = db.storage.from('product-images').getPublicUrl(safeName);
-    const url = data.publicUrl;
-    // Save URL to product_images table
-    const { error: dbErr } = await db.from('product_images').upsert({ name: productName, url });
-    if (dbErr) console.error('saveProductImage DB error:', JSON.stringify(dbErr));
-    return url;
+    return data.publicUrl;
   }
 
-  async function deleteProductImage(productName) {
-    await db.from('product_images').delete().eq('name', productName);
-    // Optionally delete from storage too (best effort)
-    const exts = ['jpg','jpeg','png','webp'];
-    const safeName = productName.replace(/[^a-zA-Z0-9_-]/g, '_');
-    for (const ext of exts) {
-      await db.storage.from('product-images').remove([safeName + '.' + ext]);
-    }
-  }
+  // Load products from DB on startup — also populates customImgs
+  loadProducts();
 
   function showEditImgPreview(src) {
     const thumb = document.getElementById('editImgThumb');
@@ -1765,9 +1836,6 @@
   }
 
   // ── Members (Supabase) ──
-  const SUPABASE_URL = 'https://bzpcjpwkmwowvpxyoitz.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_HKnoQB5XhK-MfHNwpaTmXA_3479YHTE';
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let members = [];
   let attachedCustomer = null;
@@ -2677,7 +2745,6 @@
 
     // Load current image into preview
     editImgData = null;
-    editImgFile = null;
     const currentImg = getProductImg(p.name);
     showEditImgPreview(currentImg);
 
@@ -2707,58 +2774,45 @@
 
     if (!newName || isNaN(newPrice)) { showToast('Name and price are required'); return; }
 
-    // Capture old name BEFORE overwriting editTarget
-    const oldName = editTarget.name;
+    const oldName = editTarget.name; // capture before overwrite
 
-    // If category changed, move the item
     if (newCat && newCat !== editTargetCat && PRODUCTS[newCat]) {
       for (const cat of Object.values(PRODUCTS)) {
         const idx = cat.All.findIndex(x => x === editTarget);
         if (idx !== -1) { cat.All.splice(idx, 1); break; }
       }
-      editTarget.name = newName;
-      editTarget.price = newPrice;
-      editTarget.desc = newDesc;
+      editTarget.name = newName; editTarget.price = newPrice; editTarget.desc = newDesc;
       editTarget.allergens = newAllergens || editTarget.allergens;
       editTarget.ingredients = newIngredients || editTarget.ingredients;
       editTarget.sub = newSub || editTarget.sub;
-      editTarget.validFrom = newValidFrom;
-      editTarget.validTo = newValidTo;
+      editTarget.validFrom = newValidFrom; editTarget.validTo = newValidTo;
       PRODUCTS[newCat].All.push(editTarget);
     } else {
-      editTarget.name = newName;
-      editTarget.price = newPrice;
-      editTarget.desc = newDesc;
-      editTarget.allergens = newAllergens;
-      editTarget.ingredients = newIngredients;
+      editTarget.name = newName; editTarget.price = newPrice; editTarget.desc = newDesc;
+      editTarget.allergens = newAllergens; editTarget.ingredients = newIngredients;
       if (newSub) editTarget.sub = newSub;
-      editTarget.validFrom = newValidFrom;
-      editTarget.validTo = newValidTo;
+      editTarget.validFrom = newValidFrom; editTarget.validTo = newValidTo;
     }
 
-    // Handle image changes — use oldName (captured before overwrite)
-    if (editImgData === '') {
-      // User explicitly removed the image
-      delete customImgs[newName];
-      delete customImgs[oldName];
-      await deleteProductImage(newName);
-      if (oldName !== newName) await deleteProductImage(oldName);
-    } else if (editImgFile) {
-      // New image — upload to Supabase Storage first, then close
+    // Handle image upload
+    if (editImgFile) {
       showToast('Uploading image...');
-      if (oldName !== newName) await deleteProductImage(oldName);
       const url = await uploadProductImage(newName, editImgFile);
-      if (url) customImgs[newName] = url;
-    } else if (oldName !== newName) {
-      // Name changed, no new image — re-key the DB entry
-      const oldUrl = customImgs[oldName];
-      if (oldUrl) {
-        await db.from('product_images').delete().eq('name', oldName);
-        await db.from('product_images').upsert({ name: newName, url: oldUrl });
-        customImgs[newName] = oldUrl;
-        delete customImgs[oldName];
+      if (url) {
+        customImgs[newName] = url;
+        if (oldName !== newName) delete customImgs[oldName];
+        await updateProductImageUrl(editTarget, url);
       }
+    } else if (editImgData === '') {
+      delete customImgs[newName]; delete customImgs[oldName];
+      await updateProductImageUrl(editTarget, '');
+    } else if (oldName !== newName && customImgs[oldName]) {
+      customImgs[newName] = customImgs[oldName];
+      delete customImgs[oldName];
     }
+
+    // Save all product fields to DB
+    await saveProductToDb(editTarget, newCat || editTargetCat);
 
     closeEdit();
     renderProducts();
@@ -2766,12 +2820,14 @@
   }
 
   // ── Delete Product ──
-  function deleteProduct(name) {
+  async function deleteProduct(name) {
     if (!confirm('Delete "' + name + '" from the menu?')) return;
+    let found = null;
     for (const cat of Object.values(PRODUCTS)) {
       const idx = cat.All.findIndex(x => x.name === name);
-      if (idx !== -1) { cat.All.splice(idx, 1); break; }
+      if (idx !== -1) { found = cat.All[idx]; cat.All.splice(idx, 1); break; }
     }
+    if (found) await deleteProductFromDb(found);
     renderProducts();
     showToast('Item deleted');
   }
