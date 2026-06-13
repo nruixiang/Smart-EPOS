@@ -2707,6 +2707,9 @@
 
     if (!newName || isNaN(newPrice)) { showToast('Name and price are required'); return; }
 
+    // Capture old name BEFORE overwriting editTarget
+    const oldName = editTarget.name;
+
     // If category changed, move the item
     if (newCat && newCat !== editTargetCat && PRODUCTS[newCat]) {
       for (const cat of Object.values(PRODUCTS)) {
@@ -2733,31 +2736,27 @@
       editTarget.validTo = newValidTo;
     }
 
-    // Handle image changes
+    // Handle image changes — use oldName (captured before overwrite)
     if (editImgData === '') {
       // User explicitly removed the image
       delete customImgs[newName];
-      delete customImgs[editTarget.name];
+      delete customImgs[oldName];
       await deleteProductImage(newName);
-      if (editTarget.name !== newName) await deleteProductImage(editTarget.name);
+      if (oldName !== newName) await deleteProductImage(oldName);
     } else if (editImgFile) {
-      // New image uploaded — push to Supabase Storage
+      // New image — upload to Supabase Storage first, then close
       showToast('Uploading image...');
-      // If name changed, remove old DB entry
-      if (editTarget.name !== newName) await deleteProductImage(editTarget.name);
+      if (oldName !== newName) await deleteProductImage(oldName);
       const url = await uploadProductImage(newName, editImgFile);
-      if (url) {
-        customImgs[newName] = url;
-        showToast('Item updated');
-      }
-    } else if (editTarget.name !== newName) {
-      // Name changed but no new image — re-key the DB entry
-      const oldUrl = customImgs[editTarget.name];
+      if (url) customImgs[newName] = url;
+    } else if (oldName !== newName) {
+      // Name changed, no new image — re-key the DB entry
+      const oldUrl = customImgs[oldName];
       if (oldUrl) {
-        await db.from('product_images').delete().eq('name', editTarget.name);
+        await db.from('product_images').delete().eq('name', oldName);
         await db.from('product_images').upsert({ name: newName, url: oldUrl });
         customImgs[newName] = oldUrl;
-        delete customImgs[editTarget.name];
+        delete customImgs[oldName];
       }
     }
 
