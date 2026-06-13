@@ -1303,11 +1303,18 @@
   async function saveProductToDb(p, category) {
     const row = productToDbRow(p, category);
     if (p.id) {
-      const { error } = await db.from('products').update(row).eq('id', p.id);
-      if (error) console.error('saveProductToDb update error:', JSON.stringify(error));
+      const { id: _id, ...updateRow } = row; // strip id from update payload
+      const { error } = await db.from('products').update(updateRow).eq('id', p.id);
+      if (error) {
+        console.error('saveProductToDb update error:', JSON.stringify(error));
+        showToast('Save failed: ' + (error.message || error.code || 'unknown'));
+      }
     } else {
       const { data, error } = await db.from('products').insert(row).select().single();
-      if (error) console.error('saveProductToDb insert error:', JSON.stringify(error));
+      if (error) {
+        console.error('saveProductToDb insert error:', JSON.stringify(error));
+        showToast('Save failed: ' + (error.message || error.code || 'unknown'));
+      }
       else if (data) p.id = data.id;
     }
   }
@@ -1319,8 +1326,12 @@
   }
 
   async function updateProductImageUrl(p, url) {
-    if (!p.id) return;
-    await db.from('products').update({ image_url: url }).eq('id', p.id);
+    if (!p.id) { console.warn('updateProductImageUrl: product has no id', p); return; }
+    const { error } = await db.from('products').update({ image_url: url }).eq('id', p.id);
+    if (error) {
+      console.error('updateProductImageUrl error:', JSON.stringify(error));
+      showToast('Image URL save failed: ' + (error.message || error.code));
+    }
   }
 
   let currentCat = "Hot Drinks", currentSub = "All", order = {};
@@ -1365,7 +1376,11 @@
     const { error: upErr } = await db.storage
       .from('product-images')
       .upload(safeName, file, { upsert: true, contentType: file.type });
-    if (upErr) { console.error('Image upload error:', JSON.stringify(upErr)); showToast('Image upload failed'); return null; }
+    if (upErr) {
+      console.error('Image upload error:', JSON.stringify(upErr));
+      showToast('Image upload failed: ' + (upErr.message || upErr.error || 'Check that the "product-images" storage bucket exists and is public in Supabase'));
+      return null;
+    }
     const { data } = db.storage.from('product-images').getPublicUrl(safeName);
     return data.publicUrl;
   }
@@ -2743,8 +2758,9 @@
     document.getElementById('editAllergens').value = p.allergens || '';
     document.getElementById('editIngredients').value = p.ingredients || '';
 
-    // Load current image into preview
+    // Reset image state
     editImgData = null;
+    editImgFile = null;
     const currentImg = getProductImg(p.name);
     showEditImgPreview(currentImg);
 
@@ -2796,12 +2812,13 @@
 
     // Handle image upload
     if (editImgFile) {
-      showToast('Uploading image...');
+      showToast('Uploading image…');
       const url = await uploadProductImage(newName, editImgFile);
       if (url) {
         customImgs[newName] = url;
         if (oldName !== newName) delete customImgs[oldName];
         await updateProductImageUrl(editTarget, url);
+        editImgFile = null;
       }
     } else if (editImgData === '') {
       delete customImgs[newName]; delete customImgs[oldName];
@@ -2816,7 +2833,7 @@
 
     closeEdit();
     renderProducts();
-    showToast('Item updated');
+    showToast('Item updated ✓');
   }
 
   // ── Delete Product ──
