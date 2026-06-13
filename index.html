@@ -769,6 +769,7 @@
 
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -1682,7 +1683,7 @@
         m.points += earned;
         m.spent += discounted;
         m.history.push({date: dateStr + ' ' + timeStr, total: total, items: items.map(i => ({name: i.name, qty: i.qty}))});
-        saveMembers();
+        saveMember(m);
       }
     }
 
@@ -1730,23 +1731,46 @@
     clearOrder();
   }
 
-  // ── Members ──
-  const MEMBERS_STORAGE_KEY = 'smartepos_members';
-  function loadMembers() {
-    try { return JSON.parse(localStorage.getItem(MEMBERS_STORAGE_KEY) || '[]'); } catch(e) { return []; }
-  }
-  function saveMembers() {
-    try { localStorage.setItem(MEMBERS_STORAGE_KEY, JSON.stringify(members)); } catch(e) {}
-  }
-  let members = loadMembers();
+  // ── Members (Supabase) ──
+  const SUPABASE_URL = 'https://bzpcjpwkmwowvpxyoitz.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_HKnoQB5XhK-MfHNwpaTmXA_3479YHTE';
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let members = [];
   let attachedCustomer = null;
-  let memberCounter = members.length ? Math.max(...members.map(m => m.id)) : 0;
+  let memberCounter = 0;
   let viewingMemberId = null;
   let editingMemberId = null;
 
+  async function loadMembers() {
+    const { data, error } = await db.from('members').select('*').order('id', {ascending: true});
+    if (error) {
+      console.error('loadMembers error:', JSON.stringify(error));
+      showToast('Could not load members: ' + (error.message || error.hint || 'unknown error'));
+      return;
+    }
+    members = (data || []).map(m => ({...m, history: m.history || []}));
+    memberCounter = members.length ? Math.max(...members.map(m => m.id)) : 0;
+    renderMembersList();
+  }
+
+  async function saveMember(member) {
+    const { error } = await db.from('members').upsert(member);
+    if (error) { console.error('saveMember error:', error); showToast('Could not save member'); }
+  }
+
+  async function deleteMemberRemote(id) {
+    const { error } = await db.from('members').delete().eq('id', id);
+    if (error) { console.error('deleteMember error:', error); showToast('Could not delete member'); }
+  }
+
+  loadMembers();
+
   function openMembers() {
-    backToList();
+    showMemPanel('List');
+    document.getElementById('memSearchInput').value = '';
     document.getElementById('memOverlay').classList.add('show');
+    loadMembers();
   }
   function closeMembers() {
     document.getElementById('memOverlay').classList.remove('show');
@@ -1814,8 +1838,9 @@
     const bday = document.getElementById('regBday').value;
     if (!name || !phone) { showToast('Name and phone are required'); return; }
     memberCounter++;
-    members.push({id: memberCounter, name, phone, email, bday, points: 0, spent: 0, history: []});
-    saveMembers();
+    const newMember = {id: memberCounter, name, phone, email, bday, points: 0, spent: 0, history: []};
+    members.push(newMember);
+    saveMember(newMember);
     showToast('Customer registered: ' + name);
     openProfile(memberCounter);
   }
@@ -2017,7 +2042,7 @@
     m.email = document.getElementById('custEditEmail').value.trim();
     m.bday = document.getElementById('custEditBday').value;
     if (attachedCustomer && attachedCustomer.id === m.id) { attachedCustomer = m; updateCustomerRowDisplay(); }
-    saveMembers();
+    saveMember(m);
     showToast('Customer updated');
     openProfile(m.id);
   }
@@ -2027,7 +2052,7 @@
     if (!m) return;
     if (!confirm('Delete customer "' + m.name + '"? This cannot be undone.')) return;
     members = members.filter(x => x.id !== m.id);
-    saveMembers();
+    deleteMemberRemote(m.id);
     if (attachedCustomer && attachedCustomer.id === m.id) { attachedCustomer = null; updateCustomerRowDisplay(); }
     showToast('Customer deleted');
     backToList();
