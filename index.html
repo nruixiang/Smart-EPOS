@@ -784,7 +784,6 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="header-pill"><i class="ti ti-clock" style="font-size:13px;"></i><span id="clock"></span></div>
     <div class="header-pill" id="adminPill" style="cursor:default;" onclick="openAdminPinModal()"><i class="ti ti-shield" style="font-size:13px;"></i><span id="headerRole">Staff</span></div>
     <div class="header-pill header-pill-btn" onclick="openClockIn()" id="staffPill"><i class="ti ti-user" style="font-size:13px;"></i><span id="headerStaffId">Not clocked in</span></div>
     <div class="badge" id="headerBadge">0</div>
@@ -1149,11 +1148,6 @@
 
 <script>
   // ── Clock ──
-  function updateClock() {
-    const now = new Date();
-    document.getElementById('clock').textContent = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-  }
-  updateClock(); setInterval(updateClock, 1000);
 
   // ── Supabase client (initialised first — required by loadProducts & loadMembers) ──
   const SUPABASE_URL = 'https://bzpcjpwkmwowvpxyoitz.supabase.co';
@@ -2508,10 +2502,7 @@
 
   function openAdminPinModal() {
     if (!currentStaffId || currentStaffId !== '0000') return; // only admin
-    pinValue = '';
-    updatePinDots();
-    document.getElementById('pinError').textContent = '';
-    document.getElementById('pinOverlay').classList.add('show');
+    openAdminPanel();
   }
 
   function closePinModal() {
