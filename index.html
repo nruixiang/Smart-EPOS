@@ -1241,7 +1241,7 @@
       ingredients: row.ingredients || '',
       validFrom: row.valid_from || '',
       validTo: row.valid_to || '',
-      image_url: row.image_url || '',
+      image_url: row.image || '',
     };
   }
 
@@ -1256,7 +1256,7 @@
       ingredients: p.ingredients || '',
       valid_from: p.validFrom || '',
       valid_to: p.validTo || '',
-      image_url: p.image_url || '',
+      image: p.image_url || '',
     };
     if (p.id) row.id = p.id;
     return row;
@@ -1277,8 +1277,8 @@
       if (!freshProducts[row.category]) freshProducts[row.category] = { All: [] };
       const p = dbRowToProduct(row);
       freshProducts[row.category].All.push(p);
-      // Populate image from image_url column
-      if (row.image_url) customImgs[row.name] = row.image_url;
+      // Populate image from image column
+      if (row.image) customImgs[row.name] = row.image;
     }
     PRODUCTS = freshProducts;
     renderProducts();
@@ -1321,15 +1321,6 @@
     if (error) console.error('deleteProductFromDb error:', JSON.stringify(error));
   }
 
-  async function updateProductImageUrl(p, url) {
-    if (!p.id) { console.warn('updateProductImageUrl: product has no id', p); return; }
-    const { error } = await db.from('products').update({ image_url: url }).eq('id', p.id);
-    if (error) {
-      console.error('updateProductImageUrl error:', JSON.stringify(error));
-      showToast('Image URL save failed: ' + (error.message || error.code));
-    }
-  }
-
   let currentCat = "Hot Drinks", currentSub = "All", order = {};
 
   function getProducts() {
@@ -1338,7 +1329,7 @@
     return all.filter(p => (currentSub==='All'||p.sub===currentSub) && (!search||p.name.toLowerCase().includes(search)));
   }
 
-  // ── Product Images (stored in products.image_url) ──
+  // ── Product Images (stored in products.image column) ──
   let customImgs = {}; // populated by loadProducts()
 
   function getProductImg(name) {
