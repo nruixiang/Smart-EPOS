@@ -177,7 +177,7 @@
     .clockin-btn:hover { opacity: 0.85; }
 
     /* NUMPAD SHEET */
-    .numpad-sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: flex-end; justify-content: center; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .numpad-sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: flex-end; justify-content: center; z-index: 600; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .numpad-sheet.show { opacity: 1; pointer-events: all; }
     .numpad-inner { background: var(--bg-primary); border-radius: 16px 16px 0 0; width: 100%; max-width: 420px; padding: 16px 20px 28px; display: flex; flex-direction: column; gap: 12px; transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.32,0.72,0,1); }
     .numpad-sheet.show .numpad-inner { transform: translateY(0); }
@@ -204,9 +204,9 @@
     .otp-card-sub { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
     .otp-card-sub b { color: var(--text-primary); }
     .otp-input-row { display: flex; gap: 8px; justify-content: center; margin: 6px 0; }
-    .otp-digit { width: 40px; height: 48px; text-align: center; font-size: 22px; font-weight: 700; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font); outline: none; }
-    .otp-digit:focus { border-color: #111; }
-    [data-theme="dark"] .otp-digit:focus { border-color: #fff; }
+    .otp-digit { width: 40px; height: 48px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 22px; font-weight: 700; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font); }
+    .otp-digit.filled { border-color: #111; }
+    [data-theme="dark"] .otp-digit.filled { border-color: #fff; }
     .otp-error { font-size: 12px; color: var(--red); text-align: center; min-height: 16px; }
     .otp-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
     .otp-btn-primary { padding: 12px; border-radius: 10px; border: none; background: #111; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font); }
@@ -1280,8 +1280,13 @@
   <div class="otp-card">
     <div class="otp-card-title"><i class="ti ti-shield-check"></i> Verify Phone Number</div>
     <div class="otp-card-sub" id="otpCardSub">Enter the 6-digit code sent to <b id="otpPhoneDisplay"></b> via WhatsApp.</div>
-    <div class="otp-input-row">
-      <div class="numpad-display" id="otpCodeDisplay" onclick="openNumpad('otpCode')" style="flex:1; cursor:pointer; letter-spacing: 10px; font-size: 28px;"><span class="cursor"></span></div>
+    <div class="otp-input-row" onclick="openNumpad('otpCode')" style="cursor:pointer;">
+      <div class="otp-digit" id="otpBox0"></div>
+      <div class="otp-digit" id="otpBox1"></div>
+      <div class="otp-digit" id="otpBox2"></div>
+      <div class="otp-digit" id="otpBox3"></div>
+      <div class="otp-digit" id="otpBox4"></div>
+      <div class="otp-digit" id="otpBox5"></div>
     </div>
     <div class="otp-error" id="otpError"></div>
     <div class="otp-actions">
@@ -1398,6 +1403,7 @@
     otpValue = '';
     updateOtpCodeDisplay();
     document.getElementById('otpOverlay').classList.add('show');
+    setTimeout(() => openNumpad('otpCode'), 200);
   }
 
   function closeOtpModal() {
@@ -1405,8 +1411,13 @@
   }
 
   function updateOtpCodeDisplay() {
-    const el = document.getElementById('otpCodeDisplay');
-    if (el) el.innerHTML = (otpValue || '') + '<span class="cursor"></span>';
+    for (let i = 0; i < 6; i++) {
+      const box = document.getElementById('otpBox' + i);
+      if (!box) continue;
+      const digit = otpValue[i] || '';
+      box.textContent = digit;
+      box.classList.toggle('filled', !!digit);
+    }
   }
 
   function getOtpCode() {
