@@ -644,6 +644,12 @@
     .rpt-order-card.voided .rpt-order-total,
     .rpt-order-card.voided .rpt-order-items-count,
     .rpt-order-card.voided .rpt-order-items-list { text-decoration: line-through; color: var(--text-tertiary); }
+    .rpt-order-card.refunded-original { opacity: 0.65; }
+    .rpt-order-card.refunded-original .rpt-order-id,
+    .rpt-order-card.refunded-original .rpt-order-meta,
+    .rpt-order-card.refunded-original .rpt-order-total,
+    .rpt-order-card.refunded-original .rpt-order-items-count,
+    .rpt-order-card.refunded-original .rpt-order-items-list { text-decoration: line-through; color: var(--text-tertiary); }
     .rpt-order-card.refunded { opacity: 0.75; border-color: #fed7aa; }
     .rpt-order-refunded-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; background: #fff7ed; border: 1px solid #fed7aa; font-size: 11px; font-weight: 700; color: #ea580c; letter-spacing: 0.04em; }
     .rpt-order-refund-card { border: 0.5px solid #fed7aa; border-radius: var(--radius-lg); background: #fff7ed; overflow: hidden; }
@@ -988,8 +994,8 @@
   <div class="receipt-modal">
     <div class="receipt-modal-header">
       <div class="receipt-modal-title">
-        <div class="icon"><i class="ti ti-receipt"></i></div>
-        Receipt
+        <div class="icon" id="receiptIcon"><i class="ti ti-receipt"></i></div>
+        <span id="receiptModalTitle">Receipt</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <span class="receipt-ref" id="receiptRef">#000000</span>
@@ -1760,6 +1766,8 @@
   }
 
   function showReceipt(method, cashReceived, change) {
+    document.getElementById('receiptModalTitle').textContent = 'Receipt';
+    document.getElementById('receiptIcon').style.background = '#111';
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-US', {month:'numeric',day:'numeric',year:'numeric'});
     const timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
@@ -3614,13 +3622,16 @@
       const shortRef = t.ref.replace('#','');
       const isVoided = t.voided === true;
       const isRefund = t.refund === true;
+      const isRefunded = t.refunded === true;
 
-      const cardClass = isVoided ? ' voided' : (isRefund ? ' refunded' : '');
+      const cardClass = isVoided ? ' voided' : isRefunded ? ' refunded-original' : isRefund ? ' refunded' : '';
       const badge = isVoided
         ? '<span class="rpt-order-voided-badge">VOIDED</span>'
-        : isRefund
-          ? '<span class="rpt-order-refunded-badge">REFUND</span>'
-          : '';
+        : isRefunded
+          ? '<span class="rpt-order-voided-badge" style="background:#fff7ed;border-color:#fed7aa;color:#ea580c;">REFUNDED</span>'
+          : isRefund
+            ? '<span class="rpt-order-refunded-badge">REFUND</span>'
+            : '';
       const totalClass = isRefund ? 'rpt-order-refund-total' : 'rpt-order-total';
       const totalPrefix = isRefund ? '-' : '';
 
@@ -3643,8 +3654,10 @@
           <button class="rpt-order-print-btn"><i class="ti ti-printer"></i> Print Receipt</button>
           ${isVoided
             ? '<span class="rpt-order-voided-label">Order voided</span>'
-            : isRefund
-              ? '<span class="rpt-order-voided-label" style="color:#ea580c;">Refund issued</span>'
+            : isRefunded
+              ? '<span class="rpt-order-voided-label" style="color:#ea580c;">Order refunded</span>'
+              : isRefund
+                ? '<span class="rpt-order-voided-label" style="color:#ea580c;">Refund issued</span>'
               : `<div style="display:flex;gap:8px;align-items:center;margin-left:auto;">
                   <div class="rpt-void-confirm" id="voidConfirm_${shortRef}" style="display:none;align-items:center;gap:8px;">
                     <span style="font-size:12px;color:var(--text-secondary);">Void this order?</span>
@@ -3705,14 +3718,14 @@
     const tx = salesLog.find(t => t.ref === fullRef);
     if (!tx) return;
 
-    // Create a new refund entry mirroring the original with negative values
+    const now = new Date();
     const refundRef = fullRef + '-R';
     const refundEntry = {
       ref: refundRef,
       method: tx.method,
-      date: new Date(),
-      hour: new Date().getHours(),
-      day: new Date().getDate(),
+      date: now,
+      hour: now.getHours(),
+      day: now.getDate(),
       gross: -tx.gross,
       discount: -tx.discount,
       tax: -tx.tax,
@@ -3729,9 +3742,59 @@
     tx.refunded = true;
     await updateSalesEntry(fullRef, { refunded: true });
 
+    // Show refund receipt
+    showRefundReceipt(tx, refundRef, now);
+
     renderOrdersTab();
     renderRptEod();
-    showToast(`Refund issued for Order ${fullRef}`);
+  }
+
+  function showRefundReceipt(tx, refundRef, now) {
+    const dateStr = now.toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'numeric'});
+    const timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+
+    document.getElementById('receiptModalTitle').textContent = 'Refund Receipt';
+    document.getElementById('receiptIcon').style.background = '#ea580c';
+    document.getElementById('receiptRef').textContent = refundRef;
+
+    const itemRows = tx.items.map(item => `
+      <tr style="color:#ea580c;">
+        <td><span class="item-qty-label">${item.qty}×</span> ${item.name}</td>
+        <td>-$${(item.price * item.qty).toFixed(2)}</td>
+      </tr>`).join('');
+
+    const discountRow = tx.discount > 0
+      ? `<tr><td>Discount</td><td>+$${tx.discount.toFixed(2)}</td></tr>` : '';
+    const customerRow = tx.customer
+      ? `<tr><td>Customer</td><td>${tx.customer}</td></tr>` : '';
+
+    document.getElementById('receiptBody').innerHTML = `
+      <div class="receipt-shop-name">LUMIÈRE</div>
+      <div class="receipt-shop-sub">Café &amp; Bakery</div>
+      <div style="text-align:center;margin:8px 0 14px;">
+        <span style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#ea580c;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUND</span>
+      </div>
+      <table class="receipt-meta">
+        <tr><td>Date</td><td>${dateStr}</td></tr>
+        <tr><td>Time</td><td>${timeStr}</td></tr>
+        <tr><td>Cashier</td><td>${currentStaffId || '0000'}</td></tr>
+        <tr><td>Original Order</td><td>${tx.ref}</td></tr>
+        ${customerRow}
+      </table>
+      <hr class="receipt-divider"/>
+      <table class="receipt-items">${itemRows}</table>
+      <hr class="receipt-divider"/>
+      <table class="receipt-totals">
+        <tr><td>Subtotal</td><td style="color:#ea580c;">-$${Math.abs(tx.gross).toFixed(2)}</td></tr>
+        ${discountRow}
+        <tr><td>Tax (9%)</td><td style="color:#ea580c;">-$${Math.abs(tx.tax).toFixed(2)}</td></tr>
+        <tr class="receipt-total-final"><td>REFUND TOTAL</td><td style="color:#ea580c;">-$${tx.total.toFixed(2)}</td></tr>
+      </table>
+      <div class="receipt-paid" style="color:#ea580c;">Refunded via ${tx.method}</div>
+      <hr class="receipt-divider"/>
+      <div class="receipt-thank">We're sorry for the inconvenience.</div>`;
+
+    document.getElementById('receiptOverlay').classList.add('show');
   }
 
 </script>
