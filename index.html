@@ -340,7 +340,7 @@
     @keyframes dotPulse { 0%,80%,100% { opacity: 0.3; } 40% { opacity: 1; } }
 
     /* RECEIPT MODAL */
-    .receipt-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .receipt-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .receipt-overlay.show { opacity: 1; pointer-events: all; }
     .receipt-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 360px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; border: 0.5px solid var(--border); }
     .receipt-modal-header { padding: 14px 16px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
@@ -3621,19 +3621,16 @@
       const itemCount = t.items.reduce((a, i) => a + i.qty, 0);
       const shortRef = t.ref.replace('#','');
       const isVoided = t.voided === true;
-      const isRefund = t.refund === true;
       const isRefunded = t.refunded === true;
 
-      const cardClass = isVoided ? ' voided' : isRefunded ? ' refunded-original' : isRefund ? ' refunded' : '';
+      const cardClass = isVoided ? ' voided' : isRefunded ? ' refunded-original' : '';
       const badge = isVoided
         ? '<span class="rpt-order-voided-badge">VOIDED</span>'
         : isRefunded
           ? '<span class="rpt-order-voided-badge" style="background:#fff7ed;border-color:#fed7aa;color:#ea580c;">REFUNDED</span>'
-          : isRefund
-            ? '<span class="rpt-order-refunded-badge">REFUND</span>'
-            : '';
-      const totalClass = isRefund ? 'rpt-order-refund-total' : 'rpt-order-total';
-      const totalPrefix = isRefund ? '-' : '';
+          : '';
+      const totalClass = 'rpt-order-total';
+      const totalPrefix = '';
 
       return `<div class="rpt-order-card${cardClass}">
         <div class="rpt-order-card-top">
@@ -3656,8 +3653,6 @@
             ? '<span class="rpt-order-voided-label">Order voided</span>'
             : isRefunded
               ? '<span class="rpt-order-voided-label" style="color:#ea580c;">Order refunded</span>'
-              : isRefund
-                ? '<span class="rpt-order-voided-label" style="color:#ea580c;">Refund issued</span>'
               : `<div style="display:flex;gap:8px;align-items:center;margin-left:auto;">
                   <div class="rpt-void-confirm" id="voidConfirm_${shortRef}" style="display:none;align-items:center;gap:8px;">
                     <span style="font-size:12px;color:var(--text-secondary);">Void this order?</span>
@@ -3719,43 +3714,25 @@
     if (!tx) return;
 
     const now = new Date();
-    const refundRef = fullRef + '-R';
-    const refundEntry = {
-      ref: refundRef,
-      method: tx.method,
-      date: now,
-      hour: now.getHours(),
-      day: now.getDate(),
-      gross: -tx.gross,
-      discount: -tx.discount,
-      tax: -tx.tax,
-      total: tx.total,
-      items: tx.items,
-      customer: tx.customer || null,
-      voided: false,
-      refund: true
-    };
-    salesLog.push(refundEntry);
-    await saveSalesEntry(refundEntry);
 
     // Mark original as refunded
     tx.refunded = true;
     await updateSalesEntry(fullRef, { refunded: true });
 
     // Show refund receipt
-    showRefundReceipt(tx, refundRef, now);
+    showRefundReceipt(tx, now);
 
     renderOrdersTab();
     renderRptEod();
   }
 
-  function showRefundReceipt(tx, refundRef, now) {
+  function showRefundReceipt(tx, now) {
     const dateStr = now.toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'numeric'});
     const timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
 
     document.getElementById('receiptModalTitle').textContent = 'Refund Receipt';
     document.getElementById('receiptIcon').style.background = '#ea580c';
-    document.getElementById('receiptRef').textContent = refundRef;
+    document.getElementById('receiptRef').textContent = tx.ref;
 
     const itemRows = tx.items.map(item => `
       <tr style="color:#ea580c;">
