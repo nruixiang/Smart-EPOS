@@ -784,6 +784,75 @@
     .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; padding: 10px 24px; border-radius: 24px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
     .toast.show { opacity: 1; }
 
+
+    /* ── Setup Screen ── */
+    .setup-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: var(--bg-primary);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 1; transition: opacity 0.4s ease;
+    }
+    .setup-overlay.fade-out { opacity: 0; pointer-events: none; }
+    .setup-overlay.hidden { display: none; }
+    .setup-card {
+      width: 440px; max-width: 92vw;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0;
+    }
+    .setup-logo {
+      width: 64px; height: 64px; border-radius: 18px;
+      background: #111; display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px; flex-shrink: 0;
+    }
+    .setup-logo i { font-size: 30px; color: white; }
+    .setup-heading {
+      font-size: 26px; font-weight: 800; color: var(--text-primary);
+      text-align: center; margin-bottom: 6px; letter-spacing: -0.5px;
+    }
+    .setup-sub {
+      font-size: 14px; color: var(--text-tertiary); text-align: center;
+      margin-bottom: 32px; line-height: 1.5;
+    }
+    .setup-field-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--text-tertiary);
+      align-self: flex-start; margin-bottom: 8px; width: 100%;
+    }
+    .setup-input {
+      width: 100%; padding: 14px 16px; border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--bg-secondary);
+      font-size: 16px; font-weight: 500; color: var(--text-primary);
+      font-family: var(--font); outline: none; box-sizing: border-box;
+      transition: border-color 0.15s;
+    }
+    .setup-input:focus { border-color: #111; }
+    [data-theme="dark"] .setup-input:focus { border-color: #fff; }
+    .setup-input::placeholder { color: var(--text-tertiary); font-weight: 400; }
+    .setup-btn {
+      width: 100%; margin-top: 16px; padding: 14px;
+      border-radius: 12px; border: none;
+      background: #111; color: white;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      font-family: var(--font); transition: opacity 0.15s;
+    }
+    [data-theme="dark"] .setup-btn { background: #fff; color: #111; }
+    .setup-btn:hover { opacity: 0.85; }
+    .setup-btn:disabled { background: var(--bg-tertiary); color: var(--text-tertiary); cursor: not-allowed; opacity: 1; }
+    .setup-hint {
+      font-size: 12px; color: var(--text-tertiary); text-align: center;
+      margin-top: 20px; line-height: 1.5;
+    }
+    /* Re-setup button in admin panel */
+    .admin-resetup-btn {
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; padding: 12px 14px; border-radius: 10px;
+      border: 1.5px solid var(--border); background: var(--bg-secondary);
+      color: var(--text-secondary); font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: var(--font); transition: all 0.15s;
+      margin-top: 4px;
+    }
+    .admin-resetup-btn:hover { border-color: var(--red); color: var(--red); background: var(--bg-primary); }
+    .admin-resetup-btn i { font-size: 16px; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -796,7 +865,7 @@
   <div class="header-left">
     <div class="brand-icon">E</div>
     <div>
-      <div class="brand-name">Smart EPOS</div>
+      <div class="brand-name" id="brandName">Smart EPOS</div>
       <div class="header-meta">Orchard · T1</div>
     </div>
   </div>
@@ -1101,6 +1170,11 @@
           </div>
           <button class="revoke-btn">Revoke Admin</button>
         </div>
+        <div class="admin-section-label" style="margin-top:18px;">Business Setup</div>
+        <div class="admin-section-note">Re-run the setup wizard to change your business name.</div>
+        <button class="admin-resetup-btn" onclick="closeAdminPanel(); openSetupScreen();">
+          <i class="ti ti-refresh"></i> Re-run Setup
+        </button>
       </div>
       <div id="adminMenuContent" style="display:none;">
         <p style="font-size:13px;color:var(--text-secondary);">Menu item management coming soon.</p>
@@ -1164,12 +1238,75 @@
 </div>
 
 <script>
+
+  // ── Business Setup ──
+  const BUSINESS_NAME_KEY = 'smartepos_business_name';
+
+  function initSetup() {
+    const saved = localStorage.getItem(BUSINESS_NAME_KEY);
+    if (saved) {
+      applyBusinessName(saved);
+      hideSetupScreen();
+    } else {
+      showSetupScreen();
+      setTimeout(() => document.getElementById('setupBusinessName').focus(), 100);
+    }
+  }
+
+  function showSetupScreen() {
+    const el = document.getElementById('setupOverlay');
+    el.classList.remove('hidden', 'fade-out');
+  }
+
+  function openSetupScreen() {
+    const el = document.getElementById('setupOverlay');
+    const input = document.getElementById('setupBusinessName');
+    const saved = localStorage.getItem(BUSINESS_NAME_KEY) || '';
+    input.value = saved;
+    document.getElementById('setupContinueBtn').disabled = !saved.trim();
+    el.classList.remove('hidden', 'fade-out');
+    setTimeout(() => input.focus(), 100);
+  }
+
+  function hideSetupScreen() {
+    const el = document.getElementById('setupOverlay');
+    el.classList.add('fade-out');
+    setTimeout(() => el.classList.add('hidden'), 420);
+  }
+
+  function finishSetup() {
+    const name = document.getElementById('setupBusinessName').value.trim();
+    if (!name) return;
+    localStorage.setItem(BUSINESS_NAME_KEY, name);
+    applyBusinessName(name);
+    hideSetupScreen();
+  }
+
+  function applyBusinessName(name) {
+    // Update header brand name
+    const brandEl = document.getElementById('brandName');
+    if (brandEl) brandEl.textContent = name;
+    // Update page title
+    document.title = name + ' — EPOS';
+  }
+
+  initSetup();
+
   // ── Clock ──
 
   // ── Supabase client (initialised first — required by loadProducts & loadMembers) ──
   const SUPABASE_URL = 'https://bzpcjpwkmwowvpxyoitz.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_HKnoQB5XhK-MfHNwpaTmXA_3479YHTE';
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  let db = null;
+  try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } else {
+      console.error('Supabase library failed to load — running in offline/local mode.');
+    }
+  } catch (e) {
+    console.error('Supabase init failed — running in offline/local mode:', e);
+  }
 
   // ── Products ──
   // ── Product image URLs ──
@@ -1280,8 +1417,17 @@
   }
 
   async function loadProducts() {
+    if (!db) {
+      // Offline/local mode — use hardcoded PRODUCTS as-is
+      renderProducts();
+      return;
+    }
     const { data, error } = await db.from('products').select('*').order('id', { ascending: true });
-    if (error) { console.error('loadProducts error:', JSON.stringify(error)); return; }
+    if (error) {
+      console.error('loadProducts error:', JSON.stringify(error));
+      renderProducts();
+      return;
+    }
     if (!data || data.length === 0) {
       // First run — seed DB from hardcoded PRODUCTS
       await seedProductsToDb();
@@ -1314,6 +1460,7 @@
   }
 
   async function saveProductToDb(p, category) {
+    if (!db) { if (!p.id) p.id = 'local_' + Date.now(); return; }
     const row = productToDbRow(p, category);
     if (p.id) {
       const { id: _id, ...updateRow } = row; // strip id from update payload
@@ -1333,7 +1480,7 @@
   }
 
   async function deleteProductFromDb(p) {
-    if (!p.id) return;
+    if (!db || !p.id) return;
     const { error } = await db.from('products').delete().eq('id', p.id);
     if (error) console.error('deleteProductFromDb error:', JSON.stringify(error));
   }
@@ -1375,6 +1522,7 @@
   }
 
   async function uploadProductImage(productName, file) {
+    if (!db) { showToast('Image upload unavailable in offline mode'); return null; }
     const ext = file.name.split('.').pop().toLowerCase();
     const safeName = productName.replace(/[^a-zA-Z0-9_-]/g, '_') + '.' + ext;
     const { error: upErr } = await db.storage
@@ -1865,6 +2013,10 @@
   let editingMemberId = null;
 
   async function loadMembers() {
+    if (!db) {
+      console.error('loadMembers skipped — running in offline/local mode.');
+      return;
+    }
     const { data, error } = await db.from('members').select('*').order('id', {ascending: true});
     if (error) {
       console.error('loadMembers error:', JSON.stringify(error));
@@ -1877,11 +2029,13 @@
   }
 
   async function saveMember(member) {
+    if (!db) return;
     const { error } = await db.from('members').upsert(member);
     if (error) { console.error('saveMember error:', error); showToast('Could not save member'); }
   }
 
   async function deleteMemberRemote(id) {
+    if (!db) return;
     const { error } = await db.from('members').delete().eq('id', id);
     if (error) { console.error('deleteMember error:', error); showToast('Could not delete member'); }
   }
@@ -2886,6 +3040,7 @@
   // ── Reports ──
   const SALES_STORAGE_KEY = 'smartepos_sales_log';
   async function loadSalesLog() {
+    if (!db) { renderOrdersTab(); renderRptEod(); return; }
     const { data, error } = await db.from('sales_log').select('*').order('date', {ascending: false});
     if (error) { console.error('loadSalesLog error:', JSON.stringify(error)); return; }
     salesLog = (data || []).map(t => ({
@@ -2897,6 +3052,7 @@
     renderRptEod();
   }
   async function saveSalesEntry(entry) {
+    if (!db) return;
     const { error } = await db.from('sales_log').upsert({
       ref: entry.ref, method: entry.method, date: entry.date.toISOString(),
       hour: entry.hour, day: entry.day, gross: entry.gross,
@@ -2907,6 +3063,7 @@
     if (error) console.error('saveSalesEntry error:', JSON.stringify(error));
   }
   async function updateSalesEntry(ref, updates) {
+    if (!db) return;
     const { error } = await db.from('sales_log').update(updates).eq('ref', ref);
     if (error) console.error('updateSalesEntry error:', JSON.stringify(error));
   }
@@ -3371,6 +3528,7 @@
   }
 
   async function deleteWastageEntry(id) {
+    if (!db) { wastageLog = wastageLog.filter(e => String(e.id) !== String(id)); renderRptWastage(); return; }
     const { error } = await db.from('wastage_log').delete().eq('id', String(id));
     if (error) { console.error('deleteWastageEntry error:', JSON.stringify(error)); return; }
     wastageLog = wastageLog.filter(e => String(e.id) !== String(id));
@@ -3381,12 +3539,14 @@
   const WASTAGE_STORAGE_KEY = 'smartepos_wastage_log';
   let wastageLog = [];
   async function getWastageLog() {
+    if (!db) return wastageLog;
     const { data, error } = await db.from('wastage_log').select('*').order('date', {ascending: false});
     if (error) { console.error('getWastageLog error:', JSON.stringify(error)); return []; }
     wastageLog = (data || []).map(e => ({...e, itemName: e.item_name, date: e.date}));
     return wastageLog;
   }
   async function saveWastageEntry(entry) {
+    if (!db) return;
     const { error } = await db.from('wastage_log').upsert({
       id: String(entry.id), item_name: entry.itemName,
       qty: entry.qty, reason: entry.reason, note: entry.note,
@@ -3395,6 +3555,7 @@
     if (error) console.error('saveWastageEntry error:', JSON.stringify(error));
   }
   async function deleteWastageEntry(id) {
+    if (!db) return;
     const { error } = await db.from('wastage_log').delete().eq('id', String(id));
     if (error) console.error('deleteWastageEntry error:', JSON.stringify(error));
   }
@@ -4543,6 +4704,25 @@
     </div>
   </div>
 </div>
+
+<!-- Setup Screen -->
+<div class="setup-overlay" id="setupOverlay">
+  <div class="setup-card">
+    <div class="setup-logo"><i class="ti ti-device-desktop"></i></div>
+    <div class="setup-heading">Welcome to Smart EPOS</div>
+    <div class="setup-sub">Let's get your point of sale ready.<br>Start by entering your business name.</div>
+    <div class="setup-field-label">Business Name</div>
+    <input class="setup-input" id="setupBusinessName" type="text"
+      placeholder="e.g. The Corner Café"
+      oninput="document.getElementById('setupContinueBtn').disabled = !this.value.trim();"
+      onkeydown="if(event.key==='Enter' && this.value.trim()) finishSetup();" />
+    <button class="setup-btn" id="setupContinueBtn" onclick="finishSetup()" disabled>
+      Continue
+    </button>
+    <div class="setup-hint">You can update this anytime from the Admin Panel.</div>
+  </div>
+</div>
+
 
 </body>
 </html>
