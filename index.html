@@ -1241,6 +1241,7 @@
 
   // ── Business Setup ──
   const BUSINESS_NAME_KEY = 'smartepos_business_name';
+  let BUSINESS_NAME = 'LUMIÈRE';
 
   function initSetup() {
     const saved = localStorage.getItem(BUSINESS_NAME_KEY);
@@ -1283,6 +1284,7 @@
   }
 
   function applyBusinessName(name) {
+    BUSINESS_NAME = name;
     // Update header brand name
     const brandEl = document.getElementById('brandName');
     if (brandEl) brandEl.textContent = name;
@@ -1372,7 +1374,7 @@
       {name:"Brownie",price:3.50,sub:"Special Edition",desc:"Fudgy dark chocolate brownie with a crinkle top. Rich, dense, and deeply chocolatey.",allergens:"Contains gluten, dairy, eggs",ingredients:"Dark Chocolate • Butter • Sugar • Eggs • Flour • Cocoa"},
     ]},
     "Merch": { All: [
-      {name:"Tote Bag",price:15.00,sub:"Coffee",desc:"Sturdy canvas tote with the Lumiere logo. Fits a laptop, reusable cup, and everything in between.",allergens:"N/A",ingredients:"100% Cotton Canvas"},
+      {name:"Tote Bag",price:15.00,sub:"Coffee",desc:"Sturdy canvas tote with our logo. Fits a laptop, reusable cup, and everything in between.",allergens:"N/A",ingredients:"100% Cotton Canvas"},
       {name:"Travel Mug",price:24.00,sub:"Coffee",desc:"Double-walled stainless steel mug. Keeps drinks hot for 8 hours, cold for 12.",allergens:"N/A",ingredients:"18/8 Stainless Steel • BPA-free lid"},
       {name:"Coffee Beans 250g",price:18.00,sub:"Special Edition",desc:"Our house blend, roasted locally. Notes of dark chocolate, hazelnut, and caramel.",allergens:"No common allergens",ingredients:"Single-Origin Arabica Blend"},
     ]},
@@ -1973,7 +1975,7 @@
       <tr><td>Change</td><td>$${change.toFixed(2)}</td></tr>` : '';
 
     document.getElementById('receiptBody').innerHTML = `
-      <div class="receipt-shop-name">LUMIÈRE</div>
+      <div class="receipt-shop-name">${BUSINESS_NAME}</div>
       <div class="receipt-shop-sub">Café &amp; Bakery</div>
       <table class="receipt-meta">
         <tr><td>Date</td><td>${dateStr}</td></tr>
@@ -3910,7 +3912,7 @@
       ? `<tr><td>Customer</td><td>${tx.customer}</td></tr>` : '';
 
     document.getElementById('receiptBody').innerHTML = `
-      <div class="receipt-shop-name">LUMIÈRE</div>
+      <div class="receipt-shop-name">${BUSINESS_NAME}</div>
       <div class="receipt-shop-sub">Café &amp; Bakery</div>
       <div style="text-align:center;margin:8px 0 14px;">
         <span style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#ea580c;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUND</span>
