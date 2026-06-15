@@ -2942,14 +2942,17 @@
   }
 
   function switchRptTab(tab) {
-    ['eod','hourly','month','wastage'].forEach(t => {
-      document.getElementById('rptTab_' + t).classList.toggle('active', t === tab);
-      document.getElementById('rptPane_' + t).style.display = t === tab ? 'flex' : 'none';
+    ['eod','hourly','month','wastage','orders'].forEach(t => {
+      const tabEl = document.getElementById('rptTab_' + t);
+      const paneEl = document.getElementById('rptPane_' + t);
+      if (tabEl) tabEl.classList.toggle('active', t === tab);
+      if (paneEl) paneEl.style.display = t === tab ? 'flex' : 'none';
     });
     if (tab === 'eod') renderRptEod();
     if (tab === 'hourly') renderRptHourly();
     if (tab === 'month') renderRptMonth();
     if (tab === 'wastage') renderRptWastage();
+    if (tab === 'orders') renderOrdersTab();
   }
 
   function todayKey() {
@@ -3636,7 +3639,7 @@
         <div class="rpt-order-card-top">
           <div>
             <div class="rpt-order-id">
-              ${isRefund ? 'Refund' : 'Order'} #${shortRef}
+              ${isRefunded ? 'Refund' : 'Order'} #${shortRef}
               ${badge}
             </div>
             <div class="rpt-order-meta">${timeStr} · ${t.method.toUpperCase()}${t.customer ? ' · ' + t.customer : ''}</div>
