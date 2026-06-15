@@ -1281,12 +1281,7 @@
     <div class="otp-card-title"><i class="ti ti-shield-check"></i> Verify Phone Number</div>
     <div class="otp-card-sub" id="otpCardSub">Enter the 6-digit code sent to <b id="otpPhoneDisplay"></b> via WhatsApp.</div>
     <div class="otp-input-row">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,0)" onkeydown="otpDigitKeydown(event,0)" />
-      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,1)" onkeydown="otpDigitKeydown(event,1)" />
-      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,2)" onkeydown="otpDigitKeydown(event,2)" />
-      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,3)" onkeydown="otpDigitKeydown(event,3)" />
-      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,4)" onkeydown="otpDigitKeydown(event,4)" />
-      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,5)" onkeydown="otpDigitKeydown(event,5)" />
+      <div class="numpad-display" id="otpCodeDisplay" onclick="openNumpad('otpCode')" style="flex:1; cursor:pointer; letter-spacing: 10px; font-size: 28px;"><span class="cursor"></span></div>
     </div>
     <div class="otp-error" id="otpError"></div>
     <div class="otp-actions">
@@ -1395,36 +1390,27 @@
     return digits;
   }
 
+  let otpValue = '';
+
   function openOtpModal(phone) {
     document.getElementById('otpPhoneDisplay').textContent = phone;
     document.getElementById('otpError').textContent = '';
-    document.querySelectorAll('.otp-digit').forEach(d => d.value = '');
+    otpValue = '';
+    updateOtpCodeDisplay();
     document.getElementById('otpOverlay').classList.add('show');
-    setTimeout(() => document.querySelector('.otp-digit').focus(), 150);
   }
 
   function closeOtpModal() {
     document.getElementById('otpOverlay').classList.remove('show');
   }
 
-  function otpDigitInput(el, idx) {
-    el.value = el.value.replace(/\D/g, '').slice(0,1);
-    if (el.value && idx < 5) {
-      const next = document.querySelectorAll('.otp-digit')[idx+1];
-      if (next) next.focus();
-    }
-  }
-
-  function otpDigitKeydown(e, idx) {
-    if (e.key === 'Backspace' && !e.target.value && idx > 0) {
-      const prev = document.querySelectorAll('.otp-digit')[idx-1];
-      if (prev) { prev.focus(); }
-    }
-    if (e.key === 'Enter') submitOtpVerification();
+  function updateOtpCodeDisplay() {
+    const el = document.getElementById('otpCodeDisplay');
+    if (el) el.innerHTML = (otpValue || '') + '<span class="cursor"></span>';
   }
 
   function getOtpCode() {
-    return Array.from(document.querySelectorAll('.otp-digit')).map(d => d.value).join('');
+    return otpValue;
   }
 
   async function sendOtpRequest(phone) {
@@ -1490,7 +1476,8 @@
     resendBtn.disabled = true;
     resendBtn.textContent = 'Sending…';
     document.getElementById('otpError').textContent = '';
-    document.querySelectorAll('.otp-digit').forEach(d => d.value = '');
+    otpValue = '';
+    updateOtpCodeDisplay();
     const result = await sendOtpRequest(otpPendingMember.phone);
     resendBtn.disabled = false;
     resendBtn.textContent = 'Resend code';
@@ -2968,7 +2955,8 @@
       const input = document.getElementById(fieldId);
       numpadValue = (input && input.value) ? input.value.replace(/\D/g,'') : '';
     }
-    document.getElementById('numpadLabel').textContent = target === 'staffId' ? 'STAFF ID' : (target === 'password' ? 'PASSWORD' : 'PHONE NUMBER');
+    else if (target === 'otpCode') numpadValue = otpValue;
+    document.getElementById('numpadLabel').textContent = target === 'staffId' ? 'STAFF ID' : (target === 'password' ? 'PASSWORD' : (target === 'otpCode' ? 'VERIFICATION CODE' : 'PHONE NUMBER'));
     updateNumpadDisplay();
     document.getElementById('staffIdBox').classList.toggle('active', target === 'staffId');
     document.getElementById('passwordBox').classList.toggle('active', target === 'password');
@@ -2996,6 +2984,9 @@
       const input = document.getElementById(numpadFieldId);
       if (input) input.value = numpadValue;
       numpadFieldId = null;
+    } else if (numpadTarget === 'otpCode') {
+      otpValue = numpadValue;
+      updateOtpCodeDisplay();
     }
     numpadTarget = null;
   }
@@ -3005,7 +2996,8 @@
   }
 
   function numpadPress(val) {
-    if (numpadValue.length >= 8) return;
+    const maxLen = numpadTarget === 'otpCode' ? 6 : 8;
+    if (numpadValue.length >= maxLen) return;
     numpadValue += val;
     updateNumpadDisplay();
     if (numpadTarget === 'customerPhone') {
@@ -3016,6 +3008,9 @@
     } else if (numpadTarget === 'phoneField') {
       const input = document.getElementById(numpadFieldId);
       if (input) input.value = numpadValue;
+    } else if (numpadTarget === 'otpCode') {
+      otpValue = numpadValue;
+      updateOtpCodeDisplay();
     }
   }
 
@@ -3030,6 +3025,9 @@
     } else if (numpadTarget === 'phoneField') {
       const input = document.getElementById(numpadFieldId);
       if (input) input.value = numpadValue;
+    } else if (numpadTarget === 'otpCode') {
+      otpValue = numpadValue;
+      updateOtpCodeDisplay();
     }
   }
 
