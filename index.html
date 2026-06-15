@@ -763,6 +763,41 @@
     .held-recall-btn { padding: 8px 16px; background: var(--blue); color: white; border: none; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; transition: opacity 0.15s; }
     .held-recall-btn:hover { opacity: 0.88; }
 
+    /* CASH FLOAT */
+    .float-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 350; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .float-overlay.show { opacity: 1; pointer-events: all; }
+    .float-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 360px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); border: 0.5px solid var(--border); }
+    .float-header { padding: 16px 18px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .float-title { font-size: 16px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+    .float-close { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 20px; display: flex; align-items: center; }
+    .float-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .float-amount-display { background: #111; border-radius: var(--radius-md); padding: 18px; text-align: center; }
+    .float-amount-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .float-amount-val { font-size: 32px; font-weight: 800; color: white; letter-spacing: -1px; }
+    .float-note-input { width: 100%; padding: 10px 12px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font); outline: none; }
+    .float-note-input:focus { border-color: var(--blue); }
+    .float-history { display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto; }
+    .float-history-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: var(--bg-secondary); border-radius: 6px; font-size: 12px; }
+    .float-history-left { color: var(--text-secondary); }
+    .float-history-amt { font-weight: 700; color: var(--green); }
+    .float-confirm-btn { width: 100%; padding: 13px; border-radius: var(--radius-md); border: none; background: var(--green); color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+    .float-confirm-btn:hover { opacity: 0.88; }
+    .float-confirm-btn:disabled { background: var(--bg-tertiary); color: var(--text-tertiary); cursor: not-allowed; }
+    .rpt-cash-drawer { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    [data-theme="dark"] .rpt-cash-drawer { background: rgba(22,163,74,0.1); border-color: rgba(22,163,74,0.3); }
+    .rpt-cash-drawer-title { font-size: 12px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.07em; display: flex; align-items: center; gap: 6px; }
+    .rpt-cash-drawer-row { display: flex; justify-content: space-between; font-size: 13px; }
+    .rpt-cash-drawer-row span:first-child { color: var(--text-secondary); }
+    .rpt-cash-drawer-row span:last-child { font-weight: 600; color: var(--text-primary); }
+    .rpt-cash-drawer-row.strong span { font-weight: 700; color: var(--text-primary); font-size: 14px; }
+    .rpt-cash-drawer-row.variance-pos span:last-child { color: var(--green); }
+    .rpt-cash-drawer-row.variance-neg span:last-child { color: #dc2626; }
+    .rpt-cash-drawer-divider { height: 0.5px; background: #bbf7d0; margin: 2px 0; }
+    .float-action-btn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: var(--radius-md); font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; white-space: nowrap; }
+    .float-action-btn:hover { opacity: 0.88; }
+    .cash-counted-input { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-weight: 600; background: var(--bg-primary); color: var(--text-primary); font-family: var(--font); outline: none; text-align: right; }
+    .cash-counted-input:focus { border-color: var(--green); }
+
     /* TOAST */
     .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; padding: 10px 24px; border-radius: 24px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
     .toast.show { opacity: 1; }
@@ -1406,7 +1441,7 @@
     const grid = document.getElementById('productsGrid');
     const prods = getProducts();
     if (!prods.length) { grid.innerHTML = '<p style="color:var(--text-tertiary);font-size:13px;padding:12px;">No products found.</p>'; return; }
-    const isAdmin = currentStaffRole === 'Administrator';
+    const isAdmin = currentStaffId === '0000';
     grid.innerHTML = prods.map(p => {
       const safeName = p.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
       const imgUrl = getProductImg(p.name);
@@ -2161,6 +2196,110 @@
     backToList();
   }
 
+  // ── Cash Float ──
+  let floatBuffer = '';
+  let todayFloatTotal = 0;
+
+  async function loadTodayFloat() {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+    const end   = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
+    const { data, error } = await db.from('cash_float').select('*').gte('date', start).lt('date', end).order('date', {ascending: false});
+    if (error) { console.error('loadTodayFloat error:', JSON.stringify(error)); return; }
+    todayFloatTotal = (data || []).reduce((a, e) => a + parseFloat(e.amount), 0);
+    renderFloatHistory(data || []);
+    updateCashDrawer();
+  }
+
+  function renderFloatHistory(entries) {
+    const el = document.getElementById('floatHistory');
+    if (!el) return;
+    if (!entries.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text-tertiary);text-align:center;padding:6px 0;">No floats logged today</div>'; return; }
+    el.innerHTML = entries.map(e => {
+      const t = new Date(e.date).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+      return `<div class="float-history-row">
+        <div class="float-history-left">${t}${e.note ? ' · ' + e.note : ''}</div>
+        <div class="float-history-amt">+$${parseFloat(e.amount).toFixed(2)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function updateCashDrawer() {
+    const txs = todaySales();
+    const cashSales = txs.filter(t => t.method === 'Cash').reduce((a, t) => a + t.total, 0);
+    const expected = todayFloatTotal + cashSales;
+    document.getElementById('drawerFloat').textContent      = '$' + todayFloatTotal.toFixed(2);
+    document.getElementById('drawerCashSales').textContent  = '$' + cashSales.toFixed(2);
+    document.getElementById('drawerExpected').textContent   = '$' + expected.toFixed(2);
+    updateCashVariance();
+  }
+
+  function updateCashVariance() {
+    const expectedEl = document.getElementById('drawerExpected');
+    const actualEl   = document.getElementById('drawerActual');
+    const varianceRow = document.getElementById('drawerVarianceRow');
+    const varianceEl  = document.getElementById('drawerVariance');
+    if (!actualEl || !actualEl.value) { varianceRow.style.display = 'none'; return; }
+    const expected = parseFloat(expectedEl.textContent.replace('$','')) || 0;
+    const actual   = parseFloat(actualEl.value) || 0;
+    const variance = actual - expected;
+    varianceRow.style.display = '';
+    varianceEl.textContent = (variance >= 0 ? '+$' : '-$') + Math.abs(variance).toFixed(2);
+    varianceRow.className = 'rpt-cash-drawer-row ' + (variance >= 0 ? 'variance-pos' : 'variance-neg');
+  }
+
+  function openFloatModal() {
+    floatBuffer = '';
+    document.getElementById('floatDisplay').textContent = '$0.00';
+    document.getElementById('floatNote').value = '';
+    document.getElementById('floatConfirmBtn').disabled = true;
+    loadTodayFloat();
+    document.getElementById('floatOverlay').classList.add('show');
+  }
+
+  function closeFloatModal() {
+    document.getElementById('floatOverlay').classList.remove('show');
+  }
+
+  function closeFloatIfBg(e) {
+    if (e.target === document.getElementById('floatOverlay')) closeFloatModal();
+  }
+
+  function floatKeyPress(ch) {
+    if (ch === '.') { if (floatBuffer.includes('.')) return; if (!floatBuffer) floatBuffer = '0'; }
+    const parts = floatBuffer.split('.');
+    if (parts[1] !== undefined && parts[1].length >= 2) return;
+    if (floatBuffer.length >= 8) return;
+    floatBuffer += ch;
+    const val = parseFloat(floatBuffer) || 0;
+    document.getElementById('floatDisplay').textContent = '$' + floatBuffer;
+    document.getElementById('floatConfirmBtn').disabled = val <= 0;
+  }
+
+  function floatKeyDel() {
+    floatBuffer = floatBuffer.slice(0, -1);
+    const val = parseFloat(floatBuffer) || 0;
+    document.getElementById('floatDisplay').textContent = floatBuffer ? '$' + floatBuffer : '$0.00';
+    document.getElementById('floatConfirmBtn').disabled = val <= 0;
+  }
+
+  async function confirmFloat() {
+    const amount = parseFloat(floatBuffer) || 0;
+    if (amount <= 0) return;
+    const note = document.getElementById('floatNote').value.trim() || 'Opening float';
+    const entry = { amount, note, date: new Date().toISOString(), staff_id: currentStaffId || '0000' };
+    const { error } = await db.from('cash_float').insert(entry);
+    if (error) { showToast('Could not save float: ' + (error.message || 'error')); return; }
+    todayFloatTotal += amount;
+    showToast('Float logged: $' + amount.toFixed(2));
+    floatBuffer = '';
+    document.getElementById('floatDisplay').textContent = '$0.00';
+    document.getElementById('floatNote').value = '';
+    document.getElementById('floatConfirmBtn').disabled = true;
+    loadTodayFloat();
+    updateCashDrawer();
+  }
+
   // ── Discount ──
   let activeDiscount = null;
   let discKbTarget = null; // 'phone' | 'code'
@@ -2492,7 +2631,7 @@
   let pinValue = '';
 
   function openAdminPinModal() {
-    if (!currentStaffId || currentStaffRole !== 'Administrator') return; // only admin
+    if (!currentStaffId || currentStaffId !== '0000') return; // only admin
     openAdminPanel();
   }
 
@@ -2543,15 +2682,14 @@
 
   function updateThemeToggleVisibility() { /* no-op, replaced by admin panel */ }
 
-  function applySession(staffId, staffRole, staffName) {
+  function applySession(staffId, staffRole) {
     currentStaffId = staffId;
     currentStaffRole = staffRole;
-    const isAdmin = staffRole === 'Administrator';
-    const roleLabel = isAdmin ? 'Admin' : 'Staff';
-    document.getElementById('headerStaffId').textContent = staffId + ' · ' + (staffName || staffRole);
+    const roleLabel = staffId === '0000' ? 'Admin' : 'Staff';
+    document.getElementById('headerStaffId').textContent = staffId + ' · ' + staffRole;
     document.getElementById('headerRole').textContent = roleLabel;
     const adminPill = document.getElementById('adminPill');
-    if (isAdmin) {
+    if (staffId === '0000') {
       adminPill.classList.add('header-pill-btn');
       adminPill.style.cursor = 'pointer';
     } else {
@@ -2562,39 +2700,23 @@
     renderProducts();
   }
 
-  async function submitClockIn() {
+  function submitClockIn() {
     if (!clockinStaffId || !clockinPassword) return;
     const id = clockinStaffId.padStart(4, '0');
-
-    // Look up staff in Supabase
-    const { data, error } = await db.from('staff').select('*').eq('id', id).single();
-
-    if (error || !data) {
-      showToast('Staff ID not found');
-      return;
-    }
-    if (data.pin !== clockinPassword) {
-      showToast('Incorrect PIN');
-      return;
-    }
-
-    const role = data.role || 'Staff';
-    const name = data.name || id;
+    const role = id === '0000' ? 'Administrator' : 'Staff';
     localStorage.setItem('epos_staff_id', id);
     localStorage.setItem('epos_staff_role', role);
-    localStorage.setItem('epos_staff_name', name);
-    applySession(id, role, name);
+    applySession(id, role);
     closeClockIn();
-    showToast('Clocked in as ' + name + ' · ' + role);
+    showToast('Clocked in as ' + id + ' · ' + role);
   }
 
   // ── Restore session on startup ──
   (function restoreSession() {
     const savedId = localStorage.getItem('epos_staff_id');
     const savedRole = localStorage.getItem('epos_staff_role');
-    const savedName = localStorage.getItem('epos_staff_name');
     if (savedId) {
-      applySession(savedId, savedRole || 'Staff', savedName || savedId);
+      applySession(savedId, savedRole || (savedId === '0000' ? 'Administrator' : 'Staff'));
     }
   })();
 
@@ -2943,7 +3065,7 @@
       document.getElementById('rptTab_' + t).classList.toggle('active', t === tab);
       document.getElementById('rptPane_' + t).style.display = t === tab ? 'flex' : 'none';
     });
-    if (tab === 'eod') renderRptEod();
+    if (tab === 'eod') { renderRptEod(); loadTodayFloat(); }
     if (tab === 'hourly') renderRptHourly();
     if (tab === 'month') renderRptMonth();
     if (tab === 'wastage') renderRptWastage();
@@ -2993,6 +3115,7 @@
     document.getElementById('rptBdProfit').textContent  = '$' + profit.toFixed(2);
 
     renderRptEodDetail(txs, wastageEntries);
+    updateCashDrawer();
   }
 
   function getProductCategory(name) {
@@ -4196,6 +4319,9 @@
 
     <!-- END OF DAY -->
     <div class="rpt-body" id="rptPane_eod" style="display:flex;">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+        <button class="float-action-btn" onclick="openFloatModal()"><i class="ti ti-cash"></i> Log Opening Float</button>
+      </div>
       <div class="rpt-stat-grid">
         <div class="rpt-stat-card">
           <div class="rpt-stat-label">Gross Sales <i class="ti ti-currency-dollar"></i></div>
@@ -4228,6 +4354,27 @@
         <div class="rpt-breakdown-row"><span>Tax Collected</span><span id="rptBdTax">$0.00</span></div>
         <div class="rpt-breakdown-row strong"><span>Total Collected</span><span id="rptBdTotal">$0.00</span></div>
         <div class="rpt-breakdown-row green"><span>Estimated Gross Profit (65% margin)</span><span id="rptBdProfit">$0.00</span></div>
+      </div>
+
+      <!-- CASH DRAWER -->
+      <div class="rpt-cash-drawer" id="rptCashDrawer">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="rpt-cash-drawer-title"><i class="ti ti-building-bank"></i> Cash Drawer</div>
+        </div>
+        <div class="rpt-cash-drawer-row"><span>Opening Float</span><span id="drawerFloat">$0.00</span></div>
+        <div class="rpt-cash-drawer-row"><span>Cash Sales</span><span id="drawerCashSales">$0.00</span></div>
+        <div class="rpt-cash-drawer-divider"></div>
+        <div class="rpt-cash-drawer-row strong"><span>Expected in Drawer</span><span id="drawerExpected">$0.00</span></div>
+        <div class="rpt-cash-drawer-row" style="margin-top:6px;align-items:center;gap:8px;">
+          <span style="color:var(--text-secondary);font-size:13px;">Actual Cash Counted</span>
+          <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;">
+            <span style="font-size:13px;color:var(--text-secondary);">$</span>
+            <input type="number" class="cash-counted-input" id="drawerActual" placeholder="0.00" style="width:110px;" oninput="updateCashVariance()" />
+          </div>
+        </div>
+        <div class="rpt-cash-drawer-row" id="drawerVarianceRow" style="display:none;">
+          <span>Cash Variance</span><span id="drawerVariance">$0.00</span>
+        </div>
       </div>
 
       <!-- DETAILED BREAKDOWN (toggled) -->
@@ -4434,6 +4581,39 @@
     <div class="wastage-modal-footer" id="wastageFooter">
       <button class="wastage-cancel-btn" id="wastageLeftBtn" onclick="closeLogWastage()">Cancel</button>
       <button class="wastage-next-btn" id="wastageRightBtn" onclick="wastageNext()" disabled>Next — Choose Reason</button>
+    </div>
+  </div>
+</div>
+<!-- Cash Float Modal -->
+<div class="float-overlay" id="floatOverlay" onclick="closeFloatIfBg(event)">
+  <div class="float-modal">
+    <div class="float-header">
+      <div class="float-title"><i class="ti ti-building-bank" style="color:var(--green);"></i> Log Opening Float</div>
+      <button class="float-close" onclick="closeFloatModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="float-body">
+      <div class="float-amount-display">
+        <div class="float-amount-label">Amount to Add</div>
+        <div class="float-amount-val" id="floatDisplay">$0.00</div>
+      </div>
+      <!-- Reuse existing numpad-style keys inline -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        <button class="numpad-key" onclick="floatKeyPress('7')">7</button>
+        <button class="numpad-key" onclick="floatKeyPress('8')">8</button>
+        <button class="numpad-key" onclick="floatKeyPress('9')">9</button>
+        <button class="numpad-key" onclick="floatKeyPress('4')">4</button>
+        <button class="numpad-key" onclick="floatKeyPress('5')">5</button>
+        <button class="numpad-key" onclick="floatKeyPress('6')">6</button>
+        <button class="numpad-key" onclick="floatKeyPress('1')">1</button>
+        <button class="numpad-key" onclick="floatKeyPress('2')">2</button>
+        <button class="numpad-key" onclick="floatKeyPress('3')">3</button>
+        <button class="numpad-key" onclick="floatKeyPress('.')">.</button>
+        <button class="numpad-key" onclick="floatKeyPress('0')">0</button>
+        <button class="numpad-key key-del" onclick="floatKeyDel()"><i class="ti ti-backspace"></i></button>
+      </div>
+      <input type="text" class="float-note-input" id="floatNote" placeholder="Note (optional, e.g. 'Opening float')" />
+      <div id="floatHistory" class="float-history"></div>
+      <button class="float-confirm-btn" id="floatConfirmBtn" onclick="confirmFloat()" disabled>Confirm Float</button>
     </div>
   </div>
 </div>
