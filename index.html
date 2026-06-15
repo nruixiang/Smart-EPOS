@@ -194,6 +194,28 @@
     .numpad-key.key-del { background: var(--bg-secondary); font-size: 18px; }
     .numpad-key.key-empty { background: transparent; cursor: default; }
     .badge { background: var(--green); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+
+    /* OTP Verification Modal */
+    .otp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .otp-overlay.show { opacity: 1; pointer-events: all; }
+    .otp-card { background: var(--bg-primary); border-radius: 16px; width: 100%; max-width: 360px; padding: 24px; display: flex; flex-direction: column; gap: 14px; transform: scale(0.95); transition: transform 0.2s cubic-bezier(0.32,0.72,0,1); margin: 16px; }
+    .otp-overlay.show .otp-card { transform: scale(1); }
+    .otp-card-title { font-size: 16px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+    .otp-card-sub { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    .otp-card-sub b { color: var(--text-primary); }
+    .otp-input-row { display: flex; gap: 8px; justify-content: center; margin: 6px 0; }
+    .otp-digit { width: 40px; height: 48px; text-align: center; font-size: 22px; font-weight: 700; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font); outline: none; }
+    .otp-digit:focus { border-color: #111; }
+    [data-theme="dark"] .otp-digit:focus { border-color: #fff; }
+    .otp-error { font-size: 12px; color: var(--red); text-align: center; min-height: 16px; }
+    .otp-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .otp-btn-primary { padding: 12px; border-radius: 10px; border: none; background: #111; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font); }
+    [data-theme="dark"] .otp-btn-primary { background: #fff; color: #111; }
+    .otp-btn-primary:disabled { opacity: 0.5; cursor: default; }
+    .otp-btn-secondary { padding: 10px; border-radius: 10px; border: none; background: none; color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); }
+    .otp-btn-secondary:disabled { opacity: 0.5; cursor: default; }
+    .otp-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: otp-spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+    @keyframes otp-spin { to { transform: rotate(360deg); } }
     .main { display: grid; grid-template-columns: 1fr 300px; flex: 1; overflow: hidden; min-height: 0; }
 
     /* MIDDLE PANEL */
@@ -831,6 +853,19 @@
     .setup-input:focus { border-color: #111; }
     [data-theme="dark"] .setup-input:focus { border-color: #fff; }
     .setup-input::placeholder { color: var(--text-tertiary); font-weight: 400; }
+    .setup-select {
+      width: 100%; padding: 14px 16px; border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--bg-secondary);
+      font-size: 16px; font-weight: 500; color: var(--text-primary);
+      font-family: var(--font); outline: none; box-sizing: border-box;
+      transition: border-color 0.15s; cursor: pointer;
+      appearance: none; -webkit-appearance: none; -moz-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 16px center;
+    }
+    .setup-select:focus { border-color: #111; }
+    [data-theme="dark"] .setup-select:focus { border-color: #fff; }
+    .setup-select option { color: var(--text-primary); background: var(--bg-secondary); }
     .setup-btn {
       width: 100%; margin-top: 16px; padding: 14px;
       border-radius: 12px; border: none;
@@ -1240,16 +1275,42 @@
   </div>
 </div>
 
+<!-- OTP Verification Modal -->
+<div class="otp-overlay" id="otpOverlay">
+  <div class="otp-card">
+    <div class="otp-card-title"><i class="ti ti-shield-check"></i> Verify Phone Number</div>
+    <div class="otp-card-sub" id="otpCardSub">Enter the 6-digit code sent to <b id="otpPhoneDisplay"></b> via WhatsApp.</div>
+    <div class="otp-input-row">
+      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,0)" onkeydown="otpDigitKeydown(event,0)" />
+      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,1)" onkeydown="otpDigitKeydown(event,1)" />
+      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,2)" onkeydown="otpDigitKeydown(event,2)" />
+      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,3)" onkeydown="otpDigitKeydown(event,3)" />
+      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,4)" onkeydown="otpDigitKeydown(event,4)" />
+      <input class="otp-digit" maxlength="1" inputmode="numeric" oninput="otpDigitInput(this,5)" onkeydown="otpDigitKeydown(event,5)" />
+    </div>
+    <div class="otp-error" id="otpError"></div>
+    <div class="otp-actions">
+      <button class="otp-btn-primary" id="otpVerifyBtn" onclick="submitOtpVerification()">Verify</button>
+      <button class="otp-btn-secondary" id="otpResendBtn" onclick="resendOtp()">Resend code</button>
+      <button class="otp-btn-secondary" onclick="cancelOtpVerification()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 
   // ── Business Setup ──
   const BUSINESS_NAME_KEY = 'smartepos_business_name';
+  const BUSINESS_TYPE_KEY = 'smartepos_business_type';
   let BUSINESS_NAME = 'LUMIÈRE';
+  let BUSINESS_TYPE = '';
 
   function initSetup() {
     const saved = localStorage.getItem(BUSINESS_NAME_KEY);
-    if (saved) {
+    const savedType = localStorage.getItem(BUSINESS_TYPE_KEY);
+    if (saved && savedType) {
       applyBusinessName(saved);
+      BUSINESS_TYPE = savedType;
       hideSetupScreen();
     } else {
       showSetupScreen();
@@ -1265,9 +1326,12 @@
   function openSetupScreen() {
     const el = document.getElementById('setupOverlay');
     const input = document.getElementById('setupBusinessName');
+    const typeSelect = document.getElementById('setupBusinessType');
     const saved = localStorage.getItem(BUSINESS_NAME_KEY) || '';
+    const savedType = localStorage.getItem(BUSINESS_TYPE_KEY) || '';
     input.value = saved;
-    document.getElementById('setupContinueBtn').disabled = !saved.trim();
+    typeSelect.value = savedType;
+    document.getElementById('setupContinueBtn').disabled = !saved.trim() || !typeSelect.value;
     el.classList.remove('hidden', 'fade-out');
     setTimeout(() => input.focus(), 100);
   }
@@ -1280,8 +1344,11 @@
 
   function finishSetup() {
     const name = document.getElementById('setupBusinessName').value.trim();
-    if (!name) return;
+    const type = document.getElementById('setupBusinessType').value;
+    if (!name || !type) return;
     localStorage.setItem(BUSINESS_NAME_KEY, name);
+    localStorage.setItem(BUSINESS_TYPE_KEY, type);
+    BUSINESS_TYPE = type;
     applyBusinessName(name);
     hideSetupScreen();
   }
@@ -1311,6 +1378,132 @@
     }
   } catch (e) {
     console.error('Supabase init failed — running in offline/local mode:', e);
+  }
+
+  // ── WhatsApp OTP Verification ──
+  const OTP_SEND_URL = SUPABASE_URL + '/functions/v1/send-otp';
+  const OTP_VERIFY_URL = SUPABASE_URL + '/functions/v1/verify-otp';
+  let otpPendingMember = null; // { name, phone, email, bday } awaiting verification
+  let otpVerifiedPhone = null; // phone number that was just successfully verified
+
+  function normalizePhone(phone) {
+    // Strip spaces/dashes; assume Singapore numbers if no country code given
+    let digits = phone.replace(/[^\d+]/g, '');
+    if (!digits.startsWith('+')) {
+      digits = '+65' + digits; // adjust default country code as needed
+    }
+    return digits;
+  }
+
+  function openOtpModal(phone) {
+    document.getElementById('otpPhoneDisplay').textContent = phone;
+    document.getElementById('otpError').textContent = '';
+    document.querySelectorAll('.otp-digit').forEach(d => d.value = '');
+    document.getElementById('otpOverlay').classList.add('show');
+    setTimeout(() => document.querySelector('.otp-digit').focus(), 150);
+  }
+
+  function closeOtpModal() {
+    document.getElementById('otpOverlay').classList.remove('show');
+  }
+
+  function otpDigitInput(el, idx) {
+    el.value = el.value.replace(/\D/g, '').slice(0,1);
+    if (el.value && idx < 5) {
+      const next = document.querySelectorAll('.otp-digit')[idx+1];
+      if (next) next.focus();
+    }
+  }
+
+  function otpDigitKeydown(e, idx) {
+    if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+      const prev = document.querySelectorAll('.otp-digit')[idx-1];
+      if (prev) { prev.focus(); }
+    }
+    if (e.key === 'Enter') submitOtpVerification();
+  }
+
+  function getOtpCode() {
+    return Array.from(document.querySelectorAll('.otp-digit')).map(d => d.value).join('');
+  }
+
+  async function sendOtpRequest(phone) {
+    const res = await fetch(OTP_SEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ phone })
+    });
+    return res.json();
+  }
+
+  async function verifyOtpRequest(phone, code) {
+    const res = await fetch(OTP_VERIFY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ phone, code })
+    });
+    return res.json();
+  }
+
+  // Triggered from registerCustomer() — sends OTP and opens modal
+  async function startPhoneVerification(memberData) {
+    const phone = normalizePhone(memberData.phone);
+    otpPendingMember = { ...memberData, phone };
+    document.getElementById('otpVerifyBtn').disabled = true;
+    document.getElementById('otpVerifyBtn').innerHTML = '<span class="otp-spinner"></span>Sending code…';
+    openOtpModal(phone);
+    const result = await sendOtpRequest(phone);
+    document.getElementById('otpVerifyBtn').disabled = false;
+    document.getElementById('otpVerifyBtn').textContent = 'Verify';
+    if (result.error) {
+      document.getElementById('otpError').textContent = 'Could not send code: ' + result.error;
+    }
+  }
+
+  async function submitOtpVerification() {
+    const code = getOtpCode();
+    if (code.length !== 6) {
+      document.getElementById('otpError').textContent = 'Enter all 6 digits';
+      return;
+    }
+    const btn = document.getElementById('otpVerifyBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="otp-spinner"></span>Verifying…';
+    document.getElementById('otpError').textContent = '';
+
+    const result = await verifyOtpRequest(otpPendingMember.phone, code);
+    btn.disabled = false;
+    btn.textContent = 'Verify';
+
+    if (result.success) {
+      otpVerifiedPhone = otpPendingMember.phone;
+      closeOtpModal();
+      completeRegistration(otpPendingMember);
+      otpPendingMember = null;
+    } else {
+      document.getElementById('otpError').textContent = result.error || 'Incorrect code';
+    }
+  }
+
+  async function resendOtp() {
+    const resendBtn = document.getElementById('otpResendBtn');
+    resendBtn.disabled = true;
+    resendBtn.textContent = 'Sending…';
+    document.getElementById('otpError').textContent = '';
+    document.querySelectorAll('.otp-digit').forEach(d => d.value = '');
+    const result = await sendOtpRequest(otpPendingMember.phone);
+    resendBtn.disabled = false;
+    resendBtn.textContent = 'Resend code';
+    if (result.error) {
+      document.getElementById('otpError').textContent = 'Could not resend: ' + result.error;
+    } else {
+      document.querySelector('.otp-digit').focus();
+    }
+  }
+
+  function cancelOtpVerification() {
+    closeOtpModal();
+    otpPendingMember = null;
   }
 
   // ── Products ──
@@ -2118,6 +2311,11 @@
     const email = document.getElementById('regEmail').value.trim();
     const bday = document.getElementById('regBday').value;
     if (!name || !phone) { showToast('Name and phone are required'); return; }
+    startPhoneVerification({ name, phone, email, bday });
+  }
+
+  function completeRegistration(memberData) {
+    const { name, phone, email, bday } = memberData;
     memberCounter++;
     const newMember = {id: memberCounter, name, phone, email, bday, points: 0, spent: 0, history: []};
     members.push(newMember);
@@ -4719,8 +4917,17 @@
     <div class="setup-field-label">Business Name</div>
     <input class="setup-input" id="setupBusinessName" type="text"
       placeholder="e.g. The Corner Café"
-      oninput="document.getElementById('setupContinueBtn').disabled = !this.value.trim();"
-      onkeydown="if(event.key==='Enter' && this.value.trim()) finishSetup();" />
+      oninput="document.getElementById('setupContinueBtn').disabled = !this.value.trim() || !document.getElementById('setupBusinessType').value;"
+      onkeydown="if(event.key==='Enter' && this.value.trim() && document.getElementById('setupBusinessType').value) finishSetup();" />
+    <div class="setup-field-label" style="margin-top:20px;">Business Type</div>
+    <select class="setup-select" id="setupBusinessType"
+      onchange="document.getElementById('setupContinueBtn').disabled = !document.getElementById('setupBusinessName').value.trim() || !this.value;">
+      <option value="" disabled selected>Select a business type</option>
+      <option value="fnb">Food &amp; Beverage</option>
+      <option value="retail">Clothing &amp; Retail</option>
+      <option value="services">Salon &amp; Services</option>
+      <option value="other">Other</option>
+    </select>
     <button class="setup-btn" id="setupContinueBtn" onclick="finishSetup()" disabled>
       Continue
     </button>
