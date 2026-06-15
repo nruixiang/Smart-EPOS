@@ -635,6 +635,9 @@
     .rpt-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
     .rpt-cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-tertiary); padding: 4px 0; }
     .rpt-cal-day { border-radius: 8px; border: 0.5px solid var(--border); min-height: 56px; padding: 5px 6px; font-size: 12px; background: var(--bg-primary); cursor: default; position: relative; }
+    .rpt-cal-day.clickable { cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
+    .rpt-cal-day.clickable:hover { box-shadow: 0 0 0 1.5px var(--text-primary) inset; }
+    .rpt-cal-day.clickable:active { transform: scale(0.97); }
     .rpt-cal-day.today { border-color: var(--green); }
     .rpt-cal-day.has-sales { background: #d1fae5; border-color: #6ee7b7; }
     [data-theme="dark"] .rpt-cal-day.has-sales { background: rgba(22,163,74,0.18); border-color: rgba(22,163,74,0.4); }
@@ -3283,6 +3286,7 @@
   loadSalesLog();
   let rptMonthOffset = 0; // 0 = current month
   let rptSalesTarget = 15000;
+  let rptEodViewDate = null; // null = today; otherwise a Date object for the day being viewed
 
   function openOrdersModal() {
     document.getElementById('ordersOverlay').classList.add('show');
@@ -3310,14 +3314,17 @@
     if (e.target === document.getElementById('rptOverlay')) closeReports();
   }
 
-  function switchRptTab(tab) {
+  function switchRptTab(tab, preserveEodDate) {
     ['eod','hourly','month','wastage','orders'].forEach(t => {
       const tabEl = document.getElementById('rptTab_' + t);
       const paneEl = document.getElementById('rptPane_' + t);
       if (tabEl) tabEl.classList.toggle('active', t === tab);
       if (paneEl) paneEl.style.display = t === tab ? 'flex' : 'none';
     });
-    if (tab === 'eod') renderRptEod();
+    if (tab === 'eod') {
+      if (!preserveEodDate) rptEodViewDate = null;
+      renderRptEod();
+    }
     if (tab === 'hourly') renderRptHourly();
     if (tab === 'month') renderRptMonth();
     if (tab === 'wastage') renderRptWastage();
@@ -3337,8 +3344,24 @@
     });
   }
 
+  function salesForDate(date) {
+    const key = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
+    return salesLog.filter(t => {
+      const d = t.date;
+      return !t.voided && !t.refund && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === key;
+    });
+  }
+
+  function wastageForDate(date) {
+    return wastageLog.filter(e => {
+      const d = new Date(e.date);
+      return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
+    });
+  }
+
   function renderRptEod() {
-    const txs = todaySales();
+    const viewDate = rptEodViewDate || new Date();
+    const txs = salesForDate(viewDate);
     const gross = txs.reduce((a, t) => a + t.gross, 0);
     const disc  = txs.reduce((a, t) => a + t.discount, 0);
     const tax   = txs.reduce((a, t) => a + t.tax, 0);
@@ -3347,12 +3370,18 @@
     const avgReceipt = txs.length ? net / txs.length : 0;
     const profit = net * 0.65;
 
-    const today = new Date();
-    const wastageEntries = wastageLog.filter(e => {
-      const d = new Date(e.date);
-      return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
-    });
+    const wastageEntries = wastageForDate(viewDate);
     const wastageCost = wastageEntries.reduce((a, e) => a + (e.cost || 0), 0);
+
+    // Date label / back-to-today control
+    const isToday = !rptEodViewDate || isSameDay(rptEodViewDate, new Date());
+    const dateLabelEl = document.getElementById('rptEodDateLabel');
+    const backBtnEl = document.getElementById('rptEodBackBtn');
+    if (dateLabelEl) {
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      dateLabelEl.textContent = isToday ? 'Today' : (monthNames[viewDate.getMonth()] + ' ' + viewDate.getDate() + ', ' + viewDate.getFullYear());
+    }
+    if (backBtnEl) backBtnEl.style.display = isToday ? 'none' : '';
 
     document.getElementById('rptEodGross').textContent  = '$' + gross.toFixed(2);
     document.getElementById('rptEodNet').textContent    = '$' + net.toFixed(2);
@@ -3368,6 +3397,20 @@
     document.getElementById('rptBdProfit').textContent  = '$' + profit.toFixed(2);
 
     renderRptEodDetail(txs, wastageEntries);
+  }
+
+  function isSameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  function openEodForDate(yr, mo, day) {
+    rptEodViewDate = new Date(yr, mo, day);
+    switchRptTab('eod', true);
+  }
+
+  function rptEodBackToToday() {
+    rptEodViewDate = null;
+    renderRptEod();
   }
 
   function getProductCategory(name) {
@@ -3455,7 +3498,6 @@
     document.getElementById('rptDtWastageRow').style.display = wastageEntries.length > 0 ? '' : 'none';
     document.getElementById('rptDtWastage').textContent = wastageEntries.length + ' entries';
   }
-
   function exportMonthToExcel() {
     const now = new Date();
     const viewDate = new Date(now.getFullYear(), now.getMonth() + rptMonthOffset, 1);
@@ -3658,7 +3700,9 @@
     for (let d = 1; d <= daysInMonth; d++) {
       const isToday = isCurrentMonth && d === today;
       const data = dayMap[d];
-      cal += `<div class="rpt-cal-day${data ? ' has-sales' : ''}${isToday ? ' today' : ''}">
+      const isFuture = new Date(yr, mo, d) > new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const clickable = !isFuture;
+      cal += `<div class="rpt-cal-day${data ? ' has-sales' : ''}${isToday ? ' today' : ''}${clickable ? ' clickable' : ''}"${clickable ? ` onclick="openEodForDate(${yr},${mo},${d})"` : ''}>
         <div class="rpt-cal-day-num">${d}${isToday ? ' ·' : ''}</div>
         ${data ? `<div class="rpt-cal-day-sal">$${data.total.toFixed(0)}</div><div class="rpt-cal-day-ord">${data.orders} order${data.orders>1?'s':''}</div>` : ''}
       </div>`;
@@ -4675,6 +4719,12 @@
 
     <!-- END OF DAY -->
     <div class="rpt-body" id="rptPane_eod" style="display:flex;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:-4px;">
+        <div style="font-size:13px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.06em;" id="rptEodDateLabel">Today</div>
+        <button class="rpt-detail-btn" id="rptEodBackBtn" style="display:none;" onclick="rptEodBackToToday()">
+          <i class="ti ti-arrow-back"></i> Back to Today
+        </button>
+      </div>
       <div class="rpt-stat-grid">
         <div class="rpt-stat-card">
           <div class="rpt-stat-label">Gross Sales <i class="ti ti-currency-dollar"></i></div>
