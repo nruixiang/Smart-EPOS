@@ -823,7 +823,7 @@
       </button>
       <button class="action-btn" onclick="openReports()"><i class="ti ti-chart-bar"></i><span>Reports</span></button>
       <button class="action-btn" onclick="openMembers()"><i class="ti ti-users"></i><span>Members</span></button>
-      <button class="action-btn" onclick="openOrdersModal()"><i class="ti ti-shopping-cart"></i><span>Transactions</span></button>
+      <button class="action-btn" onclick="openOrdersModal()"><i class="ti ti-shopping-cart"></i><span>Orders</span></button>
     </div>
   </div>
 
@@ -1406,7 +1406,7 @@
     const grid = document.getElementById('productsGrid');
     const prods = getProducts();
     if (!prods.length) { grid.innerHTML = '<p style="color:var(--text-tertiary);font-size:13px;padding:12px;">No products found.</p>'; return; }
-    const isAdmin = currentStaffId === '0000';
+    const isAdmin = currentStaffRole === 'Administrator';
     grid.innerHTML = prods.map(p => {
       const safeName = p.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
       const imgUrl = getProductImg(p.name);
@@ -2492,7 +2492,7 @@
   let pinValue = '';
 
   function openAdminPinModal() {
-    if (!currentStaffId || currentStaffId !== '0000') return; // only admin
+    if (!currentStaffId || currentStaffRole !== 'Administrator') return; // only admin
     openAdminPanel();
   }
 
@@ -2543,14 +2543,15 @@
 
   function updateThemeToggleVisibility() { /* no-op, replaced by admin panel */ }
 
-  function applySession(staffId, staffRole) {
+  function applySession(staffId, staffRole, staffName) {
     currentStaffId = staffId;
     currentStaffRole = staffRole;
-    const roleLabel = staffId === '0000' ? 'Admin' : 'Staff';
-    document.getElementById('headerStaffId').textContent = staffId + ' · ' + staffRole;
+    const isAdmin = staffRole === 'Administrator';
+    const roleLabel = isAdmin ? 'Admin' : 'Staff';
+    document.getElementById('headerStaffId').textContent = staffId + ' · ' + (staffName || staffRole);
     document.getElementById('headerRole').textContent = roleLabel;
     const adminPill = document.getElementById('adminPill');
-    if (staffId === '0000') {
+    if (isAdmin) {
       adminPill.classList.add('header-pill-btn');
       adminPill.style.cursor = 'pointer';
     } else {
@@ -2561,23 +2562,39 @@
     renderProducts();
   }
 
-  function submitClockIn() {
+  async function submitClockIn() {
     if (!clockinStaffId || !clockinPassword) return;
     const id = clockinStaffId.padStart(4, '0');
-    const role = id === '0000' ? 'Administrator' : 'Staff';
+
+    // Look up staff in Supabase
+    const { data, error } = await db.from('staff').select('*').eq('id', id).single();
+
+    if (error || !data) {
+      showToast('Staff ID not found');
+      return;
+    }
+    if (data.pin !== clockinPassword) {
+      showToast('Incorrect PIN');
+      return;
+    }
+
+    const role = data.role || 'Staff';
+    const name = data.name || id;
     localStorage.setItem('epos_staff_id', id);
     localStorage.setItem('epos_staff_role', role);
-    applySession(id, role);
+    localStorage.setItem('epos_staff_name', name);
+    applySession(id, role, name);
     closeClockIn();
-    showToast('Clocked in as ' + id + ' · ' + role);
+    showToast('Clocked in as ' + name + ' · ' + role);
   }
 
   // ── Restore session on startup ──
   (function restoreSession() {
     const savedId = localStorage.getItem('epos_staff_id');
     const savedRole = localStorage.getItem('epos_staff_role');
+    const savedName = localStorage.getItem('epos_staff_name');
     if (savedId) {
-      applySession(savedId, savedRole || (savedId === '0000' ? 'Administrator' : 'Staff'));
+      applySession(savedId, savedRole || 'Staff', savedName || savedId);
     }
   })();
 
@@ -4343,7 +4360,7 @@
 <div class="rpt-overlay" id="ordersOverlay" onclick="closeOrdersIfBg(event)">
   <div class="rpt-modal">
     <div class="rpt-header">
-      <div class="rpt-title">Transactions</div>
+      <div class="rpt-title">Orders</div>
       <button class="rpt-close" onclick="closeOrdersModal()"><i class="ti ti-x"></i></button>
     </div>
     <div class="rpt-body" style="display:flex;">
