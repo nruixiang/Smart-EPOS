@@ -507,6 +507,7 @@
     .mem-field-label .req { color: #dc2626; }
     .mem-field-input { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-primary); color: var(--text-primary); font-family: var(--font); outline: none; margin-bottom: 14px; }
     .mem-field-input:focus { border-color: var(--blue); }
+    .mem-field-input.field-error { border-color: var(--red); }
     .mem-form-footer { display: flex; gap: 8px; padding: 14px 18px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
     .mem-btn-cancel { flex: 1; padding: 11px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background 0.15s; }
     .mem-btn-cancel:hover { background: var(--bg-secondary); }
@@ -2303,14 +2304,22 @@
     document.getElementById('regPhone').value = '';
     document.getElementById('regEmail').value = '';
     document.getElementById('regBday').value = '';
+    document.getElementById('regName').classList.remove('field-error');
+    document.getElementById('regPhone').classList.remove('field-error');
     showMemPanel('Register');
   }
 
   function registerCustomer() {
-    const name = document.getElementById('regName').value.trim();
-    const phone = document.getElementById('regPhone').value.trim();
+    const nameEl = document.getElementById('regName');
+    const phoneEl = document.getElementById('regPhone');
+    const name = nameEl.value.trim();
+    const phone = phoneEl.value.trim();
     const email = document.getElementById('regEmail').value.trim();
     const bday = document.getElementById('regBday').value;
+
+    nameEl.classList.toggle('field-error', !name);
+    phoneEl.classList.toggle('field-error', !phone);
+
     if (!name || !phone) { showToast('Name and phone are required'); return; }
     startPhoneVerification({ name, phone, email, bday });
   }
@@ -2757,7 +2766,10 @@
   function syncFieldKb() {
     document.getElementById('fieldKbVal').value = fieldKbBuffer;
     const input = document.getElementById(fieldKbTargetId);
-    if (input) input.value = fieldKbBuffer;
+    if (input) {
+      input.value = fieldKbBuffer;
+      if (fieldKbBuffer) input.classList.remove('field-error');
+    }
     if (fieldKbTargetId === 'customerDisplay') updateCustomerMatchCard();
     if (fieldKbTargetId === 'memSearchInput') renderMembersList();
     if (fieldKbTargetId === 'searchInput') filterProducts();
@@ -2996,7 +3008,10 @@
       updateCustomerMatchCard();
     } else if (numpadTarget === 'phoneField') {
       const input = document.getElementById(numpadFieldId);
-      if (input) input.value = numpadValue;
+      if (input) {
+        input.value = numpadValue;
+        if (numpadValue) input.classList.remove('field-error');
+      }
       numpadFieldId = null;
     } else if (numpadTarget === 'otpCode') {
       otpValue = numpadValue;
