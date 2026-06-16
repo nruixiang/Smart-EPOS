@@ -177,7 +177,7 @@
     .clockin-btn:hover { opacity: 0.85; }
 
     /* NUMPAD SHEET */
-    .numpad-sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: flex-end; justify-content: center; z-index: 600; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .numpad-sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: flex-end; justify-content: center; z-index: 12000; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .numpad-sheet.show { opacity: 1; pointer-events: all; }
     .numpad-inner { background: var(--bg-primary); border-radius: 16px 16px 0 0; width: 100%; max-width: 420px; padding: 16px 20px 28px; display: flex; flex-direction: column; gap: 12px; transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.32,0.72,0,1); }
     .numpad-sheet.show .numpad-inner { transform: translateY(0); }
@@ -196,7 +196,7 @@
     .badge { background: var(--green); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
 
     /* OTP Verification Modal */
-    .otp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .otp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 11000; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .otp-overlay.show { opacity: 1; pointer-events: all; }
     .otp-card { background: var(--bg-primary); border-radius: 16px; width: 100%; max-width: 360px; padding: 24px; display: flex; flex-direction: column; gap: 14px; transform: scale(0.95); transition: transform 0.2s cubic-bezier(0.32,0.72,0,1); margin: 16px; }
     .otp-overlay.show .otp-card { transform: scale(1); }
