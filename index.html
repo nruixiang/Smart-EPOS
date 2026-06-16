@@ -1496,10 +1496,11 @@
 
   async function verifyOtpRequest(phone, code) {
     console.log('Verifying OTP — phone:', phone, 'code:', code);
+    const normalizedPhone = normalizePhone(phone);
     const res = await fetch(OTP_VERIFY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
-      body: JSON.stringify({ phone, code })
+      body: JSON.stringify({ phone: normalizedPhone, code })
     });
     return res.json();
   }
