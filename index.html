@@ -193,6 +193,26 @@
     .numpad-key:active { background: var(--bg-tertiary); transform: scale(0.95); }
     .numpad-key.key-del { background: var(--bg-secondary); font-size: 18px; }
     .numpad-key.key-empty { background: transparent; cursor: default; }
+    .forecast-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .forecast-title { font-size:16px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:6px; }
+    .forecast-title i { color: #7c3aed; }
+    .forecast-sub { font-size:12px; color:var(--text-tertiary); margin-top:2px; }
+    .forecast-refresh-btn { display:flex; align-items:center; gap:5px; padding:8px 14px; border-radius:10px; border:1.5px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); white-space:nowrap; transition: border-color 0.15s; }
+    .forecast-refresh-btn:hover { border-color: #7c3aed; color: #7c3aed; }
+    .forecast-refresh-btn:disabled { opacity:0.5; cursor:default; }
+    .forecast-spinner { width:28px; height:28px; border:3px solid var(--border); border-top-color:#7c3aed; border-radius:50%; animation: otp-spin 0.7s linear infinite; }
+    .forecast-chart-wrap { background:var(--bg-secondary); border-radius:12px; padding:14px; }
+    .forecast-chart-title { font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em; }
+    .forecast-bars { display:flex; align-items:flex-end; gap:4px; height:80px; }
+    .forecast-bar-wrap { display:flex; flex-direction:column; align-items:center; gap:3px; flex:1; }
+    .forecast-bar { width:100%; border-radius:4px 4px 0 0; background:#ddd6fe; transition:height 0.4s ease; min-height:2px; }
+    [data-theme="dark"] .forecast-bar { background:#4c1d95; }
+    .forecast-bar.peak { background:#7c3aed; }
+    .forecast-bar-label { font-size:9px; color:var(--text-tertiary); white-space:nowrap; }
+    .forecast-narrative-card { background:var(--bg-secondary); border-radius:12px; padding:14px; border-left:3px solid #7c3aed; }
+    .forecast-narrative-label { font-size:11px; font-weight:700; color:#7c3aed; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; display:flex; align-items:center; gap:5px; }
+    .forecast-narrative { font-size:13px; color:var(--text-primary); line-height:1.6; }
+    .forecast-disclaimer { font-size:11px; color:var(--text-tertiary); text-align:center; }
     .badge { background: var(--green); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
 
     /* OTP Verification Modal */
@@ -3108,7 +3128,127 @@
     el.innerHTML = (text || '') + '<span class="cursor"></span>';
   }
 
-  // If no saved session, render products in default (non-admin) state
+  // ── AI Traffic Forecast ──
+  const GEMINI_API_KEY = 'AQ.Ab8RN6LCDvVHaRfL5rimptEhw565_dnWqoG1LfK3A7pEkxTUFA'; // ← paste your key here
+  const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_API_KEY;
+
+  function buildForecastPrompt() {
+    const now = new Date();
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const today = dayNames[now.getDay()];
+    const hour = now.getHours();
+
+    // Summarise last 14 days of sales by day-of-week and hour
+    const daySummary = {};
+    const hourSummary = {};
+    salesLog.forEach(t => {
+      if (t.voided || t.refund) return;
+      const d = t.date;
+      const dow = dayNames[d.getDay()];
+      const h = d.getHours();
+      daySummary[dow] = (daySummary[dow] || 0) + 1;
+      hourSummary[h] = (hourSummary[h] || 0) + 1;
+    });
+
+    const dayLines = Object.entries(daySummary).map(([d,c]) => `${d}: ${c} orders`).join(', ') || 'No historical data yet';
+    const hourLines = Object.entries(hourSummary).sort((a,b)=>+a[0]-+b[0]).map(([h,c]) => `${h}:00-${+h+1}:00: ${c} orders`).join(', ') || 'No historical data yet';
+    const totalOrders = salesLog.filter(t => !t.voided && !t.refund).length;
+
+    return `You are a retail traffic forecasting assistant for a small business POS system called Smart EPOS.
+
+Business type: ${BUSINESS_TYPE || 'retail'}
+Current day: ${today}
+Current time: ${hour}:00
+Total historical orders in system: ${totalOrders}
+
+Historical orders by day of week: ${dayLines}
+Historical orders by hour of day: ${hourLines}
+
+Based on this data, forecast today's (${today}) expected customer traffic. If there is little or no historical data, make reasonable assumptions for a small ${BUSINESS_TYPE || 'retail'} business.
+
+Respond ONLY with a JSON object in this exact format, no markdown, no explanation:
+{
+  "total": <estimated number of customers today as integer>,
+  "peak_hour": "<e.g. 12:00 - 13:00>",
+  "hourly": {
+    "9": <estimated customers>,
+    "10": <estimated customers>,
+    "11": <estimated customers>,
+    "12": <estimated customers>,
+    "13": <estimated customers>,
+    "14": <estimated customers>,
+    "15": <estimated customers>,
+    "16": <estimated customers>,
+    "17": <estimated customers>,
+    "18": <estimated customers>,
+    "19": <estimated customers>,
+    "20": <estimated customers>
+  },
+  "insight": "<2-3 sentence plain English summary of the forecast and any useful tips for today>"
+}`;
+  }
+
+  async function runForecast() {
+    const btn = document.getElementById('forecastRefreshBtn');
+    btn.disabled = true;
+    document.getElementById('forecastEmpty').style.display = 'none';
+    document.getElementById('forecastResults').style.display = 'none';
+    document.getElementById('forecastLoading').style.display = 'flex';
+
+    try {
+      const res = await fetch(GEMINI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: buildForecastPrompt() }] }],
+          generationConfig: { temperature: 0.4, maxOutputTokens: 600 }
+        })
+      });
+
+      const data = await res.json();
+      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const forecast = JSON.parse(clean);
+
+      // Render summary cards
+      document.getElementById('fcTotal').textContent = forecast.total;
+      document.getElementById('fcPeak').textContent = forecast.peak_hour;
+
+      // Render bar chart
+      const hours = forecast.hourly;
+      const maxVal = Math.max(...Object.values(hours), 1);
+      const barsEl = document.getElementById('fcBars');
+      const peakHourNum = parseInt(forecast.peak_hour);
+      barsEl.innerHTML = Object.entries(hours).map(([h, v]) => {
+        const heightPct = Math.round((v / maxVal) * 100);
+        const isPeak = parseInt(h) === peakHourNum;
+        const label = parseInt(h) >= 12 ? (parseInt(h) === 12 ? '12p' : (parseInt(h)-12)+'p') : h+'a';
+        return `<div class="forecast-bar-wrap">
+          <div class="forecast-bar${isPeak ? ' peak' : ''}" style="height:${heightPct}%;" title="${h}:00 — ~${v} customers"></div>
+          <div class="forecast-bar-label">${label}</div>
+        </div>`;
+      }).join('');
+
+      // Render narrative
+      document.getElementById('fcNarrative').textContent = forecast.insight;
+
+      // Update date line
+      const now = new Date();
+      const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      document.getElementById('forecastDateLine').textContent = dayNames[now.getDay()] + ' · AI-generated estimate';
+
+      document.getElementById('forecastLoading').style.display = 'none';
+      document.getElementById('forecastResults').style.display = 'flex';
+
+    } catch (err) {
+      document.getElementById('forecastLoading').style.display = 'none';
+      document.getElementById('forecastEmpty').style.display = 'flex';
+      showToast('Forecast failed — check your API key');
+      console.error('Forecast error:', err);
+    }
+
+    btn.disabled = false;
+  }
   if (!localStorage.getItem('epos_staff_id')) renderProducts();
   // Ensure header pill reflects correct initial state
   if (!localStorage.getItem('epos_staff_id')) {
@@ -3371,7 +3511,7 @@
   }
 
   function switchRptTab(tab, preserveEodDate) {
-    ['eod','hourly','month','wastage','orders'].forEach(t => {
+    ['eod','hourly','month','wastage','forecast'].forEach(t => {
       const tabEl = document.getElementById('rptTab_' + t);
       const paneEl = document.getElementById('rptPane_' + t);
       if (tabEl) tabEl.classList.toggle('active', t === tab);
@@ -3384,7 +3524,6 @@
     if (tab === 'hourly') renderRptHourly();
     if (tab === 'month') renderRptMonth();
     if (tab === 'wastage') renderRptWastage();
-    if (tab === 'orders') renderOrdersTab();
   }
 
   function todayKey() {
@@ -4771,6 +4910,7 @@
       <button class="rpt-tab" id="rptTab_hourly" onclick="switchRptTab('hourly')">Hourly</button>
       <button class="rpt-tab" id="rptTab_month" onclick="switchRptTab('month')">Month to Date</button>
       <button class="rpt-tab" id="rptTab_wastage" onclick="switchRptTab('wastage')">Wastage</button>
+      <button class="rpt-tab" id="rptTab_forecast" onclick="switchRptTab('forecast')"><i class="ti ti-sparkles" style="font-size:12px;"></i> AI Forecast</button>
     </div>
 
     <!-- END OF DAY -->
@@ -4938,10 +5078,51 @@
       </div>
     </div>
 
+    <!-- AI FORECAST -->
+    <div class="rpt-body" id="rptPane_forecast" style="display:none; gap:14px;">
+      <div class="forecast-header">
+        <div>
+          <div class="forecast-title"><i class="ti ti-sparkles"></i> AI Traffic Forecast</div>
+          <div class="forecast-sub" id="forecastDateLine">Today's estimated customer traffic</div>
+        </div>
+        <button class="forecast-refresh-btn" id="forecastRefreshBtn" onclick="runForecast()">
+          <i class="ti ti-refresh"></i> Generate
+        </button>
+      </div>
+      <div id="forecastEmpty" class="rpt-empty">
+        <i class="ti ti-chart-dots"></i>
+        <div style="font-weight:600;">No forecast yet</div>
+        <div style="color:var(--text-tertiary);">Hit Generate to get today's AI traffic estimate.</div>
+      </div>
+      <div id="forecastLoading" style="display:none; flex-direction:column; align-items:center; gap:12px; padding:32px 0;">
+        <div class="forecast-spinner"></div>
+        <div style="font-size:13px; color:var(--text-secondary);">Analysing your sales data…</div>
+      </div>
+      <div id="forecastResults" style="display:none; flex-direction:column; gap:14px;">
+        <div class="rpt-stat-grid">
+          <div class="rpt-stat-card">
+            <div class="rpt-stat-label">Expected Customers <i class="ti ti-users"></i></div>
+            <div class="rpt-stat-val" id="fcTotal">—</div>
+          </div>
+          <div class="rpt-stat-card">
+            <div class="rpt-stat-label">Peak Hour <i class="ti ti-clock"></i></div>
+            <div class="rpt-stat-val" id="fcPeak">—</div>
+          </div>
+        </div>
+        <div class="forecast-chart-wrap">
+          <div class="forecast-chart-title">Estimated Traffic by Hour</div>
+          <div class="forecast-bars" id="fcBars"></div>
+        </div>
+        <div class="forecast-narrative-card">
+          <div class="forecast-narrative-label"><i class="ti ti-message-dots"></i> AI Insight</div>
+          <div class="forecast-narrative" id="fcNarrative"></div>
+        </div>
+        <div class="forecast-disclaimer">Estimates are based on your historical sales data and may vary.</div>
+      </div>
+    </div>
+
   </div>
 </div>
-
-<!-- Orders Modal -->
 <div class="rpt-overlay" id="ordersOverlay" onclick="closeOrdersIfBg(event)">
   <div class="rpt-modal">
     <div class="rpt-header">
