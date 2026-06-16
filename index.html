@@ -1519,6 +1519,12 @@
   }
 
   async function submitOtpVerification() {
+    // Sync in case numpad is still open
+    if (numpadTarget === 'otpCode') {
+      otpValue = numpadValue;
+      updateOtpCodeDisplay();
+      closeNumpad();
+    }
     const code = getOtpCode();
     if (code.length !== 6) {
       document.getElementById('otpError').textContent = 'Enter all 6 digits';
