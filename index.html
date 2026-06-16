@@ -3129,8 +3129,8 @@
   }
 
   // ── AI Traffic Forecast ──
-  const GEMINI_API_KEY = 'AQ.Ab8RN6LCDvVHaRfL5rimptEhw565_dnWqoG1LfK3A7pEkxTUFA'; // ← paste your key here
-  const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_API_KEY;
+  const GROQ_API_KEY = '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'; // ← paste your gsk_... key here
+  const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
   function buildForecastPrompt() {
     const now = new Date();
@@ -3196,17 +3196,22 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     document.getElementById('forecastLoading').style.display = 'flex';
 
     try {
-      const res = await fetch(GEMINI_URL, {
+      const res = await fetch(GROQ_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + GROQ_API_KEY
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: buildForecastPrompt() }] }],
-          generationConfig: { temperature: 0.4, maxOutputTokens: 600 }
+          model: 'llama3-8b-8192',
+          messages: [{ role: 'user', content: buildForecastPrompt() }],
+          temperature: 0.4,
+          max_tokens: 600
         })
       });
 
       const data = await res.json();
-      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const raw = data?.choices?.[0]?.message?.content || '';
       const clean = raw.replace(/```json|```/g, '').trim();
       const forecast = JSON.parse(clean);
 
