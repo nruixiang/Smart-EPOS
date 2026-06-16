@@ -1306,8 +1306,16 @@
   // ── Business Setup ──
   const BUSINESS_NAME_KEY = 'smartepos_business_name';
   const BUSINESS_TYPE_KEY = 'smartepos_business_type';
+  const BUSINESS_PHONE_KEY = 'smartepos_business_phone';
   let BUSINESS_NAME = 'LUMIÈRE';
   let BUSINESS_TYPE = '';
+
+  function updateSetupBtn() {
+    const name = document.getElementById('setupBusinessName').value.trim();
+    const type = document.getElementById('setupBusinessType').value;
+    const phone = document.getElementById('setupPhone').value.trim();
+    document.getElementById('setupContinueBtn').disabled = !name || !type || !phone;
+  }
 
   function initSetup() {
     const saved = localStorage.getItem(BUSINESS_NAME_KEY);
@@ -1331,11 +1339,14 @@
     const el = document.getElementById('setupOverlay');
     const input = document.getElementById('setupBusinessName');
     const typeSelect = document.getElementById('setupBusinessType');
+    const phoneInput = document.getElementById('setupPhone');
     const saved = localStorage.getItem(BUSINESS_NAME_KEY) || '';
     const savedType = localStorage.getItem(BUSINESS_TYPE_KEY) || '';
+    const savedPhone = localStorage.getItem(BUSINESS_PHONE_KEY) || '';
     input.value = saved;
     typeSelect.value = savedType;
-    document.getElementById('setupContinueBtn').disabled = !saved.trim() || !typeSelect.value;
+    phoneInput.value = savedPhone;
+    updateSetupBtn();
     el.classList.remove('hidden', 'fade-out');
     setTimeout(() => input.focus(), 100);
   }
@@ -1346,15 +1357,41 @@
     setTimeout(() => el.classList.add('hidden'), 420);
   }
 
-  function finishSetup() {
+  async function tryFinishSetup() {
     const name = document.getElementById('setupBusinessName').value.trim();
     const type = document.getElementById('setupBusinessType').value;
-    if (!name || !type) return;
+    const phone = document.getElementById('setupPhone').value.trim();
+    if (!name || !type || !phone) return;
+
+    // Store pending setup data and trigger OTP
+    otpPendingMember = { _setupMode: true, name, type, phone };
+    const btn = document.getElementById('setupContinueBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="otp-spinner"></span>Sending code…';
+
+    const normalizedPhone = normalizePhone(phone);
+    const result = await sendOtpRequest(normalizedPhone);
+
+    btn.disabled = false;
+    btn.textContent = 'Verify & Continue';
+    updateSetupBtn();
+
+    if (result.error) {
+      showToast('Could not send code: ' + result.error);
+    } else {
+      openOtpModal(normalizedPhone);
+    }
+  }
+
+  function finishSetup() {
+    const { name, type, phone } = otpPendingMember;
     localStorage.setItem(BUSINESS_NAME_KEY, name);
     localStorage.setItem(BUSINESS_TYPE_KEY, type);
+    localStorage.setItem(BUSINESS_PHONE_KEY, phone);
     BUSINESS_TYPE = type;
     applyBusinessName(name);
     hideSetupScreen();
+    otpPendingMember = null;
   }
 
   function applyBusinessName(name) {
@@ -1479,8 +1516,12 @@
     if (result.success) {
       otpVerifiedPhone = otpPendingMember.phone;
       closeOtpModal();
-      completeRegistration(otpPendingMember);
-      otpPendingMember = null;
+      if (otpPendingMember._setupMode) {
+        finishSetup();
+      } else {
+        completeRegistration(otpPendingMember);
+        otpPendingMember = null;
+      }
     } else {
       document.getElementById('otpError').textContent = result.error || 'Incorrect code';
     }
@@ -2321,7 +2362,7 @@
     phoneEl.classList.toggle('field-error', !phone);
 
     if (!name || !phone) { showToast('Name and phone are required'); return; }
-    startPhoneVerification({ name, phone, email, bday });
+    completeRegistration({ name, phone, email, bday });
   }
 
   function completeRegistration(memberData) {
@@ -4987,23 +5028,28 @@
   <div class="setup-card">
     <div class="setup-logo"><i class="ti ti-device-desktop"></i></div>
     <div class="setup-heading">Welcome to Smart EPOS</div>
-    <div class="setup-sub">Let's get your point of sale ready.<br>Start by entering your business name.</div>
+    <div class="setup-sub">Let's get your point of sale ready.<br>Fill in your business details to get started.</div>
     <div class="setup-field-label">Business Name</div>
     <input class="setup-input" id="setupBusinessName" type="text"
       placeholder="e.g. The Corner Café"
-      oninput="document.getElementById('setupContinueBtn').disabled = !this.value.trim() || !document.getElementById('setupBusinessType').value;"
-      onkeydown="if(event.key==='Enter' && this.value.trim() && document.getElementById('setupBusinessType').value) finishSetup();" />
+      oninput="updateSetupBtn();"
+      onkeydown="if(event.key==='Enter') tryFinishSetup();" />
     <div class="setup-field-label" style="margin-top:20px;">Business Type</div>
-    <select class="setup-select" id="setupBusinessType"
-      onchange="document.getElementById('setupContinueBtn').disabled = !document.getElementById('setupBusinessName').value.trim() || !this.value;">
+    <select class="setup-select" id="setupBusinessType" onchange="updateSetupBtn();">
       <option value="" disabled selected>Select a business type</option>
       <option value="fnb">Food &amp; Beverage</option>
       <option value="retail">Clothing &amp; Retail</option>
       <option value="services">Salon &amp; Services</option>
       <option value="other">Other</option>
     </select>
-    <button class="setup-btn" id="setupContinueBtn" onclick="finishSetup()" disabled>
-      Continue
+    <div class="setup-field-label" style="margin-top:20px;">Business WhatsApp Number</div>
+    <input class="setup-input" id="setupPhone" type="tel"
+      placeholder="e.g. +6591234567"
+      oninput="updateSetupBtn();"
+      onkeydown="if(event.key==='Enter') tryFinishSetup();" />
+    <div class="setup-hint" style="margin-bottom:12px;">A verification code will be sent to this number.</div>
+    <button class="setup-btn" id="setupContinueBtn" onclick="tryFinishSetup()" disabled>
+      Verify &amp; Continue
     </button>
     <div class="setup-hint">You can update this anytime from the Admin Panel.</div>
   </div>
