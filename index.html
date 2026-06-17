@@ -3987,8 +3987,10 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   async function deleteWastageEntry(id) {
+    console.log('deleteWastageEntry called with id:', id, 'db:', !!db);
     if (!db) { wastageLog = wastageLog.filter(e => String(e.id) !== String(id)); renderRptWastage(); return; }
-    const { error } = await db.from('wastage_log').delete().eq('id', String(id));
+    const { error, data } = await db.from('wastage_log').delete().eq('id', String(id)).select();
+    console.log('delete result — error:', JSON.stringify(error), 'data:', JSON.stringify(data));
     if (error) { console.error('deleteWastageEntry error:', JSON.stringify(error)); return; }
     wastageLog = wastageLog.filter(e => String(e.id) !== String(id));
     renderRptWastage();
@@ -4012,11 +4014,6 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       date: entry.date, cost: entry.cost
     });
     if (error) console.error('saveWastageEntry error:', JSON.stringify(error));
-  }
-  async function deleteWastageEntry(id) {
-    if (!db) return;
-    const { error } = await db.from('wastage_log').delete().eq('id', String(id));
-    if (error) console.error('deleteWastageEntry error:', JSON.stringify(error));
   }
   let wastageSelectedItems = {}; // { itemName: qty }
   let wastageSelectedReason = null;
