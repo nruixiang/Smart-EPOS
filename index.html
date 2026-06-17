@@ -2490,7 +2490,8 @@
     const card = document.getElementById('customerMatchCard');
     const digits = fieldKbBuffer.replace(/\D/g, '');
     if (digits.length < 8) { card.style.display = 'none'; return; }
-    const match = members.find(m => m.phone.replace(/\D/g,'') === digits);
+    // Match on last 8 digits to handle numbers stored with country code (e.g. +65)
+    const match = members.find(m => m.phone.replace(/\D/g,'').slice(-8) === digits.slice(-8));
     if (!match) { card.style.display = 'none'; return; }
     document.getElementById('matchAvatar').textContent = getInitial(match.name);
     document.getElementById('matchName').textContent = match.name;
