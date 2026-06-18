@@ -740,6 +740,40 @@
     .rpt-wastage-log-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
     .rpt-wastage-log-qty { margin-left: auto; font-size: 15px; font-weight: 700; color: var(--red); flex-shrink: 0; }
 
+    /* CASH FLOAT */
+    .rpt-cashfloat-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px 16px; border-radius: var(--radius-md); border: none; background: var(--blue); color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; margin-bottom: 4px; }
+    .rpt-cashfloat-btn:hover { opacity: 0.88; }
+    .rpt-cashfloat-btn i { font-size: 18px; }
+    .rpt-cashfloat-log-entry { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--bg-primary); }
+    .rpt-cashfloat-log-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; color: var(--blue); }
+    .rpt-cashfloat-log-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+    .rpt-cashfloat-log-amt { margin-left: auto; font-size: 15px; font-weight: 700; color: var(--blue); flex-shrink: 0; }
+
+    /* CASH FLOAT MODAL */
+    .cashfloat-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 600; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .cashfloat-overlay.show { opacity: 1; pointer-events: all; }
+    .cashfloat-modal { background: var(--bg-primary); border-radius: 16px; width: 360px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); border: 0.5px solid var(--border); }
+    .cashfloat-header { padding: 16px 20px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .cashfloat-title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+    .cashfloat-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+    .cashfloat-close { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 20px; display: flex; align-items: center; }
+    .cashfloat-close:hover { color: var(--text-primary); }
+    .cashfloat-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+    .cashfloat-input-display { margin: 0 0 10px; padding: 14px; border: 1.5px solid var(--border-hover); border-radius: var(--radius-md); font-size: 26px; font-weight: 700; color: var(--text-secondary); background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .cashfloat-input-display span { color: var(--text-primary); }
+    .cashfloat-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+    .cashfloat-key { padding: 15px 0; border: 0.5px solid var(--border); border-radius: var(--radius-md); background: var(--bg-primary); font-size: 18px; font-weight: 500; color: var(--text-primary); cursor: pointer; transition: background 0.1s; font-family: var(--font); text-align: center; }
+    .cashfloat-key:active { background: var(--bg-tertiary); transform: scale(0.96); }
+    .cashfloat-key.key-del { background: var(--bg-secondary); }
+    .cashfloat-note-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .cashfloat-note-input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; color: var(--text-primary); background: var(--bg-primary); font-family: var(--font); outline: none; margin-bottom: 4px; }
+    .cashfloat-note-input:focus { border-color: var(--blue); }
+    .cashfloat-footer { padding: 14px 20px; border-top: 0.5px solid var(--border); display: flex; gap: 10px; flex-shrink: 0; }
+    .cashfloat-footer button { flex: 1; padding: 13px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; border: none; }
+    .cashfloat-cancel-btn { background: var(--bg-secondary); color: var(--text-secondary); }
+    .cashfloat-confirm-btn { background: var(--blue); color: white; }
+    .cashfloat-confirm-btn:disabled { background: var(--bg-tertiary); color: var(--text-tertiary); cursor: not-allowed; }
+
     /* WASTAGE MODAL */
     .wastage-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .wastage-overlay.show { opacity: 1; pointer-events: all; }
@@ -3513,6 +3547,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     rptMonthOffset = 0;
     document.getElementById('rptOverlay').classList.add('show');
     switchRptTab('eod');
+    getCashFloatLog().then(() => renderRptEod());
   }
 
   function closeReports() {
@@ -3603,6 +3638,39 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     document.getElementById('rptBdTax').textContent     = '$' + tax.toFixed(2);
     document.getElementById('rptBdTotal').textContent   = '$' + net.toFixed(2);
     document.getElementById('rptBdProfit').textContent  = '$' + profit.toFixed(2);
+
+    // Cash float (excluded from profit calc — only affects cash drawer tally)
+    const cashSalesAmt = txs.filter(t => t.method === 'Cash').reduce((a,t) => a + t.total, 0);
+    const floatEntries = cashFloatForDate(viewDate).sort((a,b) => new Date(b.date) - new Date(a.date));
+    const floatTotal = floatEntries.reduce((a,e) => a + (parseFloat(e.amount) || 0), 0);
+    const expectedDrawer = cashSalesAmt + floatTotal;
+    document.getElementById('rptCfCashSales').textContent = '$' + cashSalesAmt.toFixed(2);
+    document.getElementById('rptCfFloatTotal').textContent = '$' + floatTotal.toFixed(2);
+    document.getElementById('rptCfExpected').textContent = '$' + expectedDrawer.toFixed(2);
+    document.getElementById('rptDtCashFloat').textContent = '$' + floatTotal.toFixed(2);
+    document.getElementById('rptDtCashDrawer').textContent = '$' + expectedDrawer.toFixed(2);
+
+    const floatBtn = document.getElementById('rptCashFloatBtn');
+    if (floatBtn) floatBtn.style.display = isToday ? '' : 'none';
+
+    const logEl = document.getElementById('rptCashFloatLog');
+    if (logEl) {
+      if (!floatEntries.length) {
+        logEl.innerHTML = '';
+      } else {
+        logEl.innerHTML = floatEntries.map(e => {
+          const t = new Date(e.date);
+          const timeStr = isNaN(t) ? '' : t.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+          const noteStr = e.note ? e.note : (e.staff_id ? ('Staff ' + e.staff_id) : 'Cash float');
+          return '<div class="rpt-cashfloat-log-entry">' +
+            '<div class="rpt-cashfloat-log-icon"><i class="ti ti-cash-banknote"></i></div>' +
+            '<div><div style="font-size:13px;font-weight:600;color:var(--text-primary);">' + noteStr + '</div>' +
+            '<div class="rpt-cashfloat-log-meta">' + timeStr + (e.staff_id ? (' \u00B7 Staff ' + e.staff_id) : '') + '</div></div>' +
+            '<div class="rpt-cashfloat-log-amt">+$' + (parseFloat(e.amount)||0).toFixed(2) + '</div>' +
+            '</div>';
+        }).join('');
+      }
+    }
 
     renderRptEodDetail(txs, wastageEntries);
   }
@@ -3999,6 +4067,93 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     if (error) { console.error('deleteWastageEntry error:', JSON.stringify(error)); return; }
     wastageLog = wastageLog.filter(e => String(e.id) !== String(id));
     renderRptWastage();
+  }
+
+  // ── Cash Float ──
+  let cashFloatLog = [];
+  async function getCashFloatLog() {
+    if (!db) return cashFloatLog;
+    const { data, error } = await db.from('cash_float').select('*').order('date', {ascending: false});
+    if (error) { console.error('getCashFloatLog error:', JSON.stringify(error)); return cashFloatLog; }
+    cashFloatLog = data || [];
+    return cashFloatLog;
+  }
+  async function saveCashFloatEntry(entry) {
+    if (!db) return;
+    const { data, error } = await db.from('cash_float').insert({
+      amount: entry.amount, note: entry.note, date: entry.date, staff_id: entry.staff_id
+    }).select();
+    if (error) { console.error('saveCashFloatEntry error:', JSON.stringify(error)); return null; }
+    return data && data[0] ? data[0] : null;
+  }
+  function cashFloatForDate(date) {
+    return cashFloatLog.filter(e => {
+      if (!e.date) return false;
+      const d = new Date(e.date);
+      return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
+    });
+  }
+
+  // ── Cash Float Modal ──
+  let cfRaw = '';
+  function openCashFloat() {
+    cfRaw = '';
+    document.getElementById('cashFloatNote').value = '';
+    updateCfDisplay();
+    const now = new Date();
+    document.getElementById('cashFloatModalSub').textContent = 'Today, ' + now.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+    document.getElementById('cashFloatOverlay').classList.add('show');
+  }
+
+  function closeCashFloat() {
+    document.getElementById('cashFloatOverlay').classList.remove('show');
+  }
+
+  function closeCashFloatIfBg(e) {
+    if (e.target === document.getElementById('cashFloatOverlay')) closeCashFloat();
+  }
+
+  function cfKeyPress(val) {
+    if (val === '.') {
+      if (cfRaw.includes('.')) return;
+      if (cfRaw === '') cfRaw = '0';
+    }
+    const parts = cfRaw.split('.');
+    if (parts[1] && parts[1].length >= 2) return;
+    if (cfRaw.length >= 8) return;
+    cfRaw += val;
+    updateCfDisplay();
+  }
+
+  function cfKeyDel() {
+    cfRaw = cfRaw.slice(0, -1);
+    updateCfDisplay();
+  }
+
+  function updateCfDisplay() {
+    const val = cfRaw === '' ? '0.00' : cfRaw;
+    document.getElementById('cashFloatDisplay').textContent = val;
+    const amt = parseFloat(val) || 0;
+    document.getElementById('cashFloatConfirmBtn').disabled = !(amt > 0);
+  }
+
+  async function confirmCashFloat() {
+    const amt = parseFloat(cfRaw) || 0;
+    if (amt <= 0) return;
+    const note = document.getElementById('cashFloatNote').value.trim();
+    const entry = {
+      amount: amt,
+      note: note || null,
+      date: new Date().toISOString(),
+      staff_id: currentStaffId || null
+    };
+    const saved = await saveCashFloatEntry(entry);
+    cashFloatLog.unshift(saved || entry);
+    closeCashFloat();
+    showToast('Cash float of $' + amt.toFixed(2) + ' added');
+    if (rptEodViewDate === null || isSameDay(rptEodViewDate, new Date())) {
+      renderRptEod();
+    }
   }
 
   // ── Log Wastage Modal ──
@@ -4927,9 +5082,14 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     <div class="rpt-body" id="rptPane_eod" style="display:flex;">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:-4px;">
         <div style="font-size:13px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.06em;" id="rptEodDateLabel">Today</div>
-        <button class="rpt-detail-btn" id="rptEodBackBtn" style="display:none;" onclick="rptEodBackToToday()">
-          <i class="ti ti-arrow-back"></i> Back to Today
-        </button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="rpt-detail-btn" id="rptEodBackBtn" style="display:none;" onclick="rptEodBackToToday()">
+            <i class="ti ti-arrow-back"></i> Back to Today
+          </button>
+          <button class="rpt-cashfloat-btn" id="rptCashFloatBtn" onclick="openCashFloat()" style="width:auto; margin-bottom:0; padding:8px 14px; font-size:12.5px;">
+            <i class="ti ti-cash-banknote" style="font-size:15px;"></i> Add Cash Float
+          </button>
+        </div>
       </div>
       <div class="rpt-stat-grid">
         <div class="rpt-stat-card">
@@ -4965,6 +5125,17 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
         <div class="rpt-breakdown-row green"><span>Estimated Gross Profit (65% margin)</span><span id="rptBdProfit">$0.00</span></div>
       </div>
 
+      <!-- CASH DRAWER TALLY -->
+      <div class="rpt-breakdown">
+        <div class="rpt-breakdown-header">
+          <div class="rpt-breakdown-title">Cash Drawer Tally</div>
+        </div>
+        <div class="rpt-breakdown-row"><span>Cash Sales</span><span id="rptCfCashSales">$0.00</span></div>
+        <div class="rpt-breakdown-row" style="color:var(--blue);"><span>Cash Float Added</span><span id="rptCfFloatTotal">$0.00</span></div>
+        <div class="rpt-breakdown-row strong"><span>Expected Cash in Drawer</span><span id="rptCfExpected">$0.00</span></div>
+        <div id="rptCashFloatLog" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;"></div>
+      </div>
+
       <!-- DETAILED BREAKDOWN (toggled) -->
       <div class="rpt-breakdown" id="rptEodDetail" style="display:none;">
         <div class="rpt-breakdown-title">Detailed Breakdown</div>
@@ -4973,6 +5144,8 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
         <div class="rpt-breakdown-row"><span>Cash</span><span id="rptDtCash">$0.00</span></div>
         <div class="rpt-breakdown-row"><span>Credit Card</span><span id="rptDtCard">$0.00</span></div>
         <div class="rpt-breakdown-row"><span>Mobile / PayNow</span><span id="rptDtMobile">$0.00</span></div>
+        <div class="rpt-breakdown-row" style="color:var(--blue);"><span>Cash Float Added</span><span id="rptDtCashFloat">$0.00</span></div>
+        <div class="rpt-breakdown-row strong"><span>Expected Cash in Drawer</span><span id="rptDtCashDrawer">$0.00</span></div>
 
         <div class="rpt-detail-section-label">Sales Analysis</div>
         <div class="rpt-breakdown-row"><span>Net Sales (excl. tax)</span><span id="rptDtNet">$0.00</span></div>
@@ -5153,6 +5326,46 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     </div>
   </div>
 </div>
+
+<!-- Cash Float Modal -->
+<div class="cashfloat-overlay" id="cashFloatOverlay" onclick="closeCashFloatIfBg(event)">
+  <div class="cashfloat-modal">
+    <div class="cashfloat-header">
+      <div>
+        <div class="cashfloat-title">Add Cash Float</div>
+        <div class="cashfloat-sub" id="cashFloatModalSub">Today, --:--</div>
+      </div>
+      <button class="cashfloat-close" onclick="closeCashFloat()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cashfloat-body">
+      <div class="cashfloat-input-display">
+        <span style="color:var(--text-tertiary);">$</span>
+        <span id="cashFloatDisplay">0.00</span>
+      </div>
+      <div class="cashfloat-keypad">
+        <button class="cashfloat-key" onclick="cfKeyPress('1')">1</button>
+        <button class="cashfloat-key" onclick="cfKeyPress('2')">2</button>
+        <button class="cashfloat-key" onclick="cfKeyPress('3')">3</button>
+        <button class="cashfloat-key" onclick="cfKeyPress('4')">4</button>
+        <button class="cashfloat-key" onclick="cfKeyPress('5')">5</button>
+        <button class="cashfloat-key" onclick="cfKeyPress('6')">6</button>
+        <button class="cashfloat-key" onclick="cfKeyPress('7')">7</button>
+        <button class="cashfloat-key" onclick="cfKeyPress('8')">8</button>
+        <button class="cashfloat-key" onclick="cfKeyPress('9')">9</button>
+        <button class="cashfloat-key" onclick="cfKeyPress('.')">.</button>
+        <button class="cashfloat-key" onclick="cfKeyPress('0')">0</button>
+        <button class="cashfloat-key key-del" onclick="cfKeyDel()"><i class="ti ti-backspace"></i></button>
+      </div>
+      <div class="cashfloat-note-label">Note (optional)</div>
+      <input class="cashfloat-note-input" id="cashFloatNote" type="text" placeholder="e.g. Morning float, coin top-up..." />
+    </div>
+    <div class="cashfloat-footer">
+      <button class="cashfloat-cancel-btn" onclick="closeCashFloat()">Cancel</button>
+      <button class="cashfloat-confirm-btn" id="cashFloatConfirmBtn" disabled onclick="confirmCashFloat()">Add Float</button>
+    </div>
+  </div>
+</div>
+
 <div class="wastage-overlay" id="wastageOverlay" onclick="closeWastageIfBg(event)">
   <div class="wastage-modal">
     <div class="wastage-modal-header">
