@@ -1939,6 +1939,9 @@
   }
 
   function productToDbRow(p, category) {
+    const outletIds = Array.isArray(p.outlet_ids) && p.outlet_ids.length > 0
+      ? p.outlet_ids.map(String)
+      : outlets.map(o => String(o.id));
     const row = {
       name: p.name,
       category,
@@ -1950,7 +1953,7 @@
       valid_from: p.validFrom || '',
       valid_to: p.validTo || '',
       image: p.image_url || '',
-      outlet_ids: Array.isArray(p.outlet_ids) ? p.outlet_ids : outlets.map(o => String(o.id)),
+      outlet_ids: outletIds,
     };
     if (p.id) row.id = p.id;
     return row;
@@ -2008,6 +2011,7 @@
         showToast('Save failed: ' + (error.message || error.code || 'unknown'));
       }
     } else {
+      console.log('saveProductToDb INSERT row:', JSON.stringify(row));
       const { data, error } = await db.from('products').insert(row).select().single();
       if (error) {
         console.error('saveProductToDb insert error:', JSON.stringify(error));
