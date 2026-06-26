@@ -964,6 +964,20 @@
     }
     .admin-resetup-btn:hover { border-color: var(--red); color: var(--red); background: var(--bg-primary); }
     .admin-resetup-btn i { font-size: 16px; }
+    /* Outlet styles */
+    .outlet-selector { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-radius:var(--radius-md); border:0.5px solid var(--border); background:var(--bg-primary); cursor:pointer; font-size:13px; font-weight:600; color:var(--text-primary); user-select:none; position:relative; }
+    .outlet-selector:hover { border-color:var(--border-hover); background:var(--bg-secondary); }
+    .outlet-dropdown { position:fixed; background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-md); overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:1000; min-width:260px; }
+    .outlet-dropdown-item { display:flex; align-items:center; gap:8px; padding:11px 14px; font-size:13px; color:var(--text-primary); cursor:pointer; }
+    .outlet-dropdown-item:hover { background:var(--bg-secondary); }
+    .outlet-dropdown-item.active { color:var(--green); font-weight:600; }
+    .outlet-dropdown-addr { font-size:11px; color:var(--text-tertiary); }
+    .outlet-field-label { font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
+    .outlet-input { width:100%; padding:9px 12px; border-radius:var(--radius-md); border:0.5px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); font-size:13px; font-family:var(--font); outline:none; }
+    .outlet-input:focus { border-color:var(--green); }
+    .outlet-add-btn { display:flex; align-items:center; gap:6px; justify-content:center; width:100%; padding:10px 16px; border-radius:var(--radius-md); border:0.5px solid var(--border); background:transparent; color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); }
+    .outlet-add-btn:hover { background:var(--bg-secondary); }
+    .outlet-save-btn { display:flex; align-items:center; gap:6px; justify-content:center; width:100%; padding:10px 16px; border-radius:var(--radius-md); border:none; background:var(--green); color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); margin-top:4px; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -977,7 +991,7 @@
     <div class="brand-icon">E</div>
     <div>
       <div class="brand-name" id="brandName">Smart EPOS</div>
-      <div class="header-meta">Orchard · T1</div>
+      <div class="header-meta" id="headerOutlet">Orchard · T1</div>
     </div>
   </div>
   <div class="header-right">
@@ -1247,6 +1261,7 @@
     <div class="admin-tabs">
       <button class="admin-tab" id="adminTabMenu" onclick="switchAdminTab('menu')"><i class="ti ti-calendar"></i>Menu Items</button>
       <button class="admin-tab active" id="adminTabSettings" onclick="switchAdminTab('settings')"><i class="ti ti-settings"></i>Settings</button>
+      <button class="admin-tab" id="adminTabOutlets" onclick="switchAdminTab('outlets')"><i class="ti ti-building-store"></i>Outlets</button>
     </div>
     <div class="admin-body" id="adminBody">
       <!-- Settings tab (default) -->
@@ -1298,6 +1313,7 @@
       <div id="adminMenuContent" style="display:none;">
         <p style="font-size:13px;color:var(--text-secondary);">Menu item management coming soon.</p>
       </div>
+      <div id="adminOutletsContent" style="display:none;"></div>
     </div>
   </div>
 </div>
@@ -1384,7 +1400,11 @@
   const BUSINESS_NAME_KEY = 'smartepos_business_name';
   const BUSINESS_TYPE_KEY = 'smartepos_business_type';
   const BUSINESS_PHONE_KEY = 'smartepos_business_phone';
+  const CURRENT_OUTLET_KEY = 'smartepos_current_outlet_id';
   let BUSINESS_NAME = 'LUMIÈRE';
+  let currentOutletId = null;
+  let currentOutletName = 'Orchard · T1';
+  let outlets = [];
   let BUSINESS_TYPE = '';
 
   function updateSetupBtn() {
@@ -1485,6 +1505,194 @@
   }
 
   document.addEventListener('DOMContentLoaded', initSetup);
+
+  // ── Outlets ──
+
+  async function loadOutlets() {
+    if (!db) {
+      // Offline: create a single default outlet
+      outlets = [{ id: 'local_default', name: 'Orchard · T1', address: '' }];
+      currentOutletId = outlets[0].id;
+      currentOutletName = outlets[0].name;
+      applyOutletName(currentOutletName);
+      return;
+    }
+    const { data, error } = await db.from('outlets').select('*').order('id', { ascending: true });
+    if (error) { console.error('loadOutlets error:', JSON.stringify(error)); return; }
+    if (!data || data.length === 0) {
+      // Seed default outlet
+      const { data: inserted, error: insertErr } = await db.from('outlets').insert({ name: 'Orchard · T1', address: '' }).select().single();
+      if (insertErr) { console.error('seedOutlet error:', JSON.stringify(insertErr)); return; }
+      outlets = [inserted];
+    } else {
+      outlets = data;
+    }
+    // Restore last used outlet or default to first
+    const savedId = localStorage.getItem(CURRENT_OUTLET_KEY);
+    const match = outlets.find(o => String(o.id) === String(savedId));
+    const active = match || outlets[0];
+    currentOutletId = active.id;
+    currentOutletName = active.name;
+    applyOutletName(currentOutletName);
+  }
+
+  function applyOutletName(name) {
+    currentOutletName = name;
+    const el = document.getElementById('headerOutlet');
+    if (el) el.textContent = name;
+  }
+
+  async function switchOutlet(id) {
+    const outlet = outlets.find(o => String(o.id) === String(id));
+    if (!outlet) return;
+    currentOutletId = outlet.id;
+    currentOutletName = outlet.name;
+    localStorage.setItem(CURRENT_OUTLET_KEY, String(id));
+    applyOutletName(outlet.name);
+    await loadProducts();
+    renderOutletsTab();
+    showToast('Switched to ' + outlet.name);
+  }
+
+  async function addOutlet(name, address) {
+    if (!name.trim()) return;
+    if (!db) { showToast('No database connection'); return; }
+    const { data, error } = await db.from('outlets').insert({ name: name.trim(), address: address.trim() }).select().single();
+    if (error) { showToast('Failed to add outlet'); console.error(error); return; }
+    outlets.push(data);
+    renderOutletsTab();
+    showOutletPanel('Main');
+    showToast('Outlet added ✓');
+  }
+
+  async function deleteOutlet(id) {
+    if (outlets.length <= 1) { showToast('Cannot delete the only outlet'); return; }
+    if (String(id) === String(currentOutletId)) { showToast('Switch to another outlet first'); return; }
+    if (!db) return;
+    const { error } = await db.from('outlets').delete().eq('id', id);
+    if (error) { showToast('Failed to delete outlet'); return; }
+    outlets = outlets.filter(o => String(o.id) !== String(id));
+    renderOutletsTab();
+    showToast('Outlet removed');
+  }
+
+  function renderOutletsTab() {
+    const el = document.getElementById('adminOutletsContent');
+    if (!el) return;
+
+    // If outlets haven't loaded yet, fetch them first then re-render
+    if (outlets.length === 0) {
+      el.innerHTML = '<div style="padding:20px;color:var(--text-tertiary);font-size:13px;">Loading outlets…</div>';
+      loadOutlets().then(() => renderOutletsTab());
+      return;
+    }
+
+    el.innerHTML = `
+      <!-- MAIN: current outlet + dropdown + add button -->
+      <div id="outletPanelMain" style="display:flex;flex-direction:column;gap:0;">
+        <div class="admin-section-label">Your Outlets</div>
+        <div class="outlet-selector" id="outletSelector" onclick="toggleOutletDropdown()">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i class="ti ti-building-store" style="font-size:16px;color:var(--text-secondary);"></i>
+            <span id="outletSelectorLabel">${currentOutletName}</span>
+          </div>
+          <i class="ti ti-chevron-down" id="outletChevron" style="font-size:15px;color:var(--text-secondary);transition:transform 0.2s;"></i>
+        </div>
+        <div class="outlet-dropdown" id="outletDropdown" style="display:none;">
+          ${outlets.map(o => `
+            <div class="outlet-dropdown-item ${String(o.id) === String(currentOutletId) ? 'active' : ''}"
+                 onclick="selectOutletFromDropdown('${o.id}')">
+              <div style="flex:1;min-width:0;">
+                <div>${o.name}</div>
+                ${o.address ? `<div class="outlet-dropdown-addr">${o.address}</div>` : ''}
+              </div>
+              ${String(o.id) === String(currentOutletId)
+                ? '<i class="ti ti-check" style="font-size:14px;color:var(--green);flex-shrink:0;"></i>'
+                : ''}
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:16px;">
+          <button class="outlet-add-btn" onclick="showOutletPanel('Add')">
+            <i class="ti ti-plus" style="font-size:14px;"></i> Add New Outlet
+          </button>
+        </div>
+      </div>
+
+      <!-- ADD: new outlet form -->
+      <div id="outletPanelAdd" style="display:none;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <button onclick="showOutletPanel('Main')"
+            style="background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:4px;display:flex;align-items:center;border-radius:6px;">
+            <i class="ti ti-arrow-left" style="font-size:18px;"></i>
+          </button>
+          <div class="admin-section-label" style="margin:0;">New Outlet</div>
+        </div>
+        <div>
+          <div class="outlet-field-label">Outlet Name <span style="color:var(--red);">*</span></div>
+          <input class="outlet-input" id="newOutletName" placeholder="e.g. Bugis · T2" />
+        </div>
+        <div>
+          <div class="outlet-field-label">Address <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
+          <input class="outlet-input" id="newOutletAddress" placeholder="e.g. 200 Victoria St, #03-22" />
+        </div>
+        <button class="outlet-save-btn" onclick="addOutletFromForm()">
+          <i class="ti ti-check" style="font-size:14px;"></i> Save Outlet
+        </button>
+      </div>`;
+  }
+
+  function showOutletPanel(panel) {
+    const main = document.getElementById('outletPanelMain');
+    const add  = document.getElementById('outletPanelAdd');
+    if (main) main.style.display = panel === 'Main' ? 'flex' : 'none';
+    if (add)  add.style.display  = panel === 'Add'  ? 'flex' : 'none';
+    if (panel === 'Add') {
+      const nameInput = document.getElementById('newOutletName');
+      if (nameInput) { nameInput.value = ''; nameInput.focus(); }
+      const addrInput = document.getElementById('newOutletAddress');
+      if (addrInput) addrInput.value = '';
+    }
+    // Close dropdown if open
+    const dd = document.getElementById('outletDropdown');
+    if (dd) dd.style.display = 'none';
+    const chevron = document.getElementById('outletChevron');
+    if (chevron) chevron.style.transform = '';
+  }
+
+  function toggleOutletDropdown() {
+    const dd = document.getElementById('outletDropdown');
+    const selector = document.getElementById('outletSelector');
+    const chevron = document.getElementById('outletChevron');
+    const open = dd.style.display === 'none' || dd.style.display === '';
+    if (open) {
+      const rect = selector.getBoundingClientRect();
+      dd.style.top = (rect.bottom + 4) + 'px';
+      dd.style.left = rect.left + 'px';
+      dd.style.width = rect.width + 'px';
+      dd.style.display = 'block';
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else {
+      dd.style.display = 'none';
+      if (chevron) chevron.style.transform = '';
+    }
+  }
+
+  async function selectOutletFromDropdown(id) {
+    const dd = document.getElementById('outletDropdown');
+    const chevron = document.getElementById('outletChevron');
+    if (dd) dd.style.display = 'none';
+    if (chevron) chevron.style.transform = '';
+    const outlet = outlets.find(o => String(o.id) === String(id));
+    if (!outlet || String(outlet.id) === String(currentOutletId)) return;
+    await switchOutlet(id);
+  }
+
+  function addOutletFromForm() {
+    const name = (document.getElementById('newOutletName') || {}).value || '';
+    const address = (document.getElementById('newOutletAddress') || {}).value || '';
+    if (!name.trim()) { showToast('Please enter an outlet name'); return; }
+    addOutlet(name, address);
+  }
 
   // ── Clock ──
 
@@ -1742,6 +1950,7 @@
       valid_to: p.validTo || '',
       image: p.image_url || '',
     };
+    if (currentOutletId) row.outlet_id = currentOutletId;
     if (p.id) row.id = p.id;
     return row;
   }
@@ -1752,7 +1961,8 @@
       renderProducts();
       return;
     }
-    const { data, error } = await db.from('products').select('*').order('id', { ascending: true });
+    const { data, error } = await db.from('products').select('*').order('id', { ascending: true })
+      .eq('outlet_id', currentOutletId);
     if (error) {
       console.error('loadProducts error:', JSON.stringify(error));
       renderProducts();
@@ -1867,8 +2077,8 @@
     return data.publicUrl;
   }
 
-  // Load products from DB on startup — also populates customImgs
-  loadProducts();
+  // Load outlets first (sets currentOutletId), then load products filtered by outlet
+  loadOutlets().then(() => loadProducts());
 
   function showEditImgPreview(src) {
     const thumb = document.getElementById('editImgThumb');
@@ -3001,10 +3211,12 @@
   function switchAdminTab(tab) {
     document.getElementById('adminTabMenu').classList.toggle('active', tab === 'menu');
     document.getElementById('adminTabSettings').classList.toggle('active', tab === 'settings');
+    document.getElementById('adminTabOutlets').classList.toggle('active', tab === 'outlets');
     document.getElementById('adminSettingsContent').style.display = tab === 'settings' ? 'flex' : 'none';
     document.getElementById('adminMenuContent').style.display = tab === 'menu' ? 'block' : 'none';
-    if (tab === 'settings') document.getElementById('adminSettingsContent').style.flexDirection = 'column';
-    if (tab === 'settings') document.getElementById('adminSettingsContent').style.gap = '0';
+    document.getElementById('adminOutletsContent').style.display = tab === 'outlets' ? 'block' : 'none';
+    if (tab === 'settings') { document.getElementById('adminSettingsContent').style.flexDirection = 'column'; document.getElementById('adminSettingsContent').style.gap = '0'; }
+    if (tab === 'outlets') renderOutletsTab();
   }
 
   // ── Supervisor PIN Modal ──
@@ -3055,6 +3267,7 @@
   function openAdminPanel() {
     applyTheme();
     document.getElementById('adminOverlay').classList.add('show');
+    if (outlets.length === 0) loadOutlets();
   }
 
   function closeAdminPanel() {
