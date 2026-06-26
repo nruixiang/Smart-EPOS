@@ -1934,6 +1934,7 @@
       validFrom: row.valid_from || '',
       validTo: row.valid_to || '',
       image_url: row.image || '',
+      outlet_ids: Array.isArray(row.outlet_ids) ? row.outlet_ids.map(String) : [],
     };
   }
 
@@ -1949,27 +1950,25 @@
       valid_from: p.validFrom || '',
       valid_to: p.validTo || '',
       image: p.image_url || '',
+      outlet_ids: Array.isArray(p.outlet_ids) ? p.outlet_ids : outlets.map(o => String(o.id)),
     };
-    if (currentOutletId) row.outlet_id = currentOutletId;
     if (p.id) row.id = p.id;
     return row;
   }
 
   async function loadProducts() {
     if (!db) {
-      // Offline/local mode — use hardcoded PRODUCTS as-is
       renderProducts();
       return;
     }
-    const { data, error } = await db.from('products').select('*').order('id', { ascending: true })
-      .eq('outlet_id', currentOutletId);
+    // Load ALL products, then filter client-side by outlet_ids
+    const { data, error } = await db.from('products').select('*').order('id', { ascending: true });
     if (error) {
       console.error('loadProducts error:', JSON.stringify(error));
       renderProducts();
       return;
     }
     if (!data || data.length === 0) {
-      // First run — seed DB from hardcoded PRODUCTS
       await seedProductsToDb();
       return;
     }
@@ -1980,7 +1979,6 @@
       if (!freshProducts[row.category]) freshProducts[row.category] = { All: [] };
       const p = dbRowToProduct(row);
       freshProducts[row.category].All.push(p);
-      // Populate image from image column
       if (row.image) customImgs[row.name] = row.image;
     }
     PRODUCTS = freshProducts;
@@ -2030,7 +2028,12 @@
   function getProducts() {
     const all = (PRODUCTS[currentCat]||{}).All || [];
     const search = document.getElementById('searchInput').value.toLowerCase();
-    return all.filter(p => (currentSub==='All'||p.sub===currentSub) && (!search||p.name.toLowerCase().includes(search)));
+    return all.filter(p => {
+      const inOutlet = Array.isArray(p.outlet_ids) && p.outlet_ids.includes(String(currentOutletId));
+      const matchesSub = currentSub === 'All' || p.sub === currentSub;
+      const matchesSearch = !search || p.name.toLowerCase().includes(search);
+      return inOutlet && matchesSub && matchesSearch;
+    });
   }
 
   // ── Product Images (stored in products.image column) ──
@@ -3618,6 +3621,17 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     document.getElementById('editCategoryTag').value = p.sub || '';
     document.getElementById('editValidFrom').value = p.validFrom || '';
     document.getElementById('editValidTo').value = p.validTo || '';
+
+    // Outlet checkboxes
+    const outletList = document.getElementById('editOutletList');
+    const assignedIds = Array.isArray(p.outlet_ids) ? p.outlet_ids.map(String) : outlets.map(o => String(o.id));
+    outletList.innerHTML = outlets.map(o => {
+      const checked = assignedIds.includes(String(o.id));
+      return `<div class="edit-outlet-item ${checked ? 'checked' : ''}" data-outlet-id="${o.id}" onclick="this.classList.toggle('checked')">
+        <div class="edit-outlet-check"><i class="ti ti-check"></i></div>
+        <div class="edit-outlet-name">${o.name}</div>
+      </div>`;
+    }).join('');
     document.getElementById('editDesc').value = p.desc || '';
     document.getElementById('editAllergens').value = p.allergens || '';
     document.getElementById('editIngredients').value = p.ingredients || '';
@@ -3638,6 +3652,15 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   function closeEdit() { document.getElementById('editOverlay').classList.remove('show'); editTarget = null; }
   function closeEditIfBg(e) { if (e.target === document.getElementById('editOverlay')) closeEdit(); }
+
+  function toggleEditOutlet(el, outletId) {
+    el.classList.toggle('checked');
+  }
+
+  function getEditOutletIds() {
+    return Array.from(document.querySelectorAll('#editOutletList .edit-outlet-item.checked'))
+      .map(el => el.dataset.outletId);
+  }
 
   async function saveEdit() {
     const isNew = !editTarget;
@@ -3693,6 +3716,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       if (newSub) editTarget.sub = newSub;
       editTarget.validFrom = newValidFrom; editTarget.validTo = newValidTo;
     }
+
+    // Save outlet_ids
+    editTarget.outlet_ids = getEditOutletIds();
 
     // Handle image upload
     if (editImgFile) {
@@ -4873,6 +4899,16 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   .edit-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .edit-modal-footer { padding: 14px 20px; border-top: 0.5px solid var(--border); display: flex; gap: 10px; flex-shrink: 0; }
   .edit-modal-footer button { flex: 1; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+  .edit-outlet-list { display: flex; flex-direction: column; gap: 8px; }
+  .edit-outlet-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
+  .edit-outlet-item:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
+  .edit-outlet-item.checked { border-color: var(--green); background: #f0fdf4; }
+  [data-theme="dark"] .edit-outlet-item.checked { background: rgba(22,163,74,0.1); }
+  .edit-outlet-check { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+  .edit-outlet-item.checked .edit-outlet-check { background: var(--green); border-color: var(--green); }
+  .edit-outlet-check i { font-size: 11px; color: white; display: none; }
+  .edit-outlet-item.checked .edit-outlet-check i { display: block; }
+  .edit-outlet-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
   .edit-btn-cancel { border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary); }
   .edit-btn-cancel:hover { opacity: 0.75; }
   .edit-btn-save { border: none; background: #2563eb; color: white; }
@@ -4937,6 +4973,12 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
           <div class="edit-field-label">Valid To <span class="required">*</span></div>
           <input id="editValidTo" type="date" class="edit-input" />
         </div>
+      </div>
+
+      <!-- Outlet Availability -->
+      <div>
+        <div class="edit-field-label">Available At <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(select outlets)</span></div>
+        <div class="edit-outlet-list" id="editOutletList"></div>
       </div>
 
       <!-- Description -->
