@@ -908,10 +908,10 @@
     .pay-dash-close-btn i { font-size: 16px; }
 
     /* Main content area */
-    .pay-dash-main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+    .pay-dash-main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; height: 100%; }
     .pay-dash-topbar { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 0 28px; height: 52px; display: flex; align-items: center; flex-shrink: 0; }
     .pay-dash-topbar-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-    .pay-dash-body { flex: 1; overflow-y: auto; padding: 28px; display: flex; flex-direction: column; gap: 24px; min-height: 0; }
+    .pay-dash-body { flex: 1; overflow-y: scroll; padding: 28px; display: flex; flex-direction: column; gap: 24px; min-height: 0; height: 0; }
     .pay-dash-section-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
 
     /* Stat cards */
@@ -6170,16 +6170,19 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
       </div>
 
-      <!-- Sales by Payment Method (full width, below) -->
-      <div class="pay-table-card">
-        <div class="pay-chart-header" style="padding:16px 20px 12px;">
-          <div class="pay-chart-title">Sales by Payment Method</div>
-          <div class="pay-chart-tabs">
-            <button class="pay-chart-tab" id="payMethodTab_7d" onclick="switchPayMethodChart('7d')">7d</button>
-            <button class="pay-chart-tab active" id="payMethodTab_30d" onclick="switchPayMethodChart('30d')">30d</button>
+      <!-- Second two-col row: Sales by Payment Method (left, matching Your Sales width) -->
+      <div class="pay-two-col">
+        <div class="pay-table-card">
+          <div class="pay-chart-header" style="padding:16px 20px 12px;">
+            <div class="pay-chart-title">Sales by Payment Method</div>
+            <div class="pay-chart-tabs">
+              <button class="pay-chart-tab" id="payMethodTab_7d" onclick="switchPayMethodChart('7d')">7d</button>
+              <button class="pay-chart-tab active" id="payMethodTab_30d" onclick="switchPayMethodChart('30d')">30d</button>
+            </div>
           </div>
+          <div id="payMethodBreakdown"></div>
         </div>
-        <div id="payMethodBreakdown"></div>
+        <div></div>
       </div>
 
     </div>
