@@ -2585,7 +2585,8 @@
       gross: sub, discount: discountAmt, tax, total,
       items: items.map(i => ({name: i.name, qty: i.qty, price: i.price})),
       customer: attachedCustomer ? attachedCustomer.name : null,
-      outlet: BUSINESS_NAME,
+      outlet: currentOutletName,
+      outlet_id: currentOutletId,
       voided: false
     };
     salesLog.push(newEntry);
@@ -2617,7 +2618,7 @@
 
     document.getElementById('receiptBody').innerHTML = `
       <div class="receipt-shop-name">${BUSINESS_NAME}</div>
-      <div class="receipt-shop-sub">Café &amp; Bakery</div>
+      <div class="receipt-shop-sub">${currentOutletName}</div>
       <table class="receipt-meta">
         <tr><td>Date</td><td>${dateStr}</td></tr>
         <tr><td>Time</td><td>${timeStr}</td></tr>
@@ -3902,6 +3903,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   // ── Payments Dashboard ──
   let payChartRange = '30d';
   let payMethodRange = '30d';
+  let payOutletFilter = 'All';
 
   function openPayments() {
     renderPayDashboard();
@@ -3938,21 +3940,20 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   function getFilteredTxs() {
     return salesLog.filter(t => !t.voided && !t.refund &&
-      (payOutletFilter === 'All' || (t.outlet || BUSINESS_NAME) === payOutletFilter));
+      (payOutletFilter === 'All' || (t.outlet || currentOutletName) === payOutletFilter));
   }
 
   function populateOutletSelector() {
     const sel = document.getElementById('payOutletSelect');
     if (!sel) return;
-    // Gather unique outlet names from salesLog + current outlet
-    const outlets = [...new Set(
-      salesLog.map(t => t.outlet || BUSINESS_NAME).concat([BUSINESS_NAME])
-    )].filter(Boolean).sort();
-    // Rebuild options
+    // Use the outlets[] array as the source of truth — always shows all configured outlets
+    const outletNames = outlets && outlets.length
+      ? outlets.map(o => o.name).filter(Boolean)
+      : [currentOutletName];
     sel.innerHTML = '<option value="All">All Outlets</option>' +
-      outlets.map(o => `<option value="${o}"${payOutletFilter === o ? ' selected' : ''}>${o}</option>`).join('');
-    // Show selector only if >1 outlet
-    sel.style.display = outlets.length > 1 ? 'inline-block' : 'none';
+      outletNames.map(n => `<option value="${n}"${payOutletFilter === n ? ' selected' : ''}>${n}</option>`).join('');
+    // Show selector only if more than 1 outlet configured
+    sel.style.display = outletNames.length > 1 ? 'inline-block' : 'none';
   }
 
   function onPayOutletChange(val) {
@@ -4143,7 +4144,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       ref: entry.ref, method: entry.method, date: entry.date.toISOString(),
       hour: entry.hour, day: entry.day, gross: entry.gross,
       discount: entry.discount, tax: entry.tax, total: entry.total,
-      items: entry.items, customer: entry.customer || null, outlet: entry.outlet || BUSINESS_NAME, voided: entry.voided || false,
+      items: entry.items, customer: entry.customer || null, outlet: entry.outlet || currentOutletName, outlet_id: entry.outlet_id || currentOutletId || null, voided: entry.voided || false,
       refund: entry.refund || false, refunded: entry.refunded || false
     });
     if (error) console.error('saveSalesEntry error:', JSON.stringify(error));
@@ -5155,7 +5156,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
     document.getElementById('receiptBody').innerHTML = `
       <div class="receipt-shop-name">${BUSINESS_NAME}</div>
-      <div class="receipt-shop-sub">Café &amp; Bakery</div>
+      <div class="receipt-shop-sub">${currentOutletName}</div>
       <div style="text-align:center;margin:8px 0 14px;">
         <span style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#ea580c;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUND</span>
       </div>
