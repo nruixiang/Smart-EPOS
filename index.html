@@ -911,6 +911,8 @@
     .pay-dash-main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; height: 100%; }
     .pay-dash-topbar { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 0 28px; height: 52px; display: flex; align-items: center; flex-shrink: 0; }
     .pay-dash-topbar-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+    .pay-outlet-select { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 13px; font-weight: 500; font-family: var(--font); cursor: pointer; outline: none; margin-left: 14px; }
+    .pay-outlet-select:focus { border-color: #2563eb; }
     .pay-dash-body { flex: 1; overflow-y: scroll; padding: 28px; display: flex; flex-direction: column; gap: 24px; min-height: 0; height: 0; }
     .pay-dash-section-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
 
@@ -2583,6 +2585,7 @@
       gross: sub, discount: discountAmt, tax, total,
       items: items.map(i => ({name: i.name, qty: i.qty, price: i.price})),
       customer: attachedCustomer ? attachedCustomer.name : null,
+      outlet: BUSINESS_NAME,
       voided: false
     };
     salesLog.push(newEntry);
@@ -3933,13 +3936,39 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     renderPayMethodBreakdown();
   }
 
+  function getFilteredTxs() {
+    return salesLog.filter(t => !t.voided && !t.refund &&
+      (payOutletFilter === 'All' || (t.outlet || BUSINESS_NAME) === payOutletFilter));
+  }
+
+  function populateOutletSelector() {
+    const sel = document.getElementById('payOutletSelect');
+    if (!sel) return;
+    // Gather unique outlet names from salesLog + current outlet
+    const outlets = [...new Set(
+      salesLog.map(t => t.outlet || BUSINESS_NAME).concat([BUSINESS_NAME])
+    )].filter(Boolean).sort();
+    // Rebuild options
+    sel.innerHTML = '<option value="All">All Outlets</option>' +
+      outlets.map(o => `<option value="${o}"${payOutletFilter === o ? ' selected' : ''}>${o}</option>`).join('');
+    // Show selector only if >1 outlet
+    sel.style.display = outlets.length > 1 ? 'inline-block' : 'none';
+  }
+
+  function onPayOutletChange(val) {
+    payOutletFilter = val;
+    renderPayDashboard();
+  }
+
   function renderPayDashboard() {
+    populateOutletSelector();
+
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const startOfWeek = new Date(startOfToday); startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const validTxs = salesLog.filter(t => !t.voided && !t.refund);
+    const validTxs = getFilteredTxs();
     const toSGD = v => 'SGD ' + v.toFixed(2);
 
     const todayTotal = validTxs.filter(t => t.date >= startOfToday).reduce((a,t) => a + t.total, 0);
@@ -3976,7 +4005,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     });
 
     // Fill totals
-    salesLog.filter(t => !t.voided && !t.refund).forEach(t => {
+    getFilteredTxs().forEach(t => {
       const tDate = new Date(t.date.getFullYear(), t.date.getMonth(), t.date.getDate());
       const bucket = buckets.find(b => b.date.getTime() === tDate.getTime());
       if (bucket) bucket.total += t.total;
@@ -4024,7 +4053,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const now = new Date();
     const days = payMethodRange === '7d' ? 7 : 30;
     const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - days + 1);
-    const txs = salesLog.filter(t => !t.voided && !t.refund && t.date >= cutoff);
+    const txs = getFilteredTxs().filter(t => t.date >= cutoff);
     const total = txs.reduce((a,t) => a + t.total, 0);
 
     const methods = [
@@ -4114,7 +4143,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       ref: entry.ref, method: entry.method, date: entry.date.toISOString(),
       hour: entry.hour, day: entry.day, gross: entry.gross,
       discount: entry.discount, tax: entry.tax, total: entry.total,
-      items: entry.items, customer: entry.customer || null, voided: entry.voided || false,
+      items: entry.items, customer: entry.customer || null, outlet: entry.outlet || BUSINESS_NAME, voided: entry.voided || false,
       refund: entry.refund || false, refunded: entry.refunded || false
     });
     if (error) console.error('saveSalesEntry error:', JSON.stringify(error));
@@ -6118,6 +6147,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   <div class="pay-dash-main">
     <div class="pay-dash-topbar">
       <span class="pay-dash-topbar-title" id="payTopbarTitle">Overview</span>
+      <select class="pay-outlet-select" id="payOutletSelect" onchange="onPayOutletChange(this.value)" style="display:none;">
+        <option value="All">All Outlets</option>
+      </select>
     </div>
 
     <!-- OVERVIEW PANE -->
