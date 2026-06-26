@@ -4000,9 +4000,10 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   function renderPayRecentTx(validTxs) {
     const el = document.getElementById('payRecentTxList');
-    const recent = validTxs.slice().sort((a,b) => b.date - a.date).slice(0, 8);
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7); cutoff.setHours(0,0,0,0);
+    const recent = validTxs.filter(t => t.date >= cutoff).sort((a,b) => b.date - a.date);
     if (!recent.length) {
-      el.innerHTML = '<div class="pay-table-empty">No transaction at the moment</div>';
+      el.innerHTML = '<div class="pay-table-empty">No transactions in the last 7 days</div>';
       return;
     }
     el.innerHTML = recent.map(t => {
