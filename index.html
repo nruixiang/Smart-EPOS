@@ -960,16 +960,16 @@
     [data-theme="dark"] .pay-method-badge.mobile { background: rgba(124,58,237,0.15); }
 
     /* Method breakdown */
-    .pay-method-row { display: flex; align-items: center; gap: 12px; padding: 13px 20px; border-bottom: 0.5px solid var(--border); }
-    .pay-method-row:last-child { border-bottom: none; }
-    .pay-method-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .pay-method-name { font-size: 13px; color: var(--text-primary); flex: 1; }
-    .pay-method-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .pay-method-name { font-size: 13px; color: var(--text-primary); flex: 1; }
-    .pay-method-bar-wrap { flex: 2; height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
-    .pay-method-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
-    .pay-method-amount { font-size: 13px; font-weight: 600; color: var(--text-primary); min-width: 80px; text-align: right; }
-    .pay-method-pct { font-size: 11px; color: var(--text-tertiary); min-width: 36px; text-align: right; }
+    .pay-pie-wrap { display: flex; align-items: center; gap: 32px; padding: 20px 24px; }
+    .pay-pie-svg { flex-shrink: 0; }
+    .pay-pie-legend { display: flex; flex-direction: column; gap: 14px; flex: 1; }
+    .pay-pie-legend-item { display: flex; align-items: center; gap: 10px; }
+    .pay-pie-legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .pay-pie-legend-label { font-size: 13px; color: var(--text-secondary); flex: 1; }
+    .pay-pie-legend-amt { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .pay-pie-legend-pct { font-size: 12px; color: var(--text-tertiary); min-width: 36px; text-align: right; }
+    .pay-pie-total-label { font-size: 11px; fill: var(--text-tertiary); }
+    .pay-pie-total-val { font-size: 15px; font-weight: 700; fill: var(--text-primary); }
 
 
     /* ── Setup Screen ── */
@@ -4039,17 +4039,59 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       return;
     }
 
-    el.innerHTML = methods.map(m => {
+    // Calculate amounts and percentages
+    const data = methods.map(m => {
       const amt = txs.filter(t => t.method === m.key).reduce((a,t) => a + t.total, 0);
-      const pct = total > 0 ? (amt / total * 100) : 0;
-      return `<div class="pay-method-row">
-        <div class="pay-method-dot" style="background:${m.color};"></div>
-        <div class="pay-method-name">${m.label}</div>
-        <div class="pay-method-bar-wrap"><div class="pay-method-bar-fill" style="width:${pct.toFixed(1)}%;background:${m.color};"></div></div>
-        <div class="pay-method-amount">SGD ${amt.toFixed(2)}</div>
-        <div class="pay-method-pct">${pct.toFixed(0)}%</div>
-      </div>`;
+      return { ...m, amt, pct: total > 0 ? amt / total : 0 };
+    }).filter(m => m.amt > 0);
+
+    // Build SVG donut chart
+    const cx = 90, cy = 90, r = 68, innerR = 44;
+    const TAU = 2 * Math.PI;
+    let startAngle = -Math.PI / 2; // start from top
+
+    function polarToCartesian(angle, radius) {
+      return { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+    }
+
+    function describeSlice(start, end, outerR, innerR) {
+      const p1 = polarToCartesian(start, outerR);
+      const p2 = polarToCartesian(end, outerR);
+      const p3 = polarToCartesian(end, innerR);
+      const p4 = polarToCartesian(start, innerR);
+      const large = (end - start) > Math.PI ? 1 : 0;
+      return [
+        `M ${p1.x} ${p1.y}`,
+        `A ${outerR} ${outerR} 0 ${large} 1 ${p2.x} ${p2.y}`,
+        `L ${p3.x} ${p3.y}`,
+        `A ${innerR} ${innerR} 0 ${large} 0 ${p4.x} ${p4.y}`,
+        'Z'
+      ].join(' ');
+    }
+
+    const slices = data.map(m => {
+      const sweep = m.pct * TAU;
+      const endAngle = startAngle + sweep;
+      const path = describeSlice(startAngle, endAngle, r, innerR);
+      startAngle = endAngle;
+      return `<path d="${path}" fill="${m.color}" opacity="0.92"/>`;
     }).join('');
+
+    const svg = `<svg class="pay-pie-svg" width="180" height="180" viewBox="0 0 180 180">
+      ${slices}
+      <text x="${cx}" y="${cy - 8}" text-anchor="middle" class="pay-pie-total-label">Total</text>
+      <text x="${cx}" y="${cy + 12}" text-anchor="middle" class="pay-pie-total-val">SGD ${total.toFixed(2)}</text>
+    </svg>`;
+
+    const legend = data.map(m => `
+      <div class="pay-pie-legend-item">
+        <div class="pay-pie-legend-dot" style="background:${m.color};"></div>
+        <span class="pay-pie-legend-label">${m.label}</span>
+        <span class="pay-pie-legend-amt">SGD ${m.amt.toFixed(2)}</span>
+        <span class="pay-pie-legend-pct">${(m.pct*100).toFixed(0)}%</span>
+      </div>`).join('');
+
+    el.innerHTML = `<div class="pay-pie-wrap">${svg}<div class="pay-pie-legend">${legend}</div></div>`;
   }
 
   // ── Reports ──
