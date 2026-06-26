@@ -3691,7 +3691,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       const newCat = activeBtn ? activeBtn.dataset.cat : null;
       if (!newName || isNaN(newPrice)) { showToast('Name and price are required'); return; }
       if (!newCat) { showToast('Please select a category'); return; }
-      const newItem = { name: newName, price: newPrice, desc: newDesc, allergens: newAllergens, ingredients: newIngredients, sub: newSub, validFrom: '', validTo: '', emoji: '☕', image_url: '', outlet_ids: [String(currentOutletId)] };
+      const newItem = { name: newName, price: newPrice, desc: newDesc, allergens: newAllergens, ingredients: newIngredients, sub: newSub, validFrom: '', validTo: '', emoji: '☕', image_url: '', outlet_ids: getEditOutletIds() };
       if (editImgFile) {
         showToast('Uploading image…');
         const url = await uploadProductImage(newName, editImgFile);
