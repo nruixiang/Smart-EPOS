@@ -6294,6 +6294,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       <span class="pay-dash-title">Payments</span>
     </div>
     <div class="pay-dash-sidebar-section">
+      <button class="pay-dash-nav-item" id="payNavItem_business" onclick="switchPayTab('business')">
+        <i class="ti ti-building"></i> Business Information
+      </button>
       <button class="pay-dash-nav-item active" id="payNavItem_overview" onclick="switchPayTab('overview')">
         <i class="ti ti-layout-dashboard"></i> Overview
       </button>
@@ -6302,9 +6305,6 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       </button>
       <button class="pay-dash-nav-item" id="payNavItem_reports" onclick="switchPayTab('reports')">
         <i class="ti ti-chart-bar"></i> Reports
-      </button>
-      <button class="pay-dash-nav-item" id="payNavItem_business" onclick="switchPayTab('business')">
-        <i class="ti ti-building"></i> Business Information
       </button>
     </div>
     <div class="pay-dash-sidebar-section" style="margin-top:4px;">
