@@ -882,6 +882,95 @@
     .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; padding: 10px 24px; border-radius: 24px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
     .toast.show { opacity: 1; }
 
+    /* PAYMENTS DASHBOARD */
+    /* ── Payments Dashboard ── */
+    .pay-dash-overlay { position: fixed; inset: 0; background: var(--bg-secondary); z-index: 500; display: flex; flex-direction: row; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .pay-dash-overlay.show { opacity: 1; pointer-events: all; }
+
+    /* Inner sidebar */
+    .pay-dash-sidebar { width: 220px; background: var(--bg-primary); border-right: 0.5px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .pay-dash-sidebar-header { padding: 16px 18px 12px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .pay-dash-logo { width: 32px; height: 32px; background: #111; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    [data-theme="dark"] .pay-dash-logo { background: #f2f2f7; }
+    .pay-dash-logo i { font-size: 17px; color: white; }
+    [data-theme="dark"] .pay-dash-logo i { color: #1c1c1e; }
+    .pay-dash-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .pay-dash-sidebar-section { padding: 14px 10px 4px; }
+    .pay-dash-sidebar-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 0 8px; margin-bottom: 4px; }
+    .pay-dash-nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border: none; background: transparent; width: 100%; font-family: var(--font); transition: background 0.12s, color 0.12s; }
+    .pay-dash-nav-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+    .pay-dash-nav-item.active { background: #eff6ff; color: #2563eb; font-weight: 600; }
+    [data-theme="dark"] .pay-dash-nav-item.active { background: rgba(37,99,235,0.15); color: #60a5fa; }
+    .pay-dash-nav-item i { font-size: 16px; flex-shrink: 0; }
+    .pay-dash-sidebar-footer { margin-top: auto; padding: 12px 10px; border-top: 0.5px solid var(--border); }
+    .pay-dash-close-btn { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border: none; background: transparent; width: 100%; font-family: var(--font); transition: background 0.12s, color 0.12s; }
+    .pay-dash-close-btn:hover { background: var(--bg-secondary); color: var(--red); }
+    .pay-dash-close-btn i { font-size: 16px; }
+
+    /* Main content area */
+    .pay-dash-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+    .pay-dash-topbar { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 0 28px; height: 52px; display: flex; align-items: center; flex-shrink: 0; }
+    .pay-dash-topbar-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+    .pay-dash-body { flex: 1; overflow-y: auto; padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+    .pay-dash-section-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+
+    /* Stat cards */
+    .pay-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .pay-stat-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+    .pay-stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+    .pay-stat-val { font-size: 24px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; font-family: 'Courier New', monospace; }
+    .pay-stat-val.green { color: var(--green); }
+
+    /* Two-col grid for bottom sections */
+    .pay-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .pay-two-col .pay-chart-card,
+    .pay-two-col .pay-table-card { height: 100%; }
+
+    /* Chart card */
+    .pay-chart-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 12px; padding: 20px; }
+    .pay-chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .pay-chart-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .pay-chart-tabs { display: flex; gap: 2px; background: var(--bg-secondary); padding: 3px; border-radius: 8px; }
+    .pay-chart-tab { padding: 4px 11px; font-size: 12px; font-weight: 500; border-radius: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-family: var(--font); transition: all 0.12s; }
+    .pay-chart-tab.active { background: var(--bg-primary); color: var(--text-primary); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .pay-chart-area { height: 160px; display: flex; align-items: flex-end; gap: 0; border-bottom: 0.5px solid var(--border); position: relative; }
+    .pay-chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+    .pay-chart-bar { width: 70%; background: #e5e7eb; border-radius: 3px 3px 0 0; transition: height 0.4s ease; min-height: 2px; }
+    [data-theme="dark"] .pay-chart-bar { background: #3a3a3c; }
+    .pay-chart-bar.has-data { background: #2563eb; }
+    .pay-chart-x { font-size: 10px; color: var(--text-tertiary); margin-top: 8px; white-space: nowrap; }
+
+    /* Table card */
+    .pay-table-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .pay-table-head { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 10px 20px; border-bottom: 0.5px solid var(--border); background: var(--bg-secondary); }
+    .pay-table-head span { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); }
+    .pay-table-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 12px 20px; border-bottom: 0.5px solid var(--border); align-items: center; transition: background 0.1s; }
+    .pay-table-row:last-child { border-bottom: none; }
+    .pay-table-row:hover { background: var(--bg-secondary); }
+    .pay-table-cell { font-size: 13px; color: var(--text-primary); }
+    .pay-table-cell.secondary { color: var(--text-secondary); font-size: 12px; }
+    .pay-table-cell.green { color: var(--green); font-weight: 600; }
+    .pay-table-empty { padding: 40px 20px; text-align: center; color: var(--text-tertiary); font-size: 13px; }
+    .pay-method-badge { display: inline-flex; align-items: center; font-size: 11px; padding: 3px 9px; border-radius: 12px; font-weight: 600; }
+    .pay-method-badge.cash { background: #f0fdf4; color: #16a34a; }
+    .pay-method-badge.card { background: #eff6ff; color: #2563eb; }
+    .pay-method-badge.mobile { background: #faf5ff; color: #7c3aed; }
+    [data-theme="dark"] .pay-method-badge.cash { background: rgba(22,163,74,0.15); }
+    [data-theme="dark"] .pay-method-badge.card { background: rgba(37,99,235,0.15); }
+    [data-theme="dark"] .pay-method-badge.mobile { background: rgba(124,58,237,0.15); }
+
+    /* Method breakdown */
+    .pay-method-row { display: flex; align-items: center; gap: 12px; padding: 13px 20px; border-bottom: 0.5px solid var(--border); }
+    .pay-method-row:last-child { border-bottom: none; }
+    .pay-method-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .pay-method-name { font-size: 13px; color: var(--text-primary); flex: 1; }
+    .pay-method-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .pay-method-name { font-size: 13px; color: var(--text-primary); flex: 1; }
+    .pay-method-bar-wrap { flex: 2; height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+    .pay-method-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+    .pay-method-amount { font-size: 13px; font-weight: 600; color: var(--text-primary); min-width: 80px; text-align: right; }
+    .pay-method-pct { font-size: 11px; color: var(--text-tertiary); min-width: 36px; text-align: right; }
+
 
     /* ── Setup Screen ── */
     .setup-overlay {
@@ -1008,6 +1097,10 @@
     <button class="lsb-btn lsb-add" onclick="openAddNew()">
       <i class="ti ti-circle-plus"></i>
       <span class="lsb-tip">Add product</span>
+    </button>
+    <button class="lsb-btn" onclick="openPayments()" style="margin-top:4px;">
+      <i class="ti ti-credit-card"></i>
+      <span class="lsb-tip">Payments</span>
     </button>
   </div>
 
@@ -3803,6 +3896,161 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   makeDraggable(document.getElementById('catTabs'));
   makeDraggable(document.getElementById('subTabs'));
 
+  // ── Payments Dashboard ──
+  let payChartRange = '30d';
+  let payMethodRange = '30d';
+
+  function openPayments() {
+    renderPayDashboard();
+    document.getElementById('payDashOverlay').classList.add('show');
+  }
+
+  function closePayments() {
+    document.getElementById('payDashOverlay').classList.remove('show');
+  }
+
+  function switchPayTab(tab) {
+    const labels = { overview: 'Overview', transactions: 'Transactions', reports: 'Reports' };
+    ['overview','transactions','reports'].forEach(t => {
+      const navItem = document.getElementById('payNavItem_' + t);
+      if (navItem) navItem.classList.toggle('active', t === tab);
+      document.getElementById('payPane_' + t).style.display = t === tab ? 'flex' : 'none';
+    });
+    const topbar = document.getElementById('payTopbarTitle');
+    if (topbar) topbar.textContent = labels[tab] || tab;
+    if (tab === 'overview') renderPayDashboard();
+  }
+
+  function switchPayChart(range) {
+    payChartRange = range;
+    ['7d','30d'].forEach(r => document.getElementById('payChartTab_' + r).classList.toggle('active', r === range));
+    renderPayChart();
+  }
+
+  function switchPayMethodChart(range) {
+    payMethodRange = range;
+    ['7d','30d'].forEach(r => document.getElementById('payMethodTab_' + r).classList.toggle('active', r === range));
+    renderPayMethodBreakdown();
+  }
+
+  function renderPayDashboard() {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(startOfToday); startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const validTxs = salesLog.filter(t => !t.voided && !t.refund);
+    const toSGD = v => 'SGD ' + v.toFixed(2);
+
+    const todayTotal = validTxs.filter(t => t.date >= startOfToday).reduce((a,t) => a + t.total, 0);
+    const weekTotal  = validTxs.filter(t => t.date >= startOfWeek).reduce((a,t) => a + t.total, 0);
+    const monthTotal = validTxs.filter(t => t.date >= startOfMonth).reduce((a,t) => a + t.total, 0);
+
+    document.getElementById('payStatToday').textContent = toSGD(todayTotal);
+    document.getElementById('payStatWeek').textContent  = toSGD(weekTotal);
+    document.getElementById('payStatMonth').textContent = toSGD(monthTotal);
+
+    renderPayChart();
+    renderPayRecentTx(validTxs);
+    renderPayMethodBreakdown();
+  }
+
+  function renderPayChart() {
+    const now = new Date();
+    const days = payChartRange === '7d' ? 7 : 30;
+    const buckets = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      buckets.push({ date: d, total: 0, label: '' });
+    }
+
+    // Label format
+    buckets.forEach((b, i) => {
+      const d = b.date;
+      if (days === 7) {
+        b.label = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+      } else {
+        // Show label every ~5 days
+        b.label = (i % 5 === 0) ? (d.getDate() + '/' + (d.getMonth()+1)) : '';
+      }
+    });
+
+    // Fill totals
+    salesLog.filter(t => !t.voided && !t.refund).forEach(t => {
+      const tDate = new Date(t.date.getFullYear(), t.date.getMonth(), t.date.getDate());
+      const bucket = buckets.find(b => b.date.getTime() === tDate.getTime());
+      if (bucket) bucket.total += t.total;
+    });
+
+    const maxVal = Math.max(...buckets.map(b => b.total), 1);
+    const chartEl = document.getElementById('payChartArea');
+    const xlabelsEl = document.getElementById('payChartXLabels');
+
+    chartEl.innerHTML = buckets.map(b => {
+      const pct = (b.total / maxVal * 100).toFixed(1);
+      return `<div class="pay-chart-bar-wrap">
+        <div class="pay-chart-bar ${b.total > 0 ? 'has-data' : ''}" style="height:${pct}%;" title="SGD ${b.total.toFixed(2)}"></div>
+      </div>`;
+    }).join('');
+
+    xlabelsEl.innerHTML = `<div style="display:flex;width:100%;padding-top:8px;">` +
+      buckets.map(b => `<div style="flex:1;text-align:center;font-size:10px;color:var(--text-tertiary);">${b.label}</div>`).join('') +
+      `</div>`;
+  }
+
+  function renderPayRecentTx(validTxs) {
+    const el = document.getElementById('payRecentTxList');
+    const recent = validTxs.slice().sort((a,b) => b.date - a.date).slice(0, 8);
+    if (!recent.length) {
+      el.innerHTML = '<div class="pay-table-empty">No transaction at the moment</div>';
+      return;
+    }
+    el.innerHTML = recent.map(t => {
+      const d = t.date instanceof Date ? t.date : new Date(t.date);
+      const dateStr = d.toLocaleDateString('en-SG', {day:'numeric',month:'short',year:'numeric'}) + ', ' +
+                      d.toLocaleTimeString('en-SG', {hour:'2-digit', minute:'2-digit'});
+      const method = t.method || 'Cash';
+      const badgeClass = method.toLowerCase() === 'cash' ? 'cash' : method.toLowerCase() === 'card' ? 'card' : 'mobile';
+      return `<div class="pay-table-row">
+        <div class="pay-table-cell secondary">${dateStr}</div>
+        <div class="pay-table-cell"><span class="pay-method-badge ${badgeClass}">${method}</span></div>
+        <div class="pay-table-cell green">SGD ${t.total.toFixed(2)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderPayMethodBreakdown() {
+    const now = new Date();
+    const days = payMethodRange === '7d' ? 7 : 30;
+    const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - days + 1);
+    const txs = salesLog.filter(t => !t.voided && !t.refund && t.date >= cutoff);
+    const total = txs.reduce((a,t) => a + t.total, 0);
+
+    const methods = [
+      { key: 'Cash',   label: 'Cash',   color: '#16a34a' },
+      { key: 'Card',   label: 'Card',   color: '#2563eb' },
+      { key: 'Mobile', label: 'Mobile', color: '#7c3aed' },
+    ];
+
+    const el = document.getElementById('payMethodBreakdown');
+    if (!total) {
+      el.innerHTML = '<div class="pay-table-empty">No sales data for this period</div>';
+      return;
+    }
+
+    el.innerHTML = methods.map(m => {
+      const amt = txs.filter(t => t.method === m.key).reduce((a,t) => a + t.total, 0);
+      const pct = total > 0 ? (amt / total * 100) : 0;
+      return `<div class="pay-method-row">
+        <div class="pay-method-dot" style="background:${m.color};"></div>
+        <div class="pay-method-name">${m.label}</div>
+        <div class="pay-method-bar-wrap"><div class="pay-method-bar-fill" style="width:${pct.toFixed(1)}%;background:${m.color};"></div></div>
+        <div class="pay-method-amount">SGD ${amt.toFixed(2)}</div>
+        <div class="pay-method-pct">${pct.toFixed(0)}%</div>
+      </div>`;
+    }).join('');
+  }
+
   // ── Reports ──
   const SALES_STORAGE_KEY = 'smartepos_sales_log';
   async function loadSalesLog() {
@@ -5783,6 +6031,138 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   </div>
 </div>
 
+
+<!-- Payments Dashboard -->
+<div class="pay-dash-overlay" id="payDashOverlay">
+
+  <!-- Left Sidebar -->
+  <div class="pay-dash-sidebar">
+    <div class="pay-dash-sidebar-header">
+      <div class="pay-dash-logo"><i class="ti ti-credit-card"></i></div>
+      <span class="pay-dash-title">Payments</span>
+    </div>
+    <div class="pay-dash-sidebar-section">
+      <button class="pay-dash-nav-item active" id="payNavItem_overview" onclick="switchPayTab('overview')">
+        <i class="ti ti-layout-dashboard"></i> Overview
+      </button>
+      <button class="pay-dash-nav-item" id="payNavItem_transactions" onclick="switchPayTab('transactions')">
+        <i class="ti ti-arrows-exchange"></i> Transactions
+      </button>
+      <button class="pay-dash-nav-item" id="payNavItem_reports" onclick="switchPayTab('reports')">
+        <i class="ti ti-chart-bar"></i> Reports
+      </button>
+    </div>
+    <div class="pay-dash-sidebar-section" style="margin-top:4px;">
+      <div class="pay-dash-sidebar-label">No-Code Tools</div>
+      <button class="pay-dash-nav-item" style="opacity:0.45;cursor:not-allowed;">
+        <i class="ti ti-link"></i> Payment Links
+      </button>
+      <button class="pay-dash-nav-item" style="opacity:0.45;cursor:not-allowed;">
+        <i class="ti ti-file-invoice"></i> Invoicing
+      </button>
+      <button class="pay-dash-nav-item" style="opacity:0.45;cursor:not-allowed;">
+        <i class="ti ti-qrcode"></i> Static QRs
+      </button>
+    </div>
+    <div class="pay-dash-sidebar-footer">
+      <button class="pay-dash-close-btn" onclick="closePayments()">
+        <i class="ti ti-arrow-left"></i> Back to POS
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="pay-dash-main">
+    <div class="pay-dash-topbar">
+      <span class="pay-dash-topbar-title" id="payTopbarTitle">Overview</span>
+    </div>
+
+    <!-- OVERVIEW PANE -->
+    <div class="pay-dash-body" id="payPane_overview">
+
+      <!-- Stat cards row -->
+      <div class="pay-stat-row">
+        <div class="pay-stat-card">
+          <div class="pay-stat-label">Sales this month</div>
+          <div class="pay-stat-val" id="payStatMonth">SGD 0.00</div>
+        </div>
+        <div class="pay-stat-card">
+          <div class="pay-stat-label">Sales this week</div>
+          <div class="pay-stat-val" id="payStatWeek">SGD 0.00</div>
+        </div>
+        <div class="pay-stat-card">
+          <div class="pay-stat-label">Sales today</div>
+          <div class="pay-stat-val green" id="payStatToday">SGD 0.00</div>
+        </div>
+      </div>
+
+      <!-- Two-column: chart + recent transactions -->
+      <div class="pay-two-col">
+
+        <!-- Your Sales chart -->
+        <div class="pay-chart-card">
+          <div class="pay-chart-header">
+            <div class="pay-chart-title">Your Sales</div>
+            <div class="pay-chart-tabs">
+              <button class="pay-chart-tab" id="payChartTab_7d" onclick="switchPayChart('7d')">7d</button>
+              <button class="pay-chart-tab active" id="payChartTab_30d" onclick="switchPayChart('30d')">30d</button>
+            </div>
+          </div>
+          <div class="pay-chart-area" id="payChartArea"></div>
+          <div id="payChartXLabels" style="display:flex;padding-top:0;"></div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="pay-table-card">
+          <div class="pay-chart-header" style="padding:16px 20px 0;">
+            <div class="pay-chart-title">Recent Transactions</div>
+          </div>
+          <div class="pay-table-head">
+            <span>Date</span>
+            <span>Method</span>
+            <span>Amount</span>
+          </div>
+          <div id="payRecentTxList"></div>
+        </div>
+
+      </div>
+
+      <!-- Sales by Payment Method (full width) -->
+      <div class="pay-table-card">
+        <div class="pay-chart-header" style="padding:16px 20px 12px;">
+          <div class="pay-chart-title">Sales by Payment Method</div>
+          <div class="pay-chart-tabs">
+            <button class="pay-chart-tab" id="payMethodTab_7d" onclick="switchPayMethodChart('7d')">7d</button>
+            <button class="pay-chart-tab active" id="payMethodTab_30d" onclick="switchPayMethodChart('30d')">30d</button>
+          </div>
+        </div>
+        <div id="payMethodBreakdown"></div>
+      </div>
+
+    </div>
+
+    <!-- TRANSACTIONS PANE -->
+    <div class="pay-dash-body" id="payPane_transactions" style="display:none;">
+      <div class="pay-table-card">
+        <div class="pay-table-empty">
+          <i class="ti ti-arrows-exchange" style="font-size:32px;display:block;margin-bottom:10px;color:var(--text-tertiary);"></i>
+          Transaction history coming soon.
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS PANE -->
+    <div class="pay-dash-body" id="payPane_reports" style="display:none;">
+      <div class="pay-table-card">
+        <div class="pay-table-empty">
+          <i class="ti ti-chart-bar" style="font-size:32px;display:block;margin-bottom:10px;color:var(--text-tertiary);"></i>
+          Reports coming soon.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .pay-dash-main -->
+</div>
 
 </body>
 </html>
