@@ -3906,6 +3906,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   let payOutletFilter = 'All';
 
   function openPayments() {
+    payOutletFilter = 'All';
     renderPayDashboard();
     document.getElementById('payDashOverlay').classList.add('show');
   }
@@ -3939,20 +3940,29 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function getFilteredTxs() {
-    return salesLog.filter(t => !t.voided && !t.refund &&
-      (payOutletFilter === 'All' || (t.outlet || currentOutletName) === payOutletFilter));
+    return salesLog.filter(t => !t.voided && !t.refund && (() => {
+      if (payOutletFilter === 'All') return true;
+      // Find the outlet object for the selected filter name
+      const targetOutlet = outlets.find(o => o.name === payOutletFilter);
+      if (targetOutlet) {
+        // Prefer outlet_id match (reliable), fall back to name match
+        if (t.outlet_id != null) return String(t.outlet_id) === String(targetOutlet.id);
+        return t.outlet === payOutletFilter;
+      }
+      // No outlet object found — match by name only, never match untagged transactions
+      return t.outlet === payOutletFilter;
+    })());
   }
 
   function populateOutletSelector() {
     const sel = document.getElementById('payOutletSelect');
     if (!sel) return;
-    // Use the outlets[] array as the source of truth — always shows all configured outlets
     const outletNames = outlets && outlets.length
       ? outlets.map(o => o.name).filter(Boolean)
       : [currentOutletName];
     sel.innerHTML = '<option value="All">All Outlets</option>' +
       outletNames.map(n => `<option value="${n}"${payOutletFilter === n ? ' selected' : ''}>${n}</option>`).join('');
-    // Show selector only if more than 1 outlet configured
+    sel.value = payOutletFilter; // keep in sync with state
     sel.style.display = outletNames.length > 1 ? 'inline-block' : 'none';
   }
 
@@ -4140,14 +4150,21 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
   async function saveSalesEntry(entry) {
     if (!db) return;
-    const { error } = await db.from('sales_log').upsert({
+    const row = {
       ref: entry.ref, method: entry.method, date: entry.date.toISOString(),
       hour: entry.hour, day: entry.day, gross: entry.gross,
       discount: entry.discount, tax: entry.tax, total: entry.total,
-      items: entry.items, customer: entry.customer || null, outlet: entry.outlet || currentOutletName, outlet_id: entry.outlet_id || currentOutletId || null, voided: entry.voided || false,
+      items: entry.items, customer: entry.customer || null,
+      outlet: entry.outlet || currentOutletName,
+      outlet_id: entry.outlet_id != null ? String(entry.outlet_id) : (currentOutletId != null ? String(currentOutletId) : null),
+      voided: entry.voided || false,
       refund: entry.refund || false, refunded: entry.refunded || false
-    });
-    if (error) console.error('saveSalesEntry error:', JSON.stringify(error));
+    };
+    const { error } = await db.from('sales_log').insert(row);
+    if (error) {
+      console.error('saveSalesEntry error:', JSON.stringify(error));
+      showToast('⚠️ Transaction not saved to DB: ' + (error.message || error.code));
+    }
   }
   async function updateSalesEntry(ref, updates) {
     if (!db) return;
