@@ -922,7 +922,7 @@
     .pay-stat-val.green { color: var(--green); }
 
     /* Two-col grid for bottom sections */
-    .pay-two-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .pay-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .pay-two-col .pay-chart-card,
     .pay-two-col .pay-table-card { height: 100%; }
 
@@ -960,7 +960,7 @@
     [data-theme="dark"] .pay-method-badge.mobile { background: rgba(124,58,237,0.15); }
 
     /* Method breakdown */
-    .pay-pie-wrap { display: flex; align-items: center; gap: 16px; padding: 16px; }
+    .pay-pie-wrap { display: flex; align-items: center; gap: 24px; padding: 20px 24px; }
     .pay-pie-svg { flex-shrink: 0; }
     .pay-pie-legend { display: flex; flex-direction: column; gap: 10px; flex: 1; }
     .pay-pie-legend-item { display: flex; align-items: center; gap: 10px; }
@@ -969,7 +969,7 @@
     .pay-pie-legend-amt { font-size: 13px; font-weight: 700; color: var(--text-primary); }
     .pay-pie-legend-pct { font-size: 12px; color: var(--text-tertiary); min-width: 36px; text-align: right; }
     .pay-pie-total-label { font-size: 11px; fill: var(--text-tertiary); }
-    .pay-pie-total-val { font-size: 12px; font-weight: 700; fill: var(--text-primary); }
+    .pay-pie-total-val { font-size: 13px; font-weight: 700; fill: var(--text-primary); }
 
 
     /* ── Setup Screen ── */
@@ -4046,7 +4046,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     }).filter(m => m.amt > 0);
 
     // Build SVG donut chart
-    const cx = 60, cy = 60, r = 46, innerR = 28;
+    const cx = 70, cy = 70, r = 56, innerR = 34;
     const TAU = 2 * Math.PI;
     let startAngle = -Math.PI / 2; // start from top
 
@@ -4077,10 +4077,10 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       return `<path d="${path}" fill="${m.color}" opacity="0.92"/>`;
     }).join('');
 
-    const svg = `<svg class="pay-pie-svg" width="120" height="120" viewBox="0 0 120 120">
+    const svg = `<svg class="pay-pie-svg" width="140" height="140" viewBox="0 0 140 140">
       ${slices}
-      <text x="${cx}" y="${cy - 6}" text-anchor="middle" class="pay-pie-total-label">Total</text>
-      <text x="${cx}" y="${cy + 8}" text-anchor="middle" class="pay-pie-total-val">SGD ${total.toFixed(2)}</text>
+      <text x="${cx}" y="${cy - 7}" text-anchor="middle" class="pay-pie-total-label">Total</text>
+      <text x="${cx}" y="${cy + 10}" text-anchor="middle" class="pay-pie-total-val">SGD ${total.toFixed(2)}</text>
     </svg>`;
 
     const legend = data.map(m => `
@@ -6168,18 +6168,18 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
           <div id="payRecentTxList"></div>
         </div>
 
-        <!-- Sales by Payment Method -->
-        <div class="pay-table-card">
-          <div class="pay-chart-header" style="padding:16px 16px 12px;">
-            <div class="pay-chart-title">Sales by Method</div>
-            <div class="pay-chart-tabs">
-              <button class="pay-chart-tab" id="payMethodTab_7d" onclick="switchPayMethodChart('7d')">7d</button>
-              <button class="pay-chart-tab active" id="payMethodTab_30d" onclick="switchPayMethodChart('30d')">30d</button>
-            </div>
-          </div>
-          <div id="payMethodBreakdown"></div>
-        </div>
+      </div>
 
+      <!-- Sales by Payment Method (full width, below) -->
+      <div class="pay-table-card">
+        <div class="pay-chart-header" style="padding:16px 20px 12px;">
+          <div class="pay-chart-title">Sales by Payment Method</div>
+          <div class="pay-chart-tabs">
+            <button class="pay-chart-tab" id="payMethodTab_7d" onclick="switchPayMethodChart('7d')">7d</button>
+            <button class="pay-chart-tab active" id="payMethodTab_30d" onclick="switchPayMethodChart('30d')">30d</button>
+          </div>
+        </div>
+        <div id="payMethodBreakdown"></div>
       </div>
 
     </div>
