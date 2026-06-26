@@ -236,7 +236,18 @@
     .otp-btn-secondary:disabled { opacity: 0.5; cursor: default; }
     .otp-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: otp-spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
     @keyframes otp-spin { to { transform: rotate(360deg); } }
-    .main { display: grid; grid-template-columns: 1fr 300px; flex: 1; overflow: hidden; min-height: 0; }
+    .main { display: grid; grid-template-columns: 48px 1fr 300px; flex: 1; overflow: hidden; min-height: 0; }
+
+    /* LEFT SIDEBAR */
+    .left-sidebar { display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 2px; background: var(--bg-primary); border-right: 0.5px solid var(--border); overflow: hidden; flex-shrink: 0; }
+    .lsb-btn { width: 36px; height: 36px; border-radius: var(--radius-md); border: none; background: transparent; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: background 0.15s, color 0.15s; flex-shrink: 0; }
+    .lsb-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+    .lsb-btn i { font-size: 18px; pointer-events: none; }
+    .lsb-btn .lsb-tip { position: absolute; left: 44px; top: 50%; transform: translateY(-50%); background: var(--text-primary); color: var(--bg-primary); font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.12s; z-index: 1200; letter-spacing: 0.02em; }
+    .lsb-btn:hover .lsb-tip { opacity: 1; }
+    .lsb-divider { width: 24px; height: 0.5px; background: var(--border); flex-shrink: 0; margin: 4px 0; }
+    .lsb-btn.lsb-add { color: var(--green); }
+    .lsb-btn.lsb-add:hover { background: rgba(22,163,74,0.1); }
 
     /* MIDDLE PANEL */
     .mid-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-primary); }
@@ -978,6 +989,14 @@
 
 <div class="main">
 
+  <!-- LEFT SIDEBAR -->
+  <div class="left-sidebar">
+    <button class="lsb-btn lsb-add" onclick="openAddNew()">
+      <i class="ti ti-circle-plus"></i>
+      <span class="lsb-tip">Add product</span>
+    </button>
+  </div>
+
   <!-- MIDDLE: Products -->
   <div class="mid-panel">
     <div class="cat-tabs" id="catTabs">
@@ -1383,8 +1402,12 @@
       BUSINESS_TYPE = savedType;
       hideSetupScreen();
     } else {
-      showSetupScreen();
-      setTimeout(() => document.getElementById('setupBusinessName').focus(), 100);
+      localStorage.setItem(BUSINESS_NAME_KEY, 'Smart EPOS');
+      localStorage.setItem(BUSINESS_TYPE_KEY, 'fnb');
+      localStorage.setItem(BUSINESS_PHONE_KEY, '+6591234567');
+      BUSINESS_TYPE = 'fnb';
+      applyBusinessName('Smart EPOS');
+      hideSetupScreen();
     }
   }
 
@@ -3343,6 +3366,19 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   let editTarget = null;
   let editTargetCat = null; // which top-level category the item lives in
 
+  function openAddNew() {
+    editTarget = null;
+    editTargetCat = null;
+    editImgData = null;
+    editImgFile = null;
+    document.getElementById('editModalTitle').textContent = 'Add New Item';
+    document.getElementById('editModalSubtitle').textContent = '';
+    document.querySelectorAll('.edit-cat-btn').forEach(btn => btn.classList.remove('active'));
+    ['editName','editPrice','editCategoryTag','editValidFrom','editValidTo','editDesc','editAllergens','editIngredients'].forEach(id => document.getElementById(id).value = '');
+    showEditImgPreview(null);
+    document.getElementById('editOverlay').classList.add('show');
+  }
+
   function openEdit(name) {
     const p = findProduct(name);
     if (!p) return;
@@ -3391,7 +3427,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   function closeEditIfBg(e) { if (e.target === document.getElementById('editOverlay')) closeEdit(); }
 
   async function saveEdit() {
-    if (!editTarget) return;
+    const isNew = !editTarget;
     const newName = document.getElementById('editName').value.trim();
     const newPrice = parseFloat(document.getElementById('editPrice').value);
     const newDesc = document.getElementById('editDesc').value.trim();
@@ -3404,6 +3440,26 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const newCat = activeBtn ? activeBtn.dataset.cat : editTargetCat;
 
     if (!newName || isNaN(newPrice)) { showToast('Name and price are required'); return; }
+
+    if (isNew) {
+      const activeBtn = document.querySelector('.edit-cat-btn.active');
+      const newCat = activeBtn ? activeBtn.dataset.cat : null;
+      if (!newName || isNaN(newPrice)) { showToast('Name and price are required'); return; }
+      if (!newCat) { showToast('Please select a category'); return; }
+      const newItem = { name: newName, price: newPrice, desc: newDesc, allergens: newAllergens, ingredients: newIngredients, sub: newSub, validFrom: '', validTo: '', emoji: '☕', image_url: '' };
+      if (editImgFile) {
+        showToast('Uploading image…');
+        const url = await uploadProductImage(newName, editImgFile);
+        if (url) { newItem.image_url = url; customImgs[newName] = url; } else return;
+      }
+      if (!PRODUCTS[newCat]) PRODUCTS[newCat] = { All: [] };
+      PRODUCTS[newCat].All.push(newItem);
+      await saveProductToDb(newItem, newCat);
+      closeEdit();
+      renderProducts();
+      showToast('Item added ✓');
+      return;
+    }
 
     const oldName = editTarget.name; // capture before overwrite
 
