@@ -3592,6 +3592,15 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     document.querySelectorAll('.edit-cat-btn').forEach(btn => btn.classList.remove('active'));
     ['editName','editPrice','editCategoryTag','editValidFrom','editValidTo','editDesc','editAllergens','editIngredients'].forEach(id => document.getElementById(id).value = '');
     showEditImgPreview(null);
+    // Pre-check only the current outlet
+    const outletList = document.getElementById('editOutletList');
+    outletList.innerHTML = outlets.map(o => {
+      const checked = String(o.id) === String(currentOutletId);
+      return `<div class="edit-outlet-item ${checked ? 'checked' : ''}" data-outlet-id="${o.id}" onclick="this.classList.toggle('checked')">
+        <div class="edit-outlet-check"><i class="ti ti-check"></i></div>
+        <div class="edit-outlet-name">${o.name}</div>
+      </div>`;
+    }).join('');
     document.getElementById('editOverlay').classList.add('show');
   }
 
@@ -3682,7 +3691,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       const newCat = activeBtn ? activeBtn.dataset.cat : null;
       if (!newName || isNaN(newPrice)) { showToast('Name and price are required'); return; }
       if (!newCat) { showToast('Please select a category'); return; }
-      const newItem = { name: newName, price: newPrice, desc: newDesc, allergens: newAllergens, ingredients: newIngredients, sub: newSub, validFrom: '', validTo: '', emoji: '☕', image_url: '' };
+      const newItem = { name: newName, price: newPrice, desc: newDesc, allergens: newAllergens, ingredients: newIngredients, sub: newSub, validFrom: '', validTo: '', emoji: '☕', image_url: '', outlet_ids: [String(currentOutletId)] };
       if (editImgFile) {
         showToast('Uploading image…');
         const url = await uploadProductImage(newName, editImgFile);
