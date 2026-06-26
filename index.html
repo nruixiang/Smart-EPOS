@@ -914,6 +914,27 @@
     .pay-outlet-select { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 13px; font-weight: 500; font-family: var(--font); cursor: pointer; outline: none; margin-left: 14px; }
     .pay-outlet-select:focus { border-color: #2563eb; }
     .pay-dash-body { flex: 1; overflow-y: scroll; padding: 28px; display: flex; flex-direction: column; gap: 24px; min-height: 0; height: 0; }
+    .biz-section { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+    .biz-section-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+    .biz-field { display: flex; flex-direction: column; gap: 6px; }
+    .biz-field-label { font-size: 12px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .biz-field-input { padding: 10px 12px; font-size: 14px; border: 0.5px solid var(--border); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font); outline: none; transition: border-color 0.15s; }
+    .biz-field-input:focus { border-color: #2563eb; }
+    .biz-logo-row { display: flex; align-items: center; gap: 16px; }
+    .biz-logo-preview { width: 72px; height: 72px; border-radius: 12px; border: 0.5px solid var(--border); background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .biz-logo-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .biz-logo-preview i { font-size: 28px; color: var(--text-tertiary); }
+    .biz-logo-actions { display: flex; flex-direction: column; gap: 8px; }
+    .biz-logo-upload-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 8px; border: 0.5px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.15s; }
+    .biz-logo-upload-btn:hover { background: var(--bg-tertiary); }
+    .biz-logo-hint { font-size: 11px; color: var(--text-tertiary); }
+    .biz-save-btn { align-self: flex-end; padding: 10px 24px; font-size: 14px; font-weight: 700; border-radius: 8px; border: none; background: #2563eb; color: white; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+    .biz-save-btn:hover { opacity: 0.88; }
+    .biz-save-btn:disabled { opacity: 0.45; cursor: default; }
+    .biz-outlet-row { display: flex; align-items: center; gap: 10px; }
+    .biz-outlet-name { flex: 1; }
+    .biz-outlet-save-btn { padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: #2563eb; color: white; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; flex-shrink: 0; }
+    .biz-outlet-save-btn:hover { opacity: 0.88; }
     .pay-dash-section-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
 
     /* Stat cards */
@@ -1079,7 +1100,7 @@
 
 <header>
   <div class="header-left">
-    <div class="brand-icon">E</div>
+    <div class="brand-icon" id="brandIcon">E</div>
     <div>
       <div class="brand-name" id="brandName">Smart EPOS</div>
       <div class="header-meta" id="headerOutlet">Orchard · T1</div>
@@ -1592,11 +1613,148 @@
 
   function applyBusinessName(name) {
     BUSINESS_NAME = name;
-    // Update header brand name
     const brandEl = document.getElementById('brandName');
     if (brandEl) brandEl.textContent = name;
-    // Update page title
     document.title = name + ' — EPOS';
+    // Update brand icon initial if no logo set
+    const icon = document.getElementById('brandIcon');
+    if (icon && !icon.querySelector('img')) icon.textContent = name.charAt(0).toUpperCase();
+  }
+
+  function applyBusinessLogo(url) {
+    const icon = document.getElementById('brandIcon');
+    if (!icon) return;
+    if (url) {
+      icon.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />`;
+    } else {
+      icon.innerHTML = BUSINESS_NAME ? BUSINESS_NAME.charAt(0).toUpperCase() : 'E';
+    }
+  }
+
+  // ── Business Info (Supabase) ──
+  let businessInfoCache = null;
+  let bizLogoFile = null;
+
+  async function loadBusinessInfo() {
+    if (!db) return;
+    const { data, error } = await db.from('business_info').select('*').limit(1).maybeSingle();
+    if (error) { console.error('loadBusinessInfo error:', JSON.stringify(error)); return; }
+    if (data) {
+      businessInfoCache = data;
+      applyBusinessName(data.business_name || BUSINESS_NAME);
+      if (data.logo_url) applyBusinessLogo(data.logo_url);
+    }
+  }
+
+  async function loadBusinessInfoPane() {
+    const nameInput = document.getElementById('bizNameInput');
+    const typeSelect = document.getElementById('bizTypeSelect');
+    const preview = document.getElementById('bizLogoPreview');
+
+    if (businessInfoCache) {
+      if (nameInput) nameInput.value = businessInfoCache.business_name || '';
+      if (typeSelect) typeSelect.value = businessInfoCache.business_type || '';
+      if (preview && businessInfoCache.logo_url) {
+        preview.innerHTML = `<img src="${businessInfoCache.logo_url}" style="width:100%;height:100%;object-fit:cover;" />`;
+      }
+    } else {
+      if (nameInput) nameInput.value = localStorage.getItem(BUSINESS_NAME_KEY) || '';
+      if (typeSelect) typeSelect.value = localStorage.getItem(BUSINESS_TYPE_KEY) || '';
+    }
+
+    renderBizOutletList();
+  }
+
+  function onBizLogoSelected(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { showToast('Logo must be under 2MB'); return; }
+    bizLogoFile = file;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('bizLogoPreview');
+      if (preview) preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;" />`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadBusinessLogo(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    const path = 'logo.' + ext;
+    const { error } = await db.storage.from('business-assets').upload(path, file, { upsert: true, contentType: file.type });
+    if (error) { showToast('Logo upload failed: ' + error.message); return null; }
+    const { data } = db.storage.from('business-assets').getPublicUrl(path);
+    return data.publicUrl + '?t=' + Date.now(); // cache-bust
+  }
+
+  async function saveBusinessInfo() {
+    const btn = document.getElementById('bizSaveBtn');
+    const name = document.getElementById('bizNameInput').value.trim();
+    const type = document.getElementById('bizTypeSelect').value;
+    if (!name) { showToast('Business name cannot be empty'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    let logoUrl = businessInfoCache?.logo_url || null;
+
+    if (bizLogoFile) {
+      showToast('Uploading logo…');
+      logoUrl = await uploadBusinessLogo(bizLogoFile);
+      if (!logoUrl) { btn.disabled = false; btn.textContent = 'Save Changes'; return; }
+      bizLogoFile = null;
+    }
+
+    const row = { business_name: name, business_type: type || null, logo_url: logoUrl };
+
+    let error;
+    if (businessInfoCache?.id) {
+      ({ error } = await db.from('business_info').update(row).eq('id', businessInfoCache.id));
+    } else {
+      const { data, error: insertErr } = await db.from('business_info').insert(row).select().single();
+      error = insertErr;
+      if (data) businessInfoCache = data;
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+
+    if (error) { showToast('Save failed: ' + error.message); return; }
+
+    businessInfoCache = { ...businessInfoCache, ...row };
+    localStorage.setItem(BUSINESS_NAME_KEY, name);
+    localStorage.setItem(BUSINESS_TYPE_KEY, type);
+    applyBusinessName(name);
+    if (logoUrl) applyBusinessLogo(logoUrl);
+    showToast('Business info saved ✓');
+  }
+
+  function renderBizOutletList() {
+    const container = document.getElementById('bizOutletList');
+    if (!container) return;
+    if (!outlets.length) {
+      container.innerHTML = '<div style="font-size:13px;color:var(--text-tertiary);">No outlets found.</div>';
+      return;
+    }
+    container.innerHTML = outlets.map(o => `
+      <div class="biz-outlet-row">
+        <input class="biz-field-input biz-outlet-name" id="bizOutlet_${o.id}" value="${o.name}" placeholder="Outlet name" />
+        <button class="biz-outlet-save-btn" onclick="saveBizOutletName('${o.id}')">Save</button>
+      </div>
+    `).join('');
+  }
+
+  async function saveBizOutletName(id) {
+    const input = document.getElementById('bizOutlet_' + id);
+    if (!input) return;
+    const name = input.value.trim();
+    if (!name) { showToast('Outlet name cannot be empty'); return; }
+    const { error } = await db.from('outlets').update({ name }).eq('id', id);
+    if (error) { showToast('Failed to save outlet: ' + error.message); return; }
+    const outlet = outlets.find(o => String(o.id) === String(id));
+    if (outlet) outlet.name = name;
+    if (String(id) === String(currentOutletId)) applyOutletName(name);
+    showToast('Outlet name saved ✓');
   }
 
   document.addEventListener('DOMContentLoaded', initSetup);
@@ -2181,6 +2339,7 @@
 
   // Load outlets first (sets currentOutletId), then load products filtered by outlet
   loadOutlets().then(() => loadProducts());
+  loadBusinessInfo();
 
   function showEditImgPreview(src) {
     const thumb = document.getElementById('editImgThumb');
@@ -3916,15 +4075,17 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function switchPayTab(tab) {
-    const labels = { overview: 'Overview', transactions: 'Transactions', reports: 'Reports' };
-    ['overview','transactions','reports'].forEach(t => {
+    const labels = { overview: 'Overview', transactions: 'Transactions', reports: 'Reports', business: 'Business Information' };
+    ['overview','transactions','reports','business'].forEach(t => {
       const navItem = document.getElementById('payNavItem_' + t);
       if (navItem) navItem.classList.toggle('active', t === tab);
-      document.getElementById('payPane_' + t).style.display = t === tab ? 'flex' : 'none';
+      const pane = document.getElementById('payPane_' + t);
+      if (pane) pane.style.display = t === tab ? 'flex' : 'none';
     });
     const topbar = document.getElementById('payTopbarTitle');
     if (topbar) topbar.textContent = labels[tab] || tab;
     if (tab === 'overview') renderPayDashboard();
+    if (tab === 'business') loadBusinessInfoPane();
   }
 
   function switchPayChart(range) {
@@ -6141,6 +6302,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       <button class="pay-dash-nav-item" id="payNavItem_reports" onclick="switchPayTab('reports')">
         <i class="ti ti-chart-bar"></i> Reports
       </button>
+      <button class="pay-dash-nav-item" id="payNavItem_business" onclick="switchPayTab('business')">
+        <i class="ti ti-building"></i> Business Information
+      </button>
     </div>
     <div class="pay-dash-sidebar-section" style="margin-top:4px;">
       <div class="pay-dash-sidebar-label">No-Code Tools</div>
@@ -6255,6 +6419,56 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
           Reports coming soon.
         </div>
       </div>
+    </div>
+
+    <!-- BUSINESS INFORMATION PANE -->
+    <div class="pay-dash-body" id="payPane_business" style="display:none;">
+
+      <!-- Business Details -->
+      <div class="biz-section">
+        <div class="biz-section-title">Business Details</div>
+
+        <div class="biz-field">
+          <div class="biz-field-label">Business Name</div>
+          <input class="biz-field-input" id="bizNameInput" type="text" placeholder="e.g. The Corner Café" />
+        </div>
+
+        <div class="biz-field">
+          <div class="biz-field-label">Business Type</div>
+          <select class="biz-field-input" id="bizTypeSelect">
+            <option value="">Select type…</option>
+            <option value="fnb">Food &amp; Beverage</option>
+            <option value="retail">Clothing &amp; Retail</option>
+            <option value="services">Salon &amp; Services</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="biz-field">
+          <div class="biz-field-label">Logo</div>
+          <div class="biz-logo-row">
+            <div class="biz-logo-preview" id="bizLogoPreview">
+              <i class="ti ti-photo"></i>
+            </div>
+            <div class="biz-logo-actions">
+              <label class="biz-logo-upload-btn">
+                <i class="ti ti-upload"></i> Upload Logo
+                <input type="file" id="bizLogoFile" accept="image/*" style="display:none;" onchange="onBizLogoSelected(this)" />
+              </label>
+              <div class="biz-logo-hint">PNG, JPG or SVG · max 2MB<br>Appears in the POS header</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="biz-save-btn" id="bizSaveBtn" onclick="saveBusinessInfo()">Save Changes</button>
+      </div>
+
+      <!-- Outlets -->
+      <div class="biz-section">
+        <div class="biz-section-title">Outlets</div>
+        <div id="bizOutletList" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+
     </div>
 
   </div><!-- end .pay-dash-main -->
