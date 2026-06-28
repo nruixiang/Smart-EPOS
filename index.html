@@ -298,13 +298,20 @@
     .empty-order { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-tertiary); min-height: 120px; }
     .empty-order i { font-size: 36px; }
     .empty-order p { font-size: 13px; }
-    .order-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 0.5px solid var(--border); border-radius: var(--radius-md); background: var(--bg-primary); }
+    .order-item { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 0.5px solid var(--border); border-radius: var(--radius-md); background: var(--bg-primary); }
+    .order-item-row { display: flex; align-items: center; gap: 8px; }
     .item-details { flex: 1; min-width: 0; }
     .item-name { font-size: 12px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-price { font-size: 11px; color: var(--text-secondary); }
     .item-qty { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
     .qty-btn { width: 22px; height: 22px; border: 0.5px solid var(--border); border-radius: 4px; background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; color: var(--text-primary); line-height: 1; font-family: var(--font); }
     .qty-num { font-size: 13px; font-weight: 500; min-width: 16px; text-align: center; color: var(--text-primary); }
+    .order-item-extra { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding-top: 2px; }
+    .order-item-edit-btn { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--text-secondary); background: none; border: none; cursor: pointer; font-family: var(--font); padding: 2px; }
+    .order-item-edit-btn:hover { color: var(--text-primary); }
+    .order-item-edit-btn i { font-size: 13px; }
+    .order-item-remove-btn { display: flex; align-items: center; color: var(--red); background: none; border: none; cursor: pointer; padding: 2px; font-size: 15px; }
+    .order-item-remove-btn:hover { opacity: 0.75; }
     .customer-row { padding: 8px 10px; border-top: 0.5px solid var(--border); display: flex; gap: 6px; flex-shrink: 0; }
     .attached-customer-chip { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #f0fdf4; border: 0.5px solid #bbf7d0; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     [data-theme="dark"] .attached-customer-chip { background: rgba(22,163,74,0.15); border-color: rgba(22,163,74,0.35); }
@@ -414,6 +421,46 @@
     .cardtype-modal-footer { border-top: 0.5px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); }
     .cardtype-footer-label { font-size: 13px; color: var(--text-secondary); }
     .cardtype-footer-amt { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+
+    /* CUSTOMIZE MODAL */
+    .customize-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .customize-overlay.show { opacity: 1; pointer-events: all; }
+    .customize-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 420px; max-height: 88vh; overflow: hidden; border: 0.5px solid var(--border); display: flex; flex-direction: column; }
+    .customize-modal-top { padding: 18px 20px 14px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 0.5px solid var(--border); }
+    .customize-modal-title { font-size: 19px; font-weight: 800; color: var(--text-primary); }
+    .customize-modal-sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+    .customize-modal-price { font-size: 19px; font-weight: 800; color: var(--text-primary); flex-shrink: 0; }
+    .customize-modal-body { padding: 6px 20px 20px; overflow-y: auto; flex: 1; }
+    .customize-group { margin-top: 20px; }
+    .customize-group:first-child { margin-top: 16px; }
+    .customize-group-head { display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 0.5px solid var(--border); margin-bottom: 12px; }
+    .customize-group-label { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+    .customize-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 12px; letter-spacing: 0.02em; }
+    .customize-pill.required { background: #111; color: white; }
+    [data-theme="dark"] .customize-pill.required { background: #f2f2f7; color: #1c1c1e; }
+    .customize-pill.optional { background: #dbeafe; color: #2563eb; }
+    [data-theme="dark"] .customize-pill.optional { background: rgba(37,99,235,0.18); color: #60a5fa; }
+    .customize-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .customize-choice { border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; text-align: left; cursor: pointer; background: var(--bg-primary); font-family: var(--font); transition: all 0.15s; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .customize-choice:hover { border-color: var(--border-hover); }
+    .customize-choice.selected { background: #111; border-color: #111; }
+    [data-theme="dark"] .customize-choice.selected { background: #f2f2f7; border-color: #f2f2f7; }
+    .customize-choice-text { display: flex; flex-direction: column; gap: 2px; }
+    .customize-choice-label { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .customize-choice.selected .customize-choice-label { color: white; }
+    [data-theme="dark"] .customize-choice.selected .customize-choice-label { color: #1c1c1e; }
+    .customize-choice-delta { font-size: 12px; color: var(--text-tertiary); }
+    .customize-choice.selected .customize-choice-delta { color: rgba(255,255,255,0.7); }
+    [data-theme="dark"] .customize-choice.selected .customize-choice-delta { color: rgba(28,28,30,0.6); }
+    .customize-choice-check { width: 18px; height: 18px; border-radius: 50%; background: white; color: #111; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+    .customize-modal-footer { border-top: 0.5px solid var(--border); padding: 14px 20px; display: flex; gap: 10px; align-items: center; background: var(--bg-secondary); }
+    .customize-footer-amt-wrap { flex: 1; }
+    .customize-footer-label { font-size: 12px; color: var(--text-secondary); }
+    .customize-footer-amt { font-size: 17px; font-weight: 800; color: var(--text-primary); }
+    .customize-btn-cancel { padding: 11px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); transition: opacity 0.15s; }
+    .customize-btn-add { padding: 11px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); background: #111; color: white; border: none; transition: opacity 0.15s; }
+    [data-theme="dark"] .customize-btn-add { background: #f2f2f7; color: #1c1c1e; }
+    .customize-btn-add:hover, .customize-btn-cancel:hover { opacity: 0.85; }
 
     /* PROCESSING MODAL */
     .processing-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 210; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -1354,6 +1401,28 @@
     <div class="cardtype-modal-footer">
       <div class="cardtype-footer-label">Amount to charge</div>
       <div class="cardtype-footer-amt" id="cardTypeAmount">$0.00</div>
+    </div>
+  </div>
+</div>
+
+<!-- Customize Item Modal -->
+<div class="customize-overlay" id="customizeOverlay" onclick="closeIfBg(event, 'customizeOverlay', closeCustomizeModal)">
+  <div class="customize-modal">
+    <div class="customize-modal-top">
+      <div>
+        <div class="customize-modal-title" id="customizeModalTitle">Item</div>
+        <div class="customize-modal-sub">Customise this item</div>
+      </div>
+      <div class="customize-modal-price" id="customizeModalPrice">$0.00</div>
+    </div>
+    <div class="customize-modal-body" id="customizeModalBody"></div>
+    <div class="customize-modal-footer">
+      <button class="customize-btn-cancel" onclick="closeCustomizeModal()">Cancel</button>
+      <div class="customize-footer-amt-wrap" style="text-align:right;">
+        <div class="customize-footer-label">Total</div>
+        <div class="customize-footer-amt" id="customizeFooterAmt">$0.00</div>
+      </div>
+      <button class="customize-btn-add" onclick="confirmCustomize()" id="customizeConfirmBtn">Done · $0.00</button>
     </div>
   </div>
 </div>
@@ -2319,6 +2388,85 @@
     'Gift Bundle':       'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=300&q=80',
   };
 
+  // ── Drink Customization Options ──
+  // Loaded from Supabase (option_groups / option_choices tables) at startup into
+  // PRODUCT_OPTIONS_BY_CATEGORY, keyed by category (e.g. 'Hot Drinks'). Falls back
+  // to the hardcoded DEFAULT_DRINK_OPTIONS below if the DB is unreachable or the
+  // tables haven't been migrated yet — so the app still works either way.
+  const CUSTOMIZABLE_CATEGORIES = ['Hot Drinks', 'Cold Drinks'];
+  const DEFAULT_DRINK_OPTIONS = {
+    groups: [
+      {
+        key: 'size', label: 'Size', type: 'single', required: true,
+        choices: [
+          { label: 'Small', delta: -0.50 },
+          { label: 'Regular', delta: 0, default: true },
+          { label: 'Large', delta: 1.00 },
+        ]
+      },
+      {
+        key: 'milk', label: 'Milk', type: 'single', required: true,
+        choices: [
+          { label: 'Whole', delta: 0, default: true },
+          { label: 'Oat', delta: 0.50 },
+          { label: 'Almond', delta: 0.50 },
+          { label: 'Soy', delta: 0.50 },
+        ]
+      },
+      {
+        key: 'sugar', label: 'Sugar', type: 'single', required: true,
+        choices: [
+          { label: 'None', delta: 0 },
+          { label: 'Less', delta: 0 },
+          { label: 'Regular', delta: 0, default: true },
+          { label: 'Extra', delta: 0 },
+        ]
+      },
+      {
+        key: 'extras', label: 'Extras', type: 'multi', required: false,
+        choices: [
+          { label: 'Extra Shot', delta: 0.75 },
+          { label: 'Vanilla Syrup', delta: 0.50 },
+          { label: 'Hazelnut Syrup', delta: 0.50 },
+          { label: 'Whipped Cream', delta: 0.50 },
+        ]
+      },
+    ]
+  };
+
+  let PRODUCT_OPTIONS_BY_CATEGORY = {}; // populated by loadProductOptions()
+  let productOptionsLoaded = false;
+
+  async function loadProductOptions() {
+    if (!db) { productOptionsLoaded = false; return; }
+    const { data: groups, error: gErr } = await db.from('option_groups').select('*').order('sort_order', { ascending: true });
+    if (gErr) { console.error('loadProductOptions groups error:', JSON.stringify(gErr)); productOptionsLoaded = false; return; }
+    if (!groups || groups.length === 0) { productOptionsLoaded = false; return; } // tables empty/not migrated yet — use fallback
+    const { data: choices, error: cErr } = await db.from('option_choices').select('*').order('sort_order', { ascending: true });
+    if (cErr) { console.error('loadProductOptions choices error:', JSON.stringify(cErr)); productOptionsLoaded = false; return; }
+
+    const byCategory = {};
+    groups.forEach(g => {
+      if (!byCategory[g.category]) byCategory[g.category] = { groups: [] };
+      byCategory[g.category].groups.push({
+        key: g.key, label: g.label, type: g.type, required: g.required,
+        choices: (choices || []).filter(c => c.group_id === g.id).map(c => ({
+          label: c.label, delta: parseFloat(c.delta) || 0, default: c.is_default || false
+        }))
+      });
+    });
+    PRODUCT_OPTIONS_BY_CATEGORY = byCategory;
+    productOptionsLoaded = true;
+  }
+
+  function getProductOptions(category) {
+    if (!CUSTOMIZABLE_CATEGORIES.includes(category)) return null;
+    if (productOptionsLoaded && PRODUCT_OPTIONS_BY_CATEGORY[category]) {
+      return PRODUCT_OPTIONS_BY_CATEGORY[category];
+    }
+    return DEFAULT_DRINK_OPTIONS; // offline / DB unreachable / tables not migrated yet
+  }
+
   // ── Products ──
   let PRODUCTS = {
     "Hot Drinks": { All: [
@@ -2528,6 +2676,7 @@
   loadOutlets().then(() => loadProducts());
   loadBusinessInfo();
   getWastageLog(); // populate wastageLog from DB so past entries survive a page reload
+  loadProductOptions(); // populate PRODUCT_OPTIONS_BY_CATEGORY from the option_groups/option_choices tables
 
   function showEditImgPreview(src) {
     const thumb = document.getElementById('editImgThumb');
@@ -2707,15 +2856,178 @@
 
   function filterProducts() { renderProducts(); }
 
+  // ── Customize Item Modal ──
+  let customizeTarget = null; // { name, basePrice, emoji, editingKey } — editingKey set when editing an existing order line
+  let customizeSelections = {}; // { [groupKey]: choiceLabel } for single, { [groupKey]: Set(choiceLabel) } for multi
+
+  function openCustomizeModal(name, basePrice, emoji, editingKey, presetSelections) {
+    const opts = getProductOptions(currentCat) || getProductOptions(findProductCategory(name));
+    if (!opts) return;
+    customizeTarget = { name, basePrice, emoji, editingKey: editingKey || null };
+    customizeSelections = {};
+    opts.groups.forEach(g => {
+      if (g.type === 'multi') {
+        customizeSelections[g.key] = new Set(presetSelections && presetSelections[g.key] ? presetSelections[g.key] : []);
+      } else {
+        const preset = presetSelections && presetSelections[g.key];
+        const def = preset || (g.choices.find(c => c.default) || g.choices[0]).label;
+        customizeSelections[g.key] = def;
+      }
+    });
+    document.getElementById('customizeModalTitle').textContent = name;
+    renderCustomizeBody(opts);
+    updateCustomizeTotal();
+    document.getElementById('customizeOverlay').classList.add('show');
+  }
+
+  function findProductCategory(name) {
+    for (const [cat, val] of Object.entries(PRODUCTS)) {
+      if (val.All.find(p => p.name === name)) return cat;
+    }
+    return null;
+  }
+
+  function renderCustomizeBody(opts) {
+    const body = document.getElementById('customizeModalBody');
+    body.innerHTML = opts.groups.map(g => {
+      const pillClass = g.required ? 'required' : 'optional';
+      const pillLabel = g.required ? 'Required' : 'Pick any';
+      const choicesHtml = g.choices.map(c => {
+        const isSelected = g.type === 'multi'
+          ? customizeSelections[g.key].has(c.label)
+          : customizeSelections[g.key] === c.label;
+        const deltaText = c.delta === 0 ? '' : (c.delta > 0 ? '+$' + c.delta.toFixed(2) : '-$' + Math.abs(c.delta).toFixed(2));
+        const safeLabel = c.label.replace(/'/g, "\\'");
+        const action = g.type === 'multi'
+          ? `toggleCustomizeMulti('${g.key}','${safeLabel}')`
+          : `selectCustomizeSingle('${g.key}','${safeLabel}')`;
+        return `<button type="button" class="customize-choice${isSelected ? ' selected' : ''}" onclick="${action}">
+          <div class="customize-choice-text">
+            <div class="customize-choice-label">${c.label}</div>
+            ${deltaText ? `<div class="customize-choice-delta">${deltaText}</div>` : ''}
+          </div>
+          ${isSelected ? '<div class="customize-choice-check"><i class="ti ti-check"></i></div>' : ''}
+        </button>`;
+      }).join('');
+      return `<div class="customize-group">
+        <div class="customize-group-head">
+          <div class="customize-group-label">${g.label}</div>
+          <div class="customize-pill ${pillClass}">${pillLabel}</div>
+        </div>
+        <div class="customize-choice-grid">${choicesHtml}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function selectCustomizeSingle(groupKey, choiceLabel) {
+    customizeSelections[groupKey] = choiceLabel;
+    const opts = getProductOptions(currentCat) || getProductOptions(findProductCategory(customizeTarget.name));
+    renderCustomizeBody(opts);
+    updateCustomizeTotal();
+  }
+
+  function toggleCustomizeMulti(groupKey, choiceLabel) {
+    const set = customizeSelections[groupKey];
+    if (set.has(choiceLabel)) set.delete(choiceLabel); else set.add(choiceLabel);
+    const opts = getProductOptions(currentCat) || getProductOptions(findProductCategory(customizeTarget.name));
+    renderCustomizeBody(opts);
+    updateCustomizeTotal();
+  }
+
+  function getCustomizeDelta() {
+    const opts = getProductOptions(currentCat) || getProductOptions(findProductCategory(customizeTarget.name));
+    let delta = 0;
+    opts.groups.forEach(g => {
+      if (g.type === 'multi') {
+        customizeSelections[g.key].forEach(label => {
+          const choice = g.choices.find(c => c.label === label);
+          if (choice) delta += choice.delta;
+        });
+      } else {
+        const choice = g.choices.find(c => c.label === customizeSelections[g.key]);
+        if (choice) delta += choice.delta;
+      }
+    });
+    return delta;
+  }
+
+  function getCustomizeSummary() {
+    // Flat list of { group, choice, delta } for receipt/cart display and DB storage
+    const opts = getProductOptions(currentCat) || getProductOptions(findProductCategory(customizeTarget.name));
+    const summary = [];
+    opts.groups.forEach(g => {
+      if (g.type === 'multi') {
+        customizeSelections[g.key].forEach(label => {
+          const choice = g.choices.find(c => c.label === label);
+          summary.push({ group: g.label, choice: label, delta: choice ? choice.delta : 0 });
+        });
+      } else {
+        const label = customizeSelections[g.key];
+        const choice = g.choices.find(c => c.label === label);
+        summary.push({ group: g.label, choice: label, delta: choice ? choice.delta : 0 });
+      }
+    });
+    return summary;
+  }
+
+  function updateCustomizeTotal() {
+    const total = customizeTarget.basePrice + getCustomizeDelta();
+    document.getElementById('customizeModalPrice').textContent = '$' + total.toFixed(2);
+    document.getElementById('customizeFooterAmt').textContent = '$' + total.toFixed(2);
+    document.getElementById('customizeConfirmBtn').textContent = (customizeTarget.editingKey ? 'Save · $' : 'Done · $') + total.toFixed(2);
+  }
+
+  function closeCustomizeModal() {
+    document.getElementById('customizeOverlay').classList.remove('show');
+    customizeTarget = null;
+    customizeSelections = {};
+  }
+
+  function confirmCustomize() {
+    if (!customizeTarget) return;
+    const finalPrice = customizeTarget.basePrice + getCustomizeDelta();
+    const summary = getCustomizeSummary();
+    const key = customizeTarget.editingKey || ('line_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8));
+    const existingQty = (customizeTarget.editingKey && order[customizeTarget.editingKey]) ? order[customizeTarget.editingKey].qty : 1;
+    order[key] = {
+      key, name: customizeTarget.name, price: finalPrice, basePrice: customizeTarget.basePrice,
+      emoji: customizeTarget.emoji, qty: existingQty, selectedOptions: summary
+    };
+    closeCustomizeModal();
+    renderOrder();
+  }
+
+  function editOrderItem(key) {
+    const item = order[key];
+    if (!item) return;
+    // Reconstruct preset selections from the stored summary so the modal reopens with current choices
+    const preset = {};
+    const opts = getProductOptions(findProductCategory(item.name));
+    if (opts && item.selectedOptions) {
+      opts.groups.forEach(g => {
+        const matches = item.selectedOptions.filter(s => s.group === g.label).map(s => s.choice);
+        preset[g.key] = g.type === 'multi' ? matches : (matches[0] || null);
+      });
+    }
+    openCustomizeModal(item.name, item.basePrice != null ? item.basePrice : item.price, item.emoji, key, preset);
+  }
+
+  function removeOrderItem(key) {
+    delete order[key];
+    renderOrder();
+  }
+
   function addItem(name, price, emoji) {
+    const opts = getProductOptions(currentCat);
+    if (opts) { openCustomizeModal(name, price, emoji); return; }
     if (order[name]) order[name].qty++; else order[name]={name,price,emoji,qty:1};
     renderOrder();
   }
 
-  function changeQty(name, delta) {
-    if (!order[name]) return;
-    order[name].qty += delta;
-    if (order[name].qty <= 0) delete order[name];
+  function changeQty(key, delta) {
+    if (!order[key]) return;
+    order[key].qty += delta;
+    if (order[key].qty <= 0) delete order[key];
     renderOrder();
   }
 
@@ -2799,7 +3111,7 @@
       if (!confirm('Replace current order with held order #' + id + '?')) return;
     }
     order = {};
-    held.items.forEach(i => { order[i.name] = {...i}; });
+    held.items.forEach(i => { order[i.key || i.name] = {...i}; });
     heldOrders.splice(idx, 1);
     renderOrder();
     updateRecallBadge();
@@ -2816,18 +3128,32 @@
       container.innerHTML = `<div class="empty-order"><i class="ti ti-box"></i><p>Order is empty</p></div>`;
       updateTotals(0); return;
     }
-    container.innerHTML = items.map(item => `
+    container.innerHTML = items.map(item => {
+      const key = item.key || item.name;
+      const safeKey = key.replace(/'/g, "\\'");
+      const hasOptions = Array.isArray(item.selectedOptions) && item.selectedOptions.length > 0;
+      const optionsSummary = hasOptions ? item.selectedOptions.map(o => o.choice).join(', ') : '';
+      const extraRow = hasOptions ? `
+        <div class="order-item-extra">
+          <button class="order-item-edit-btn" onclick="editOrderItem('${safeKey}')"><i class="ti ti-adjustments"></i> Edit</button>
+          <button class="order-item-remove-btn" onclick="removeOrderItem('${safeKey}')"><i class="ti ti-circle-x"></i></button>
+        </div>` : '';
+      return `
       <div class="order-item">
-        <div class="item-details">
-          <div class="item-name">${item.name}</div>
-          <div class="item-price">$${item.price.toFixed(2)} each</div>
+        <div class="order-item-row">
+          <div class="item-details">
+            <div class="item-name">${item.name}</div>
+            <div class="item-price">$${item.price.toFixed(2)} each${optionsSummary ? ' · ' + optionsSummary : ''}</div>
+          </div>
+          <div class="item-qty">
+            <button class="qty-btn" onclick="changeQty('${safeKey}', -1)">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${safeKey}', 1)">+</button>
+          </div>
         </div>
-        <div class="item-qty">
-          <button class="qty-btn" onclick="changeQty('${item.name.replace(/'/g,"\\'")}', -1)">−</button>
-          <span class="qty-num">${item.qty}</span>
-          <button class="qty-btn" onclick="changeQty('${item.name.replace(/'/g,"\\'")}', 1)">+</button>
-        </div>
-      </div>`).join('');
+        ${extraRow}
+      </div>`;
+    }).join('');
     const sub = items.reduce((a,i)=>a+i.price*i.qty, 0);
     updateTotals(sub);
   }
@@ -3067,7 +3393,7 @@
     const newEntry = {
       ref, method, date: now, hour: txHour, day: txDay,
       gross: sub, discount: discountAmt, tax, total,
-      items: items.map(i => ({name: i.name, qty: i.qty, price: i.price})),
+      items: items.map(i => ({name: i.name, qty: i.qty, price: i.price, selectedOptions: i.selectedOptions || undefined})),
       customer: attachedCustomer ? attachedCustomer.name : null,
       outlet: currentOutletName,
       outlet_id: currentOutletId,
@@ -3090,11 +3416,16 @@
 
     const customerRow = attachedCustomer ? `<tr><td>Customer</td><td>${attachedCustomer.name}</td></tr>` : '';
 
-    const itemRows = items.map(item => `
+    const itemRows = items.map(item => {
+      const optsLine = (Array.isArray(item.selectedOptions) && item.selectedOptions.length)
+        ? `<tr><td colspan="2" style="font-size:11px;color:var(--text-tertiary);padding-top:0;padding-bottom:6px;">${item.selectedOptions.map(o => o.choice).join(', ')}</td></tr>`
+        : '';
+      return `
       <tr>
         <td><span class="item-qty-label">${item.qty}×</span> ${item.name}</td>
         <td>$${(item.price * item.qty).toFixed(2)}</td>
-      </tr>`).join('');
+      </tr>${optsLine}`;
+    }).join('');
 
     const cashRows = (method === 'Cash' && cashReceived !== null) ? `
       <tr><td>Cash received</td><td>$${cashReceived.toFixed(2)}</td></tr>
