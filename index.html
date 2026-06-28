@@ -2598,11 +2598,14 @@
   // ── Combo / Bundle Slot Definitions ──
   // Products listed here open the combo-builder modal on add (never a silent default-add),
   // since there's no sensible default for "which drink" or "which pastry."
+  // A slot's `baseline` (if set) is the price up to which a pick costs no extra; anything
+  // pricier adds the difference. If omitted, the baseline defaults to the cheapest item
+  // currently available in that slot's categories.
   const COMBO_DEFINITIONS = {
     'Breakfast Set': {
       slots: [
-        { label: 'Drink', categories: ['Hot Drinks', 'Cold Drinks'] },
-        { label: 'Pastry', categories: ['Pastries'] },
+        { label: 'Drink', categories: ['Hot Drinks', 'Cold Drinks'], baseline: 4.50 },
+        { label: 'Pastry', categories: ['Pastries'], baseline: 3.50 },
       ]
     },
     'Arvo Pick-Me-Up': {
@@ -2617,9 +2620,10 @@
     return COMBO_DEFINITIONS[name] || null;
   }
 
-  // The "no extra charge" baseline for a slot — the cheapest product currently
-  // available across its allowed categories. Pricier picks add the difference.
+  // The "no extra charge" baseline for a slot. Uses slot.baseline if explicitly set;
+  // otherwise falls back to the cheapest product currently available in its categories.
   function getSlotBaseline(slot) {
+    if (typeof slot.baseline === 'number') return slot.baseline;
     let min = Infinity;
     slot.categories.forEach(cat => {
       const all = (PRODUCTS[cat] || {}).All || [];
