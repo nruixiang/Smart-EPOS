@@ -529,6 +529,7 @@
     .receipt-body { overflow-y: auto; padding: 20px 24px; flex: 1; }
     .receipt-shop-name { text-align: center; font-size: 22px; font-weight: 700; font-style: italic; letter-spacing: 0.08em; color: var(--text-primary); margin-bottom: 2px; font-family: 'Playfair Display', Georgia, serif; }
     .receipt-shop-sub { text-align: center; font-size: 12px; color: var(--text-secondary); margin-bottom: 18px; }
+    .receipt-shop-sub.tight { margin-bottom: 2px; }
     .receipt-meta { width: 100%; font-size: 12px; margin-bottom: 16px; }
     .receipt-meta td { padding: 2px 0; color: var(--text-secondary); }
     .receipt-meta td:last-child { text-align: right; color: var(--text-primary); }
@@ -3857,17 +3858,17 @@
 
     const tagline = businessInfoCache?.tagline ? `<div class="receipt-shop-sub">${businessInfoCache.tagline}</div>` : '';
     const address = businessInfoCache?.address ? `<div class="receipt-shop-sub">${businessInfoCache.address}</div>` : '';
-    const phoneGstRow = (businessInfoCache?.phone || businessInfoCache?.gst_reg_no)
-      ? `<div class="receipt-shop-sub">${[businessInfoCache?.phone, businessInfoCache?.gst_reg_no ? 'GST: ' + businessInfoCache.gst_reg_no : null].filter(Boolean).join(' · ')}</div>`
+    const phoneGstLine = [businessInfoCache?.phone, businessInfoCache?.gst_reg_no ? 'GST: ' + businessInfoCache.gst_reg_no : null].filter(Boolean).join(' · ');
+    const phoneGstRow = phoneGstLine
+      ? `<tr><td colspan="2" style="text-align:center;font-size:11px;color:var(--text-tertiary);padding-top:4px;">${phoneGstLine}</td></tr>`
       : '';
     const footerMessage = businessInfoCache?.receipt_footer || 'Thank you for visiting!';
 
     document.getElementById('receiptBody').innerHTML = `
       <div class="receipt-shop-name">${BUSINESS_NAME}</div>
       ${tagline}
-      <div class="receipt-shop-sub">${currentOutletName}</div>
+      <div class="receipt-shop-sub${address ? ' tight' : ''}">${currentOutletName}</div>
       ${address}
-      ${phoneGstRow}
       <table class="receipt-meta">
         <tr><td>Date</td><td>${dateStr}</td></tr>
         <tr><td>Time</td><td>${timeStr}</td></tr>
@@ -3882,6 +3883,7 @@
         ${discountRow}
         <tr><td>Tax (9%)</td><td>$${tax.toFixed(2)}</td></tr>
         <tr class="receipt-total-final"><td>TOTAL</td><td>$${total.toFixed(2)}</td></tr>
+        ${phoneGstRow}
         ${cashRows}
       </table>
       <div class="receipt-paid">Paid by ${method}</div>
@@ -6439,16 +6441,16 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
     const refundTagline = businessInfoCache?.tagline ? `<div class="receipt-shop-sub">${businessInfoCache.tagline}</div>` : '';
     const refundAddress = businessInfoCache?.address ? `<div class="receipt-shop-sub">${businessInfoCache.address}</div>` : '';
-    const refundPhoneGst = (businessInfoCache?.phone || businessInfoCache?.gst_reg_no)
-      ? `<div class="receipt-shop-sub">${[businessInfoCache?.phone, businessInfoCache?.gst_reg_no ? 'GST: ' + businessInfoCache.gst_reg_no : null].filter(Boolean).join(' · ')}</div>`
+    const refundPhoneGstLine = [businessInfoCache?.phone, businessInfoCache?.gst_reg_no ? 'GST: ' + businessInfoCache.gst_reg_no : null].filter(Boolean).join(' · ');
+    const refundPhoneGstRow = refundPhoneGstLine
+      ? `<tr><td colspan="2" style="text-align:center;font-size:11px;color:var(--text-tertiary);padding-top:4px;">${refundPhoneGstLine}</td></tr>`
       : '';
 
     document.getElementById('receiptBody').innerHTML = `
       <div class="receipt-shop-name">${BUSINESS_NAME}</div>
       ${refundTagline}
-      <div class="receipt-shop-sub">${currentOutletName}</div>
+      <div class="receipt-shop-sub${refundAddress ? ' tight' : ''}">${currentOutletName}</div>
       ${refundAddress}
-      ${refundPhoneGst}
       <div style="text-align:center;margin:8px 0 14px;">
         <span style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#ea580c;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUND</span>
       </div>
@@ -6467,6 +6469,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
         ${discountRow}
         <tr><td>Tax (9%)</td><td style="color:#ea580c;">-$${Math.abs(tx.tax).toFixed(2)}</td></tr>
         <tr class="receipt-total-final"><td>REFUND TOTAL</td><td style="color:#ea580c;">-$${tx.total.toFixed(2)}</td></tr>
+        ${refundPhoneGstRow}
       </table>
       <div class="receipt-paid" style="color:#ea580c;">Refunded via ${tx.method}</div>
       <hr class="receipt-divider"/>
