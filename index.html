@@ -1565,7 +1565,7 @@
 </div>
 
 <!-- Receipt Modal -->
-<div class="receipt-overlay" id="receiptOverlay">
+<div class="receipt-overlay" id="receiptOverlay" style="z-index:600;">
   <div class="receipt-modal">
     <div class="receipt-modal-header">
       <div class="receipt-modal-title">
@@ -7075,12 +7075,30 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     document.getElementById('refundConfirm_' + shortRef).style.display = 'none';
   }
 
+  // Reverses the points and spend that were awarded to a member at the time of
+  // sale, when that sale is later voided or refunded. Matches the member by name
+  // (the same limitation as elsewhere — sales_log only stores the customer's
+  // name, not their member id), and never lets points or spend go negative.
+  async function reverseMemberRewards(tx) {
+    if (!tx.customer) return;
+    const m = members.find(x => x.name === tx.customer);
+    if (!m) return;
+    const amountToReverse = Math.max(0, (tx.gross || 0) - (tx.discount || 0));
+    const pointsToReverse = Math.floor(amountToReverse);
+    m.points = Math.max(0, (m.points || 0) - pointsToReverse);
+    m.spent = Math.max(0, (m.spent || 0) - amountToReverse);
+    await saveMember(m);
+    if (attachedCustomer && attachedCustomer.id === m.id) updateCustomerRowDisplay();
+    refreshMemberListIfVisible();
+  }
+
   async function voidOrder(shortRef) {
     const fullRef = '#' + shortRef;
     const tx = salesLog.find(t => t.ref === fullRef);
-    if (!tx) return;
+    if (!tx || tx.voided || tx.refunded) return;
     tx.voided = true;
     await updateSalesEntry(fullRef, { voided: true });
+    await reverseMemberRewards(tx);
     renderOrdersTab();
     renderRptEod();
     showToast(`Order ${fullRef} voided`);
@@ -7089,13 +7107,14 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   async function refundOrder(shortRef) {
     const fullRef = '#' + shortRef;
     const tx = salesLog.find(t => t.ref === fullRef);
-    if (!tx) return;
+    if (!tx || tx.refunded || tx.voided) return;
 
     const now = new Date();
 
     // Mark original as refunded
     tx.refunded = true;
     await updateSalesEntry(fullRef, { refunded: true });
+    await reverseMemberRewards(tx);
 
     // Show refund receipt
     showRefundReceipt(tx, now);
