@@ -114,7 +114,6 @@
     .admin-section-note { font-size: 0.857rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 12px; }
 
     /* PRODUCT CARD ADMIN OVERLAYS */
-    .product-card { position: relative; }
     .card-admin-btns { position: absolute; top: 5px; left: 5px; display: none; gap: 4px; z-index: 10; }
     .product-card.admin-mode .card-admin-btns { display: flex; }
     .card-admin-btn { padding: 3px 9px; border-radius: 5px; border: none; font-size: 10px; font-weight: 600; cursor: pointer; font-family: var(--font); line-height: 1.6; transition: opacity 0.15s; }
@@ -246,7 +245,6 @@
     .lsb-btn i { font-size: 18px; pointer-events: none; }
     .lsb-btn .lsb-tip { position: absolute; left: 44px; top: 50%; transform: translateY(-50%); background: var(--text-primary); color: var(--bg-primary); font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.12s; z-index: 1200; letter-spacing: 0.02em; }
     .lsb-btn:hover .lsb-tip { opacity: 1; }
-    .lsb-divider { width: 24px; height: 0.5px; background: var(--border); flex-shrink: 0; margin: 4px 0; }
     .lsb-btn.lsb-add { color: var(--green); }
     .lsb-btn.lsb-add:hover { background: rgba(22,163,74,0.1); }
 
@@ -265,7 +263,7 @@
     .search-bar input:focus { border-color: var(--blue); }
     .products-grid { flex: 1; overflow-y: auto; padding: 0 14px 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-content: start; min-height: 0; }
     .products-grid .product-card { height: 155px; }
-    .product-card { border: 0.5px solid var(--border); border-radius: var(--radius-md); overflow: visible; cursor: pointer; transition: all 0.15s; background: var(--bg-primary); display: flex; flex-direction: column; }
+    .product-card { position: relative; border: 0.5px solid var(--border); border-radius: var(--radius-md); overflow: visible; cursor: pointer; transition: all 0.15s; background: var(--bg-primary); display: flex; flex-direction: column; }
     .product-card:hover { border-color: var(--border-hover); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .product-card:active { transform: scale(0.97); }
     .product-img { width: 100%; height: 100px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; background: var(--bg-secondary); border-radius: var(--radius-md) var(--radius-md) 0 0; overflow: hidden; }
@@ -716,10 +714,8 @@
     .rpt-order-card.refunded-original .rpt-order-items-count,
     .rpt-order-card.refunded-original .rpt-order-items-list { text-decoration: line-through; color: var(--text-tertiary); }
     .rpt-order-card.refunded { opacity: 0.75; border-color: #fed7aa; }
-    .rpt-order-refunded-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; background: #fff7ed; border: 1px solid #fed7aa; font-size: 11px; font-weight: 700; color: #ea580c; letter-spacing: 0.04em; }
     .rpt-order-refund-card { border: 0.5px solid #fed7aa; border-radius: var(--radius-lg); background: #fff7ed; overflow: hidden; }
     [data-theme="dark"] .rpt-order-refund-card { background: rgba(234,88,12,0.08); border-color: rgba(234,88,12,0.3); }
-    .rpt-order-refund-total { font-size: 15px; font-weight: 700; color: #ea580c; }
     .rpt-order-refund-btn { font-size: 13px; font-weight: 600; color: #ea580c; background: rgba(234,88,12,0.08); border: 1px solid rgba(234,88,12,0.3); border-radius: 8px; cursor: pointer; font-family: var(--font); padding: 8px 14px; transition: background 0.15s; }
     .rpt-order-refund-btn:hover { background: rgba(234,88,12,0.15); }
     .rpt-order-card-top { padding: 12px 14px 10px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
@@ -936,7 +932,6 @@
     .biz-outlet-name { flex: 1; }
     .biz-outlet-save-btn { padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: #2563eb; color: white; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; flex-shrink: 0; }
     .biz-outlet-save-btn:hover { opacity: 0.88; }
-    .pay-dash-section-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
 
     /* Stat cards */
     .pay-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
@@ -962,7 +957,6 @@
     .pay-chart-bar { width: 70%; background: #e5e7eb; border-radius: 3px 3px 0 0; transition: height 0.4s ease; min-height: 2px; }
     [data-theme="dark"] .pay-chart-bar { background: #3a3a3c; }
     .pay-chart-bar.has-data { background: #2563eb; }
-    .pay-chart-x { font-size: 10px; color: var(--text-tertiary); margin-top: 8px; white-space: nowrap; }
 
     /* Table card */
     .pay-table-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; }
@@ -1546,11 +1540,6 @@
       applyBusinessName('Smart EPOS');
       hideSetupScreen();
     }
-  }
-
-  function showSetupScreen() {
-    const el = document.getElementById('setupOverlay');
-    el.classList.remove('hidden', 'fade-out');
   }
 
   function openSetupScreen() {
@@ -2341,6 +2330,7 @@
   // Load outlets first (sets currentOutletId), then load products filtered by outlet
   loadOutlets().then(() => loadProducts());
   loadBusinessInfo();
+  getWastageLog(); // populate wastageLog from DB so past entries survive a page reload
 
   function showEditImgPreview(src) {
     const thumb = document.getElementById('editImgThumb');
@@ -2469,10 +2459,6 @@
     document.getElementById('heldOverlay').classList.remove('show');
   }
 
-  function closeRecallIfBg(e) {
-    if (e.target === document.getElementById('heldOverlay')) closeRecall();
-  }
-
   function renderHeldOrders() {
     const body = document.getElementById('heldModalBody');
     if (!heldOrders.length) {
@@ -2570,6 +2556,12 @@
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
     setTimeout(()=>t.classList.remove('show'), 2500);
+  }
+
+  // Generic background-click-to-close handler for overlay/modal elements.
+  // Usage: onclick="closeIfBg(event, 'someOverlayId', closeSomeModal)"
+  function closeIfBg(e, overlayId, closeFn) {
+    if (e.target === document.getElementById(overlayId)) closeFn();
   }
 
   // ── Cash Keypad ──
@@ -2854,9 +2846,6 @@
   }
   function closeMembers() {
     document.getElementById('memOverlay').classList.remove('show');
-  }
-  function closeMemIfBg(e) {
-    if (e.target === document.getElementById('memOverlay')) closeMembers();
   }
   function showMemPanel(panel) {
     ['List','Register','Profile','Edit'].forEach(p => {
@@ -3195,10 +3184,6 @@
     document.getElementById('discOverlay').classList.remove('show');
   }
 
-  function closeDiscIfBg(e) {
-    if (e.target === document.getElementById('discOverlay')) closeDiscount();
-  }
-
   function switchDiscTab(tab) {
     ['manual','membership','voucher'].forEach(t => {
       document.getElementById('discTab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
@@ -3286,10 +3271,6 @@
     }
   }
 
-  function closeDiscKbIfBg(e) {
-    if (e.target === document.getElementById('discKbSheet')) closeDiscKb();
-  }
-
   function discKbPress(ch) {
     const isPhone = discKbTarget === 'phone';
     if (isPhone) {
@@ -3346,10 +3327,6 @@
 
   function closeFieldKb() {
     document.getElementById('fieldKbSheet').classList.remove('show');
-  }
-
-  function closeFieldKbIfBg(e) {
-    if (e.target === document.getElementById('fieldKbSheet')) closeFieldKb();
   }
 
   function fieldKbPress(ch) {
@@ -3837,7 +3814,6 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function closePinfo() { document.getElementById('pinfoOverlay').classList.remove('show'); }
-  function closePinfoIfBg(e) { if (e.target === document.getElementById('pinfoOverlay')) closePinfo(); }
 
   // ── Edit Product ──
   let editTarget = null;
@@ -3921,11 +3897,6 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function closeEdit() { document.getElementById('editOverlay').classList.remove('show'); editTarget = null; }
-  function closeEditIfBg(e) { if (e.target === document.getElementById('editOverlay')) closeEdit(); }
-
-  function toggleEditOutlet(el, outletId) {
-    el.classList.toggle('checked');
-  }
 
   function getEditOutletIds() {
     return Array.from(document.querySelectorAll('#editOutletList .edit-outlet-item.checked'))
@@ -4348,9 +4319,6 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     document.getElementById('ordersOverlay').classList.remove('show');
   }
 
-  function closeOrdersIfBg(e) {
-    if (e.target === document.getElementById('ordersOverlay')) closeOrdersModal();
-  }
   function openReports() {
     rptMonthOffset = 0;
     document.getElementById('rptOverlay').classList.add('show');
@@ -4360,10 +4328,6 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   function closeReports() {
     document.getElementById('rptOverlay').classList.remove('show');
-  }
-
-  function closeRptIfBg(e) {
-    if (e.target === document.getElementById('rptOverlay')) closeReports();
   }
 
   function switchRptTab(tab, preserveEodDate) {
@@ -4917,10 +4881,6 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     document.getElementById('cashFloatOverlay').classList.remove('show');
   }
 
-  function closeCashFloatIfBg(e) {
-    if (e.target === document.getElementById('cashFloatOverlay')) closeCashFloat();
-  }
-
   function cfKeyPress(val) {
     if (val === '.') {
       if (cfRaw.includes('.')) return;
@@ -5012,10 +4972,6 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   function closeLogWastage() {
     document.getElementById('wastageOverlay').classList.remove('show');
-  }
-
-  function closeWastageIfBg(e) {
-    if (e.target === document.getElementById('wastageOverlay')) closeLogWastage();
   }
 
   function wastageGoStep(step) {
@@ -5365,7 +5321,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 </script>
 
 <!-- Product Info Modal -->
-<div class="pinfo-overlay" id="pinfoOverlay" onclick="closePinfoIfBg(event)">
+<div class="pinfo-overlay" id="pinfoOverlay" onclick="closeIfBg(event, 'pinfoOverlay', closePinfo)">
   <div class="pinfo-modal" id="pinfoModal">
     <div class="pinfo-hero" id="pinfoHero">
       <div class="pinfo-hero-emoji" id="pinfoEmoji"></div>
@@ -5435,7 +5391,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   .edit-img-upload-btn i { font-size: 18px; color: var(--text-secondary); }
   .edit-img-hint { font-size: 11px; color: var(--text-tertiary); margin-top: 6px; }
 </style>
-<div class="pinfo-overlay" id="editOverlay" onclick="closeEditIfBg(event)">
+<div class="pinfo-overlay" id="editOverlay" onclick="closeIfBg(event, 'editOverlay', closeEdit)">
   <div class="edit-modal">
     <div class="edit-modal-header">
       <div>
@@ -5535,7 +5491,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 </div>
 
 <!-- Discount Modal -->
-<div class="disc-overlay" id="discOverlay" onclick="closeDiscIfBg(event)">
+<div class="disc-overlay" id="discOverlay" onclick="closeIfBg(event, 'discOverlay', closeDiscount)">
   <div class="disc-modal">
     <div class="disc-header">
       <div class="disc-title">Discounts &amp; Memberships</div>
@@ -5623,7 +5579,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 </div>
 
 <!-- Discount Keyboard Sheet -->
-<div class="disc-kb-sheet" id="discKbSheet" onclick="closeDiscKbIfBg(event)">
+<div class="disc-kb-sheet" id="discKbSheet" onclick="closeIfBg(event, 'discKbSheet', closeDiscKb)">
   <div class="disc-kb-inner">
     <div class="disc-kb-field-row">
       <span class="disc-kb-field-label" id="discKbLabel">ENTER PHONE NUMBER:</span>
@@ -5695,7 +5651,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 </div>
 
 <!-- Generic Field Keyboard Sheet -->
-<div class="disc-kb-sheet" id="fieldKbSheet" onclick="closeFieldKbIfBg(event)">
+<div class="disc-kb-sheet" id="fieldKbSheet" onclick="closeIfBg(event, 'fieldKbSheet', closeFieldKb)">
   <div class="disc-kb-inner">
     <div class="disc-kb-field-row">
       <span class="disc-kb-field-label" id="fieldKbLabel">ENTER TEXT:</span>
@@ -5764,7 +5720,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 </div>
 
 <!-- Members Modal -->
-<div class="mem-overlay" id="memOverlay" onclick="closeMemIfBg(event)">
+<div class="mem-overlay" id="memOverlay" onclick="closeIfBg(event, 'memOverlay', closeMembers)">
   <div class="mem-modal">
 
     <!-- LIST -->
@@ -5878,7 +5834,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 </div>
 
 <!-- Held Orders Modal -->
-<div class="held-overlay" id="heldOverlay" onclick="closeRecallIfBg(event)">
+<div class="held-overlay" id="heldOverlay" onclick="closeIfBg(event, 'heldOverlay', closeRecall)">
   <div class="held-modal">
     <div class="held-modal-header">
       <div class="held-modal-title">Held Orders</div>
@@ -5888,7 +5844,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   </div>
 </div>
 <!-- Reports Modal -->
-<div class="rpt-overlay" id="rptOverlay" onclick="closeRptIfBg(event)">
+<div class="rpt-overlay" id="rptOverlay" onclick="closeIfBg(event, 'rptOverlay', closeReports)">
   <div class="rpt-modal">
     <div class="rpt-header">
       <div class="rpt-title">Business Reports</div>
@@ -6130,7 +6086,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   </div>
 </div>
-<div class="rpt-overlay" id="ordersOverlay" onclick="closeOrdersIfBg(event)">
+<div class="rpt-overlay" id="ordersOverlay" onclick="closeIfBg(event, 'ordersOverlay', closeOrdersModal)">
   <div class="rpt-modal">
     <div class="rpt-header">
       <div class="rpt-title">Transactions</div>
@@ -6152,7 +6108,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 </div>
 
 <!-- Cash Float Modal -->
-<div class="cashfloat-overlay" id="cashFloatOverlay" onclick="closeCashFloatIfBg(event)">
+<div class="cashfloat-overlay" id="cashFloatOverlay" onclick="closeIfBg(event, 'cashFloatOverlay', closeCashFloat)">
   <div class="cashfloat-modal">
     <div class="cashfloat-header">
       <div>
@@ -6190,7 +6146,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   </div>
 </div>
 
-<div class="wastage-overlay" id="wastageOverlay" onclick="closeWastageIfBg(event)">
+<div class="wastage-overlay" id="wastageOverlay" onclick="closeIfBg(event, 'wastageOverlay', closeLogWastage)">
   <div class="wastage-modal">
     <div class="wastage-modal-header">
       <div>
