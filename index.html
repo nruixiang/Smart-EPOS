@@ -1862,10 +1862,20 @@
     const nameInput = document.getElementById('bizNameInput');
     const typeSelect = document.getElementById('bizTypeSelect');
     const preview = document.getElementById('bizLogoPreview');
+    const taglineInput = document.getElementById('bizTaglineInput');
+    const phoneInput = document.getElementById('bizPhoneInput');
+    const addressInput = document.getElementById('bizAddressInput');
+    const gstInput = document.getElementById('bizGstInput');
+    const footerInput = document.getElementById('bizFooterInput');
 
     if (businessInfoCache) {
       if (nameInput) nameInput.value = businessInfoCache.business_name || '';
       if (typeSelect) typeSelect.value = businessInfoCache.business_type || '';
+      if (taglineInput) taglineInput.value = businessInfoCache.tagline || '';
+      if (phoneInput) phoneInput.value = businessInfoCache.phone || '';
+      if (addressInput) addressInput.value = businessInfoCache.address || '';
+      if (gstInput) gstInput.value = businessInfoCache.gst_reg_no || '';
+      if (footerInput) footerInput.value = businessInfoCache.receipt_footer || '';
       if (preview && businessInfoCache.logo_url) {
         preview.innerHTML = `<img src="${businessInfoCache.logo_url}" style="width:100%;height:100%;object-fit:cover;" />`;
       }
@@ -1903,6 +1913,11 @@
     const btn = document.getElementById('bizSaveBtn');
     const name = document.getElementById('bizNameInput').value.trim();
     const type = document.getElementById('bizTypeSelect').value;
+    const tagline = document.getElementById('bizTaglineInput').value.trim();
+    const phone = document.getElementById('bizPhoneInput').value.trim();
+    const address = document.getElementById('bizAddressInput').value.trim();
+    const gstRegNo = document.getElementById('bizGstInput').value.trim();
+    const receiptFooter = document.getElementById('bizFooterInput').value.trim();
     if (!name) { showToast('Business name cannot be empty'); return; }
 
     btn.disabled = true;
@@ -1917,7 +1932,11 @@
       bizLogoFile = null;
     }
 
-    const row = { business_name: name, business_type: type || null, logo_url: logoUrl };
+    const row = {
+      business_name: name, business_type: type || null, logo_url: logoUrl,
+      tagline: tagline || null, phone: phone || null, address: address || null,
+      gst_reg_no: gstRegNo || null, receipt_footer: receiptFooter || null
+    };
 
     let error;
     if (businessInfoCache?.id) {
@@ -3836,9 +3855,19 @@
       <tr><td>Cash received</td><td>$${cashReceived.toFixed(2)}</td></tr>
       <tr><td>Change</td><td>$${change.toFixed(2)}</td></tr>` : '';
 
+    const tagline = businessInfoCache?.tagline ? `<div class="receipt-shop-sub">${businessInfoCache.tagline}</div>` : '';
+    const address = businessInfoCache?.address ? `<div class="receipt-shop-sub">${businessInfoCache.address}</div>` : '';
+    const phoneGstRow = (businessInfoCache?.phone || businessInfoCache?.gst_reg_no)
+      ? `<div class="receipt-shop-sub">${[businessInfoCache?.phone, businessInfoCache?.gst_reg_no ? 'GST: ' + businessInfoCache.gst_reg_no : null].filter(Boolean).join(' · ')}</div>`
+      : '';
+    const footerMessage = businessInfoCache?.receipt_footer || 'Thank you for visiting!';
+
     document.getElementById('receiptBody').innerHTML = `
       <div class="receipt-shop-name">${BUSINESS_NAME}</div>
+      ${tagline}
       <div class="receipt-shop-sub">${currentOutletName}</div>
+      ${address}
+      ${phoneGstRow}
       <table class="receipt-meta">
         <tr><td>Date</td><td>${dateStr}</td></tr>
         <tr><td>Time</td><td>${timeStr}</td></tr>
@@ -3857,7 +3886,7 @@
       </table>
       <div class="receipt-paid">Paid by ${method}</div>
       <hr class="receipt-divider"/>
-      <div class="receipt-thank">Thank you for visiting!</div>`;
+      <div class="receipt-thank">${footerMessage}</div>`;
 
     document.getElementById('receiptOverlay').classList.add('show');
     closeCashKeypad();
@@ -6408,9 +6437,18 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const customerRow = tx.customer
       ? `<tr><td>Customer</td><td>${tx.customer}</td></tr>` : '';
 
+    const refundTagline = businessInfoCache?.tagline ? `<div class="receipt-shop-sub">${businessInfoCache.tagline}</div>` : '';
+    const refundAddress = businessInfoCache?.address ? `<div class="receipt-shop-sub">${businessInfoCache.address}</div>` : '';
+    const refundPhoneGst = (businessInfoCache?.phone || businessInfoCache?.gst_reg_no)
+      ? `<div class="receipt-shop-sub">${[businessInfoCache?.phone, businessInfoCache?.gst_reg_no ? 'GST: ' + businessInfoCache.gst_reg_no : null].filter(Boolean).join(' · ')}</div>`
+      : '';
+
     document.getElementById('receiptBody').innerHTML = `
       <div class="receipt-shop-name">${BUSINESS_NAME}</div>
+      ${refundTagline}
       <div class="receipt-shop-sub">${currentOutletName}</div>
+      ${refundAddress}
+      ${refundPhoneGst}
       <div style="text-align:center;margin:8px 0 14px;">
         <span style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#ea580c;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUND</span>
       </div>
@@ -7604,6 +7642,32 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
             <option value="services">Salon &amp; Services</option>
             <option value="other">Other</option>
           </select>
+        </div>
+
+        <div class="edit-row-2">
+          <div class="biz-field">
+            <div class="biz-field-label">Tagline</div>
+            <input class="biz-field-input" id="bizTaglineInput" type="text" placeholder="e.g. Freshly baked, every day" />
+          </div>
+          <div class="biz-field">
+            <div class="biz-field-label">Phone</div>
+            <input class="biz-field-input" id="bizPhoneInput" type="text" placeholder="e.g. +65 6123 4567" />
+          </div>
+        </div>
+
+        <div class="biz-field">
+          <div class="biz-field-label">Address <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(shown on receipt)</span></div>
+          <input class="biz-field-input" id="bizAddressInput" type="text" placeholder="e.g. 123 Orchard Road, Singapore 238858" />
+        </div>
+
+        <div class="biz-field">
+          <div class="biz-field-label">GST Reg. No. <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
+          <input class="biz-field-input" id="bizGstInput" type="text" placeholder="e.g. M9-0001234-X" />
+        </div>
+
+        <div class="biz-field">
+          <div class="biz-field-label">Receipt Footer Message</div>
+          <input class="biz-field-input" id="bizFooterInput" type="text" placeholder="e.g. Thank you for your visit!" />
         </div>
 
         <div class="biz-field">
