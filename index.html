@@ -462,6 +462,41 @@
     [data-theme="dark"] .customize-btn-add { background: #f2f2f7; color: #1c1c1e; }
     .customize-btn-add:hover, .customize-btn-cancel:hover { opacity: 0.85; }
 
+    /* COMBO MODAL */
+    .combo-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .combo-overlay.show { opacity: 1; pointer-events: all; }
+    .combo-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 460px; max-height: 88vh; overflow: hidden; border: 0.5px solid var(--border); display: flex; flex-direction: column; }
+    .combo-modal-top { padding: 18px 20px 14px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 0.5px solid var(--border); }
+    .combo-modal-title { font-size: 19px; font-weight: 800; color: var(--text-primary); }
+    .combo-modal-top .close-x { background: var(--bg-secondary); border: none; color: var(--text-secondary); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; }
+    .combo-modal-top .close-x:hover { color: var(--text-primary); }
+    .combo-modal-body { padding: 16px 20px 20px; overflow-y: auto; flex: 1; }
+    .combo-slot { margin-top: 22px; }
+    .combo-slot:first-child { margin-top: 0; }
+    .combo-slot-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .combo-slot-num { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; }
+    .combo-slot-rule { flex: 1; height: 0.5px; background: var(--border); }
+    .combo-slot-label { font-size: 13px; font-weight: 700; color: var(--text-primary); flex-shrink: 0; }
+    .combo-item-list { display: flex; flex-direction: column; gap: 8px; }
+    .combo-item-row { border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; background: var(--bg-primary); transition: all 0.15s; }
+    .combo-item-row:hover { border-color: var(--border-hover); }
+    .combo-item-row.selected { border-color: var(--green); background: rgba(22,163,74,0.06); }
+    [data-theme="dark"] .combo-item-row.selected { background: rgba(22,163,74,0.12); }
+    .combo-item-thumb { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-tertiary); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .combo-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .combo-item-text { flex: 1; min-width: 0; }
+    .combo-item-name { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
+    .combo-item-row.selected .combo-item-name { color: var(--green); }
+    [data-theme="dark"] .combo-item-row.selected .combo-item-name { color: #4ade80; }
+    .combo-item-price { font-size: 11.5px; color: var(--text-tertiary); margin-top: 1px; }
+    .combo-item-check { width: 18px; height: 18px; border-radius: 50%; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+    .combo-slot-customize { margin-top: 10px; background: var(--bg-secondary); border-radius: var(--radius-md); padding: 14px 16px; }
+    .combo-slot-customize-title { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+    .combo-modal-footer { border-top: 0.5px solid var(--border); padding: 14px 20px; display: flex; gap: 10px; align-items: center; background: var(--bg-secondary); }
+    .combo-footer-amt-wrap { flex: 1; }
+    .combo-footer-label { font-size: 12px; color: var(--text-secondary); }
+    .combo-footer-amt { font-size: 17px; font-weight: 800; color: var(--text-primary); }
+
     /* PROCESSING MODAL */
     .processing-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 210; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .processing-overlay.show { opacity: 1; pointer-events: all; }
@@ -1423,6 +1458,25 @@
         <div class="customize-footer-amt" id="customizeFooterAmt">$0.00</div>
       </div>
       <button class="customize-btn-add" onclick="confirmCustomize()" id="customizeConfirmBtn">Done · $0.00</button>
+    </div>
+  </div>
+</div>
+
+<!-- Combo / Bundle Builder Modal -->
+<div class="combo-overlay" id="comboOverlay" onclick="closeIfBg(event, 'comboOverlay', closeComboModal)">
+  <div class="combo-modal">
+    <div class="combo-modal-top">
+      <div class="combo-modal-title" id="comboModalTitle">Customise — Item</div>
+      <button class="close-x" onclick="closeComboModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="combo-modal-body" id="comboModalBody"></div>
+    <div class="combo-modal-footer">
+      <button class="customize-btn-cancel" onclick="closeComboModal()">Cancel</button>
+      <div class="combo-footer-amt-wrap" style="text-align:right;">
+        <div class="combo-footer-label">Total</div>
+        <div class="combo-footer-amt" id="comboFooterAmt">$0.00</div>
+      </div>
+      <button class="customize-btn-add" onclick="confirmCombo()" id="comboConfirmBtn">Add · $0.00</button>
     </div>
   </div>
 </div>
@@ -2536,10 +2590,52 @@
     ]},
     "Bundles": { All: [
       {name:"Breakfast Set",price:9.00,sub:"Coffee",desc:"Any hot drink paired with a croissant or muffin. The perfect morning combo.",allergens:"Contains gluten, dairy",ingredients:"Choice of Hot Drink • Choice of Pastry"},
-      {name:"Arvo Pick-Me-Up",price:8.50,sub:"Coffee",desc:"Double espresso or cold brew with a brownie. Your 3pm lifesaver.",allergens:"Contains gluten, dairy, eggs",ingredients:"Double Espresso or Cold Brew • Brownie"},
+      {name:"Arvo Pick-Me-Up",price:8.50,sub:"Coffee",desc:"Pick any two drinks from our menu. Your 3pm lifesaver.",allergens:"Contains gluten, dairy, eggs",ingredients:"Choice of Drink • Choice of Drink"},
       {name:"Gift Bundle",price:35.00,sub:"Special Edition",desc:"Travel mug, coffee beans, and a gift card in a branded box. Makes a perfect present.",allergens:"N/A",ingredients:"Travel Mug • 250g Coffee Beans • $10 Gift Card"},
     ]},
   };
+
+  // ── Combo / Bundle Slot Definitions ──
+  // Products listed here open the combo-builder modal on add (never a silent default-add),
+  // since there's no sensible default for "which drink" or "which pastry."
+  const COMBO_DEFINITIONS = {
+    'Breakfast Set': {
+      slots: [
+        { label: 'Drink', categories: ['Hot Drinks', 'Cold Drinks'] },
+        { label: 'Pastry', categories: ['Pastries'] },
+      ]
+    },
+    'Arvo Pick-Me-Up': {
+      slots: [
+        { label: 'Drink', categories: ['Hot Drinks', 'Cold Drinks'] },
+        { label: 'Drink', categories: ['Hot Drinks', 'Cold Drinks'] },
+      ]
+    },
+  };
+
+  function getComboDefinition(name) {
+    return COMBO_DEFINITIONS[name] || null;
+  }
+
+  // The "no extra charge" baseline for a slot — the cheapest product currently
+  // available across its allowed categories. Pricier picks add the difference.
+  function getSlotBaseline(slot) {
+    let min = Infinity;
+    slot.categories.forEach(cat => {
+      const all = (PRODUCTS[cat] || {}).All || [];
+      all.forEach(p => { if (p.price < min) min = p.price; });
+    });
+    return min === Infinity ? 0 : min;
+  }
+
+  function getSlotProducts(slot) {
+    const items = [];
+    slot.categories.forEach(cat => {
+      const all = (PRODUCTS[cat] || {}).All || [];
+      all.forEach(p => items.push({ ...p, category: cat }));
+    });
+    return items;
+  }
 
   // ── Products DB sync ──
   function dbRowToProduct(row) {
@@ -3032,6 +3128,7 @@
   function editOrderItem(key) {
     const item = order[key];
     if (!item) return;
+    if (Array.isArray(item.comboSelections)) { editComboOrderItem(key); return; }
     // Reconstruct preset selections from the stored summary so the modal reopens with current choices
     const preset = {};
     const opts = getProductOptions(findProductCategory(item.name));
@@ -3059,7 +3156,228 @@
     );
   }
 
+  // ── Combo / Bundle Builder Modal ──
+  let comboTarget = null; // { name, basePrice, emoji, editingKey }
+  let comboSlotSelections = []; // [{ productName, selections }] — one per slot, in slot order
+
+  function openComboModal(name, basePrice, emoji, editingKey, presetSlotSelections) {
+    const combo = getComboDefinition(name);
+    if (!combo) return;
+    comboTarget = { name, basePrice, emoji, editingKey: editingKey || null };
+    comboSlotSelections = combo.slots.map((slot, i) => {
+      const preset = presetSlotSelections && presetSlotSelections[i];
+      if (!preset) return { productName: null, selections: null };
+      let selections = null;
+      if (preset.selections) {
+        selections = {};
+        Object.keys(preset.selections).forEach(k => {
+          const v = preset.selections[k];
+          selections[k] = (v instanceof Set) ? new Set(v) : v;
+        });
+      }
+      return { productName: preset.productName, selections };
+    });
+    document.getElementById('comboModalTitle').textContent = 'Customise — ' + name;
+    renderComboBody(combo);
+    updateComboTotal(combo);
+    document.getElementById('comboOverlay').classList.add('show');
+  }
+
+  function renderComboBody(combo) {
+    const body = document.getElementById('comboModalBody');
+    body.innerHTML = combo.slots.map((slot, i) => {
+      const items = getSlotProducts(slot);
+      const picked = comboSlotSelections[i].productName;
+      const itemsHtml = items.map(p => {
+        const isSelected = picked === p.name;
+        const safeName = p.name.replace(/'/g, "\\'");
+        const imgUrl = getProductImg(p.name);
+        const thumbHtml = imgUrl ? `<img src="${imgUrl}" alt="">` : (p.emoji || '');
+        return `<div class="combo-item-row${isSelected ? ' selected' : ''}" onclick="selectComboSlotItem(${i}, '${safeName}')">
+          <div class="combo-item-thumb">${thumbHtml}</div>
+          <div class="combo-item-text">
+            <div class="combo-item-name">${p.name}</div>
+            <div class="combo-item-price">$${p.price.toFixed(2)}</div>
+          </div>
+          ${isSelected ? '<div class="combo-item-check"><i class="ti ti-check"></i></div>' : ''}
+        </div>`;
+      }).join('');
+
+      let customizeHtml = '';
+      if (picked) {
+        const pickedProduct = findProduct(picked);
+        const drinkOpts = pickedProduct ? getProductOptions(findProductCategory(picked)) : null;
+        if (drinkOpts) {
+          if (!comboSlotSelections[i].selections) comboSlotSelections[i].selections = getDefaultSelections(drinkOpts);
+          customizeHtml = `<div class="combo-slot-customize">
+            <div class="combo-slot-customize-title"><i class="ti ti-adjustments"></i> Customise ${picked}</div>
+            ${renderComboCustomizeGroups(drinkOpts, i)}
+          </div>`;
+        }
+      }
+
+      return `<div class="combo-slot">
+        <div class="combo-slot-head">
+          <div class="combo-slot-num">Slot ${i + 1}</div>
+          <div class="combo-slot-rule"></div>
+          <div class="combo-slot-label">${slot.label}</div>
+        </div>
+        <div class="combo-item-list">${itemsHtml}</div>
+        ${customizeHtml}
+      </div>`;
+    }).join('');
+  }
+
+  function renderComboCustomizeGroups(opts, slotIndex) {
+    const selections = comboSlotSelections[slotIndex].selections;
+    return opts.groups.map(g => {
+      const pillClass = g.required ? 'required' : 'optional';
+      const pillLabel = g.required ? 'Required' : 'Pick any';
+      const choicesHtml = g.choices.map(c => {
+        const isSelected = g.type === 'multi' ? selections[g.key].has(c.label) : selections[g.key] === c.label;
+        const deltaText = c.delta === 0 ? '' : (c.delta > 0 ? '+$' + c.delta.toFixed(2) : '-$' + Math.abs(c.delta).toFixed(2));
+        const safeLabel = c.label.replace(/'/g, "\\'");
+        const action = g.type === 'multi'
+          ? `toggleComboCustomizeMulti(${slotIndex},'${g.key}','${safeLabel}')`
+          : `selectComboCustomizeSingle(${slotIndex},'${g.key}','${safeLabel}')`;
+        return `<button type="button" class="customize-choice${isSelected ? ' selected' : ''}" onclick="${action}" style="padding:9px 11px;">
+          <div class="customize-choice-text">
+            <div class="customize-choice-label" style="font-size:12.5px;">${c.label}</div>
+            ${deltaText ? `<div class="customize-choice-delta">${deltaText}</div>` : ''}
+          </div>
+          ${isSelected ? '<div class="customize-choice-check" style="width:15px;height:15px;font-size:9px;"><i class="ti ti-check"></i></div>' : ''}
+        </button>`;
+      }).join('');
+      return `<div class="customize-group" style="margin-top:14px;">
+        <div class="customize-group-head" style="margin-bottom:8px;padding-bottom:6px;">
+          <div class="customize-group-label" style="font-size:13px;">${g.label}</div>
+          <div class="customize-pill ${pillClass}">${pillLabel}</div>
+        </div>
+        <div class="customize-choice-grid" style="gap:8px;">${choicesHtml}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function selectComboSlotItem(slotIndex, productName) {
+    const p = findProduct(productName);
+    if (!p) return;
+    comboSlotSelections[slotIndex] = { productName, selections: null }; // reset customization on a fresh pick
+    const combo = getComboDefinition(comboTarget.name);
+    renderComboBody(combo);
+    updateComboTotal(combo);
+  }
+
+  function selectComboCustomizeSingle(slotIndex, groupKey, choiceLabel) {
+    comboSlotSelections[slotIndex].selections[groupKey] = choiceLabel;
+    const combo = getComboDefinition(comboTarget.name);
+    renderComboBody(combo);
+    updateComboTotal(combo);
+  }
+
+  function toggleComboCustomizeMulti(slotIndex, groupKey, choiceLabel) {
+    const set = comboSlotSelections[slotIndex].selections[groupKey];
+    if (set.has(choiceLabel)) set.delete(choiceLabel); else set.add(choiceLabel);
+    const combo = getComboDefinition(comboTarget.name);
+    renderComboBody(combo);
+    updateComboTotal(combo);
+  }
+
+  function getComboSlotPrice(slot, slotSelection) {
+    if (!slotSelection.productName) return null;
+    const p = findProduct(slotSelection.productName);
+    if (!p) return null;
+    let price = p.price;
+    if (slotSelection.selections) {
+      const opts = getProductOptions(findProductCategory(slotSelection.productName));
+      if (opts) price += summarizeSelections(opts, slotSelection.selections).reduce((a, s) => a + s.delta, 0);
+    }
+    return price;
+  }
+
+  function isComboComplete() {
+    return comboSlotSelections.every(s => s.productName);
+  }
+
+  function getComboTotal(combo) {
+    let total = comboTarget.basePrice;
+    combo.slots.forEach((slot, i) => {
+      const price = getComboSlotPrice(slot, comboSlotSelections[i]);
+      if (price != null) total += Math.max(0, price - getSlotBaseline(slot));
+    });
+    return total;
+  }
+
+  function updateComboTotal(combo) {
+    const total = getComboTotal(combo);
+    document.getElementById('comboFooterAmt').textContent = '$' + total.toFixed(2);
+    const complete = isComboComplete();
+    const btn = document.getElementById('comboConfirmBtn');
+    btn.textContent = (comboTarget.editingKey ? 'Save · $' : 'Add · $') + total.toFixed(2);
+    btn.disabled = !complete;
+    btn.style.opacity = complete ? '1' : '0.45';
+    btn.style.cursor = complete ? 'pointer' : 'not-allowed';
+  }
+
+  function closeComboModal() {
+    document.getElementById('comboOverlay').classList.remove('show');
+    comboTarget = null;
+    comboSlotSelections = [];
+  }
+
+  function getComboSummary(combo) {
+    // [{ slotLabel, productName, price, selectedOptions }] for cart/receipt display and DB storage
+    return combo.slots.map((slot, i) => {
+      const sel = comboSlotSelections[i];
+      const price = getComboSlotPrice(slot, sel);
+      let selectedOptions = null;
+      if (sel.selections) {
+        const opts = getProductOptions(findProductCategory(sel.productName));
+        if (opts) selectedOptions = summarizeSelections(opts, sel.selections);
+      }
+      return { slotLabel: slot.label, productName: sel.productName, price, selectedOptions };
+    });
+  }
+
+  function confirmCombo() {
+    if (!comboTarget || !isComboComplete()) return;
+    const combo = getComboDefinition(comboTarget.name);
+    const finalPrice = getComboTotal(combo);
+    const summary = getComboSummary(combo);
+    const key = comboTarget.editingKey || ('combo_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8));
+    const existingQty = (comboTarget.editingKey && order[comboTarget.editingKey]) ? order[comboTarget.editingKey].qty : 1;
+    order[key] = {
+      key, name: comboTarget.name, price: finalPrice, basePrice: comboTarget.basePrice,
+      emoji: comboTarget.emoji, qty: existingQty, comboSelections: summary
+    };
+    closeComboModal();
+    renderOrder();
+  }
+
+  function editComboOrderItem(key) {
+    const item = order[key];
+    if (!item) return;
+    const combo = getComboDefinition(item.name);
+    if (!combo) return;
+    const presetSlots = (item.comboSelections || []).map(s => {
+      let selections = null;
+      if (s.selectedOptions) {
+        const opts = getProductOptions(findProductCategory(s.productName));
+        if (opts) {
+          selections = {};
+          opts.groups.forEach(g => {
+            const matches = s.selectedOptions.filter(o => o.group === g.label).map(o => o.choice);
+            selections[g.key] = g.type === 'multi' ? new Set(matches) : (matches[0] || null);
+          });
+        }
+      }
+      return { productName: s.productName, selections };
+    });
+    openComboModal(item.name, item.basePrice != null ? item.basePrice : item.price, item.emoji, key, presetSlots);
+  }
+
   function addItem(name, price, emoji) {
+    const combo = getComboDefinition(name);
+    if (combo) { openComboModal(name, price, emoji); return; }
     const opts = getProductOptions(currentCat);
     if (opts) {
       const key = 'default::' + name;
@@ -3192,11 +3510,20 @@
     container.innerHTML = items.map(item => {
       const key = item.key || item.name;
       const safeKey = key.replace(/'/g, "\\'");
-      const isCustomizable = Array.isArray(item.selectedOptions);
+      const isCombo = Array.isArray(item.comboSelections);
+      const isCustomizable = !isCombo && Array.isArray(item.selectedOptions);
       const opts = isCustomizable ? getProductOptions(findProductCategory(item.name)) : null;
       const isEdited = isCustomizable && opts && !isAtDefaultSelections(opts, item.selectedOptions);
-      const optionsSummary = isEdited ? item.selectedOptions.map(o => o.choice).join(', ') : '';
-      const extraRow = isCustomizable ? `
+      let optionsSummary = '';
+      if (isCombo) {
+        optionsSummary = item.comboSelections.map(s => {
+          const extra = (s.selectedOptions && s.selectedOptions.length) ? ' (' + s.selectedOptions.map(o => o.choice).join(', ') + ')' : '';
+          return s.productName + extra;
+        }).join(' + ');
+      } else if (isEdited) {
+        optionsSummary = item.selectedOptions.map(o => o.choice).join(', ');
+      }
+      const extraRow = (isCustomizable || isCombo) ? `
         <div class="order-item-extra">
           <button class="order-item-edit-btn" onclick="editOrderItem('${safeKey}')"><i class="ti ti-adjustments"></i> Edit</button>
           <button class="order-item-remove-btn" onclick="removeOrderItem('${safeKey}')"><i class="ti ti-circle-x"></i></button>
@@ -3456,7 +3783,7 @@
     const newEntry = {
       ref, method, date: now, hour: txHour, day: txDay,
       gross: sub, discount: discountAmt, tax, total,
-      items: items.map(i => ({name: i.name, qty: i.qty, price: i.price, selectedOptions: i.selectedOptions || undefined})),
+      items: items.map(i => ({name: i.name, qty: i.qty, price: i.price, selectedOptions: i.selectedOptions || undefined, comboSelections: i.comboSelections || undefined})),
       customer: attachedCustomer ? attachedCustomer.name : null,
       outlet: currentOutletName,
       outlet_id: currentOutletId,
@@ -3480,11 +3807,20 @@
     const customerRow = attachedCustomer ? `<tr><td>Customer</td><td>${attachedCustomer.name}</td></tr>` : '';
 
     const itemRows = items.map(item => {
-      const opts = Array.isArray(item.selectedOptions) ? getProductOptions(findProductCategory(item.name)) : null;
-      const isEdited = Array.isArray(item.selectedOptions) && opts && !isAtDefaultSelections(opts, item.selectedOptions);
-      const optsLine = isEdited
-        ? `<tr><td colspan="2" style="font-size:11px;color:var(--text-tertiary);padding-top:0;padding-bottom:6px;">${item.selectedOptions.map(o => o.choice).join(', ')}</td></tr>`
-        : '';
+      let optsLine = '';
+      if (Array.isArray(item.comboSelections)) {
+        const comboText = item.comboSelections.map(s => {
+          const extra = (s.selectedOptions && s.selectedOptions.length) ? ' (' + s.selectedOptions.map(o => o.choice).join(', ') + ')' : '';
+          return s.productName + extra;
+        }).join(' + ');
+        optsLine = `<tr><td colspan="2" style="font-size:11px;color:var(--text-tertiary);padding-top:0;padding-bottom:6px;">${comboText}</td></tr>`;
+      } else {
+        const opts = Array.isArray(item.selectedOptions) ? getProductOptions(findProductCategory(item.name)) : null;
+        const isEdited = Array.isArray(item.selectedOptions) && opts && !isAtDefaultSelections(opts, item.selectedOptions);
+        optsLine = isEdited
+          ? `<tr><td colspan="2" style="font-size:11px;color:var(--text-tertiary);padding-top:0;padding-bottom:6px;">${item.selectedOptions.map(o => o.choice).join(', ')}</td></tr>`
+          : '';
+      }
       return `
       <tr>
         <td><span class="item-qty-label">${item.qty}×</span> ${item.name}</td>
