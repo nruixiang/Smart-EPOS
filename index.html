@@ -380,6 +380,29 @@
     .cancel-mobile-btn { background: none; border: none; font-size: 13px; color: var(--text-secondary); cursor: pointer; padding: 4px; font-family: var(--font); }
     .cancel-mobile-btn:hover { color: var(--text-primary); }
 
+    /* CARD TYPE MODAL */
+    .cardtype-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .cardtype-overlay.show { opacity: 1; pointer-events: all; }
+    .cardtype-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: 400px; max-height: 85vh; overflow: hidden; border: 0.5px solid var(--border); display: flex; flex-direction: column; }
+    .cardtype-modal-top { padding: 18px 20px 14px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 0.5px solid var(--border); }
+    .cardtype-modal-title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+    .cardtype-modal-sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+    .cardtype-modal-top .close-x { background: var(--bg-secondary); border: none; color: var(--text-secondary); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; }
+    .cardtype-modal-top .close-x:hover { color: var(--text-primary); }
+    .cardtype-modal-body { padding: 18px 20px 22px; overflow-y: auto; flex: 1; }
+    .cardtype-section-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin: 18px 0 10px; }
+    .cardtype-section-label:first-child { margin-top: 0; }
+    .cardtype-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .cardtype-card { border: none; border-radius: var(--radius-md); padding: 14px; text-align: left; cursor: pointer; color: white; font-family: var(--font); transition: transform 0.1s, opacity 0.15s; display: flex; flex-direction: column; gap: 16px; min-height: 84px; }
+    .cardtype-card:hover { opacity: 0.92; }
+    .cardtype-card:active { transform: scale(0.97); }
+    .cardtype-card i { font-size: 18px; opacity: 0.9; }
+    .cardtype-card-label { font-size: 14px; font-weight: 700; }
+    .cardtype-card-sub { font-size: 11px; opacity: 0.85; margin-top: 1px; }
+    .cardtype-modal-footer { border-top: 0.5px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); }
+    .cardtype-footer-label { font-size: 13px; color: var(--text-secondary); }
+    .cardtype-footer-amt { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+
     /* PROCESSING MODAL */
     .processing-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 210; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .processing-overlay.show { opacity: 1; pointer-events: all; }
@@ -1266,6 +1289,59 @@
       <button class="confirm-btn not-ready" id="confirmCashBtn" onclick="confirmCash()">
         <i class="ti ti-circle-check" style="vertical-align:-2px;margin-right:6px;"></i>Confirm &amp; Complete Sale
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Card Type Modal -->
+<div class="cardtype-overlay" id="cardTypeOverlay" onclick="closeIfBg(event, 'cardTypeOverlay', closeCardTypeModal)">
+  <div class="cardtype-modal">
+    <div class="cardtype-modal-top">
+      <div>
+        <div class="cardtype-modal-title">Select Card Type</div>
+        <div class="cardtype-modal-sub">Choose how the customer is paying</div>
+      </div>
+      <button class="close-x" onclick="closeCardTypeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cardtype-modal-body">
+      <div class="cardtype-section-label">NETS (Debit)</div>
+      <div class="cardtype-grid">
+        <button class="cardtype-card" style="background:#2563eb;" onclick="selectCardType('NETS')">
+          <i class="ti ti-credit-card"></i>
+          <div><div class="cardtype-card-label">NETS</div><div class="cardtype-card-sub">Debit card</div></div>
+        </button>
+        <button class="cardtype-card" style="background:#1e3a8a;" onclick="selectCardType('NETS FlashPay')">
+          <i class="ti ti-credit-card"></i>
+          <div><div class="cardtype-card-label">NETS FlashPay</div><div class="cardtype-card-sub">Contactless</div></div>
+        </button>
+      </div>
+      <div class="cardtype-section-label">Credit / Prepaid Card</div>
+      <div class="cardtype-grid">
+        <button class="cardtype-card" style="background:#3b82f6;" onclick="selectCardType('Visa')">
+          <i class="ti ti-credit-card"></i>
+          <div><div class="cardtype-card-label">Visa</div><div class="cardtype-card-sub">Credit card</div></div>
+        </button>
+        <button class="cardtype-card" style="background:#ea580c;" onclick="selectCardType('Mastercard')">
+          <i class="ti ti-credit-card"></i>
+          <div><div class="cardtype-card-label">Mastercard</div><div class="cardtype-card-sub">Credit card</div></div>
+        </button>
+        <button class="cardtype-card" style="background:#0d9488;" onclick="selectCardType('Amex')">
+          <i class="ti ti-credit-card"></i>
+          <div><div class="cardtype-card-label">Amex</div><div class="cardtype-card-sub">Credit card</div></div>
+        </button>
+        <button class="cardtype-card" style="background:#dc2626;" onclick="selectCardType('UnionPay')">
+          <i class="ti ti-credit-card"></i>
+          <div><div class="cardtype-card-label">UnionPay</div><div class="cardtype-card-sub">Credit / debit</div></div>
+        </button>
+        <button class="cardtype-card" style="background:#16a34a;" onclick="selectCardType('JCB')">
+          <i class="ti ti-credit-card"></i>
+          <div><div class="cardtype-card-label">JCB</div><div class="cardtype-card-sub">Credit card</div></div>
+        </button>
+      </div>
+    </div>
+    <div class="cardtype-modal-footer">
+      <div class="cardtype-footer-label">Amount to charge</div>
+      <div class="cardtype-footer-amt" id="cardTypeAmount">$0.00</div>
     </div>
   </div>
 </div>
@@ -2755,7 +2831,34 @@
   // ── Card ──
   function processPayment(method) {
     if (!Object.keys(order).length) { showToast('Add items to the order first'); return; }
-    showReceipt(method, null, null);
+    openCardTypeModal();
+  }
+
+  // ── Card Type Selection ──
+  function getOrderTotal() {
+    const items = Object.values(order);
+    const sub = items.reduce((a,i)=>a+i.price*i.qty,0);
+    let discountAmt = 0;
+    if (activeDiscount && sub > 0) {
+      if (activeDiscount.type === 'percent') discountAmt = sub * activeDiscount.value / 100;
+      else if (activeDiscount.type === 'fixed') discountAmt = Math.min(activeDiscount.value, sub);
+    }
+    const discounted = Math.max(0, sub - discountAmt);
+    return parseFloat((discounted * 1.09).toFixed(2));
+  }
+
+  function openCardTypeModal() {
+    document.getElementById('cardTypeAmount').textContent = '$' + getOrderTotal().toFixed(2);
+    document.getElementById('cardTypeOverlay').classList.add('show');
+  }
+
+  function closeCardTypeModal() {
+    document.getElementById('cardTypeOverlay').classList.remove('show');
+  }
+
+  function selectCardType(cardType) {
+    closeCardTypeModal();
+    showReceipt(cardType, null, null);
   }
 
   // ── Mobile Pay ──
@@ -4293,7 +4396,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       const dateStr = d.toLocaleDateString('en-SG', {day:'numeric',month:'short',year:'numeric'}) + ', ' +
                       d.toLocaleTimeString('en-SG', {hour:'2-digit', minute:'2-digit'});
       const method = t.method || 'Cash';
-      const badgeClass = method.toLowerCase() === 'cash' ? 'cash' : method.toLowerCase() === 'card' ? 'card' : 'mobile';
+      const badgeClass = getPaymentCategory(method).toLowerCase();
       return `<div class="pay-table-row">
         <div class="pay-table-cell secondary">${dateStr}</div>
         <div class="pay-table-cell"><span class="pay-method-badge ${badgeClass}">${method}</span></div>
@@ -4323,7 +4426,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
     // Calculate amounts and percentages
     const data = methods.map(m => {
-      const amt = txs.filter(t => t.method === m.key).reduce((a,t) => a + t.total, 0);
+      const amt = txs.filter(t => getPaymentCategory(t.method) === m.key).reduce((a,t) => a + t.total, 0);
       return { ...m, amt, pct: total > 0 ? amt / total : 0 };
     }).filter(m => m.amt > 0);
 
@@ -4594,6 +4697,16 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     return 'Other';
   }
 
+  // Card payments are saved with their specific type (e.g. 'NETS', 'Visa') as the method,
+  // so reports/charts that group by payment method use this to bucket them under 'Card'.
+  const CARD_TYPES = ['NETS', 'NETS FlashPay', 'Visa', 'Mastercard', 'Amex', 'UnionPay', 'JCB'];
+  function getPaymentCategory(method) {
+    if (method === 'Cash') return 'Cash';
+    if (method === 'Mobile') return 'Mobile';
+    if (CARD_TYPES.includes(method)) return 'Card';
+    return method || 'Cash';
+  }
+
   function toggleRptEodDetail() {
     const panel = document.getElementById('rptEodDetail');
     const btn = document.getElementById('rptEodDetailBtn');
@@ -4606,9 +4719,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   function renderRptEodDetail(txs, wastageEntries) {
     // Payment methods
-    const cash = txs.filter(t => t.method === 'Cash').reduce((a,t) => a + t.total, 0);
-    const card = txs.filter(t => t.method === 'Card').reduce((a,t) => a + t.total, 0);
-    const mobile = txs.filter(t => t.method === 'Mobile').reduce((a,t) => a + t.total, 0);
+    const cash = txs.filter(t => getPaymentCategory(t.method) === 'Cash').reduce((a,t) => a + t.total, 0);
+    const card = txs.filter(t => getPaymentCategory(t.method) === 'Card').reduce((a,t) => a + t.total, 0);
+    const mobile = txs.filter(t => getPaymentCategory(t.method) === 'Mobile').reduce((a,t) => a + t.total, 0);
     document.getElementById('rptDtCash').textContent = '$' + cash.toFixed(2);
     document.getElementById('rptDtCard').textContent = '$' + card.toFixed(2);
     document.getElementById('rptDtMobile').textContent = '$' + mobile.toFixed(2);
@@ -4694,9 +4807,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       const customers = dayTxs.filter(t => t.customer).length;
       const profit = net * 0.65;
 
-      const cash = dayTxs.filter(t => t.method === 'Cash').reduce((a,t) => a + t.total, 0);
-      const card = dayTxs.filter(t => t.method === 'Card').reduce((a,t) => a + t.total, 0);
-      const mobile = dayTxs.filter(t => t.method === 'Mobile').reduce((a,t) => a + t.total, 0);
+      const cash = dayTxs.filter(t => getPaymentCategory(t.method) === 'Cash').reduce((a,t) => a + t.total, 0);
+      const card = dayTxs.filter(t => getPaymentCategory(t.method) === 'Card').reduce((a,t) => a + t.total, 0);
+      const mobile = dayTxs.filter(t => getPaymentCategory(t.method) === 'Mobile').reduce((a,t) => a + t.total, 0);
 
       const allItems = dayTxs.flatMap(t => t.items);
       const itemsSold = allItems.reduce((a,i) => a + i.qty, 0);
