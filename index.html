@@ -2467,6 +2467,38 @@
     return DEFAULT_DRINK_OPTIONS; // offline / DB unreachable / tables not migrated yet
   }
 
+  // Resolves the default choice for every group (e.g. Regular/Whole/Regular, no Extras).
+  // Used both to pre-fill the customize modal and to add an item directly without opening it.
+  function getDefaultSelections(opts) {
+    const selections = {};
+    opts.groups.forEach(g => {
+      if (g.type === 'multi') {
+        selections[g.key] = new Set();
+      } else {
+        selections[g.key] = (g.choices.find(c => c.default) || g.choices[0]).label;
+      }
+    });
+    return selections;
+  }
+
+  // Flat { group, choice, delta } list from a selections object, mirroring getCustomizeSummary()
+  function summarizeSelections(opts, selections) {
+    const summary = [];
+    opts.groups.forEach(g => {
+      if (g.type === 'multi') {
+        selections[g.key].forEach(label => {
+          const choice = g.choices.find(c => c.label === label);
+          summary.push({ group: g.label, choice: label, delta: choice ? choice.delta : 0 });
+        });
+      } else {
+        const label = selections[g.key];
+        const choice = g.choices.find(c => c.label === label);
+        summary.push({ group: g.label, choice: label, delta: choice ? choice.delta : 0 });
+      }
+    });
+    return summary;
+  }
+
   // ── Products ──
   let PRODUCTS = {
     "Hot Drinks": { All: [
@@ -3017,9 +3049,38 @@
     renderOrder();
   }
 
+  function isAtDefaultSelections(opts, selectedOptions) {
+    if (!Array.isArray(selectedOptions)) return false;
+    const defaults = getDefaultSelections(opts);
+    const defaultSummary = summarizeSelections(opts, defaults);
+    if (defaultSummary.length !== selectedOptions.length) return false;
+    return defaultSummary.every(d =>
+      selectedOptions.some(s => s.group === d.group && s.choice === d.choice)
+    );
+  }
+
   function addItem(name, price, emoji) {
     const opts = getProductOptions(currentCat);
-    if (opts) { openCustomizeModal(name, price, emoji); return; }
+    if (opts) {
+      const key = 'default::' + name;
+      const existing = order[key];
+      if (existing && isAtDefaultSelections(opts, existing.selectedOptions)) {
+        existing.qty++;
+      } else {
+        const selections = getDefaultSelections(opts);
+        const summary = summarizeSelections(opts, selections);
+        const delta = summary.reduce((a, s) => a + s.delta, 0);
+        if (existing) {
+          // The default-key line was edited away from defaults — give the new default add its own key
+          const freshKey = 'default::' + name + '::' + Date.now();
+          order[freshKey] = { key: freshKey, name, price: price + delta, basePrice: price, emoji, qty: 1, selectedOptions: summary };
+        } else {
+          order[key] = { key, name, price: price + delta, basePrice: price, emoji, qty: 1, selectedOptions: summary };
+        }
+      }
+      renderOrder();
+      return;
+    }
     if (order[name]) order[name].qty++; else order[name]={name,price,emoji,qty:1};
     renderOrder();
   }
@@ -3131,9 +3192,11 @@
     container.innerHTML = items.map(item => {
       const key = item.key || item.name;
       const safeKey = key.replace(/'/g, "\\'");
-      const hasOptions = Array.isArray(item.selectedOptions) && item.selectedOptions.length > 0;
-      const optionsSummary = hasOptions ? item.selectedOptions.map(o => o.choice).join(', ') : '';
-      const extraRow = hasOptions ? `
+      const isCustomizable = Array.isArray(item.selectedOptions);
+      const opts = isCustomizable ? getProductOptions(findProductCategory(item.name)) : null;
+      const isEdited = isCustomizable && opts && !isAtDefaultSelections(opts, item.selectedOptions);
+      const optionsSummary = isEdited ? item.selectedOptions.map(o => o.choice).join(', ') : '';
+      const extraRow = isCustomizable ? `
         <div class="order-item-extra">
           <button class="order-item-edit-btn" onclick="editOrderItem('${safeKey}')"><i class="ti ti-adjustments"></i> Edit</button>
           <button class="order-item-remove-btn" onclick="removeOrderItem('${safeKey}')"><i class="ti ti-circle-x"></i></button>
@@ -3417,7 +3480,9 @@
     const customerRow = attachedCustomer ? `<tr><td>Customer</td><td>${attachedCustomer.name}</td></tr>` : '';
 
     const itemRows = items.map(item => {
-      const optsLine = (Array.isArray(item.selectedOptions) && item.selectedOptions.length)
+      const opts = Array.isArray(item.selectedOptions) ? getProductOptions(findProductCategory(item.name)) : null;
+      const isEdited = Array.isArray(item.selectedOptions) && opts && !isAtDefaultSelections(opts, item.selectedOptions);
+      const optsLine = isEdited
         ? `<tr><td colspan="2" style="font-size:11px;color:var(--text-tertiary);padding-top:0;padding-bottom:6px;">${item.selectedOptions.map(o => o.choice).join(', ')}</td></tr>`
         : '';
       return `
