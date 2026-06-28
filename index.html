@@ -2542,6 +2542,114 @@
     showEditImgPreview('');
   }
 
+  // ── Add Product (inline, Payments tab) ──
+  // Independent of the edit-modal's editTarget/editImgData/editImgFile state above —
+  // this pane is purely for adding new items inline, never for editing existing ones.
+  let apImgData = null;
+  let apImgFile = null;
+
+  function resetAddProductForm() {
+    apImgData = null;
+    apImgFile = null;
+    document.querySelectorAll('.ap-cat-btn').forEach(btn => btn.classList.remove('active'));
+    ['apName','apPrice','apCategoryTag','apDesc','apAllergens','apIngredients'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    showApImgPreview(null);
+    const outletList = document.getElementById('apOutletList');
+    if (outletList) {
+      outletList.innerHTML = outlets.map(o => {
+        const checked = String(o.id) === String(currentOutletId);
+        return `<div class="edit-outlet-item ${checked ? 'checked' : ''}" data-outlet-id="${o.id}" onclick="this.classList.toggle('checked')">
+          <div class="edit-outlet-check"><i class="ti ti-check"></i></div>
+          <div class="edit-outlet-name">${o.name}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  function toggleApCat(btn) {
+    document.querySelectorAll('.ap-cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function getApOutletIds() {
+    return Array.from(document.querySelectorAll('#apOutletList .edit-outlet-item.checked'))
+      .map(el => el.dataset.outletId);
+  }
+
+  function triggerApImgUpload() {
+    document.getElementById('apImgInput').click();
+  }
+
+  function handleApImgUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('Image too large — max 5 MB'); event.target.value = ''; return; }
+    apImgFile = file;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      apImgData = e.target.result;
+      showApImgPreview(apImgData);
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  }
+
+  function showApImgPreview(src) {
+    const thumb = document.getElementById('apImgThumb');
+    if (!thumb) return;
+    const empty = document.getElementById('apImgThumbEmpty');
+    const existing = document.getElementById('apImgPreview');
+    if (src) {
+      empty.style.display = 'none';
+      if (existing) { existing.src = src; }
+      else {
+        const img = document.createElement('img');
+        img.id = 'apImgPreview';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+        img.src = src;
+        thumb.appendChild(img);
+      }
+    } else {
+      if (existing) existing.remove();
+      empty.style.display = 'block';
+    }
+  }
+
+  function removeApImg() {
+    apImgData = '';
+    showApImgPreview('');
+  }
+
+  async function saveApProduct() {
+    const newName = document.getElementById('apName').value.trim();
+    const newPrice = parseFloat(document.getElementById('apPrice').value);
+    const newDesc = document.getElementById('apDesc').value.trim();
+    const newAllergens = document.getElementById('apAllergens').value.trim();
+    const newIngredients = document.getElementById('apIngredients').value.trim();
+    const newSub = document.getElementById('apCategoryTag').value.trim();
+    const activeBtn = document.querySelector('.ap-cat-btn.active');
+    const newCat = activeBtn ? activeBtn.dataset.cat : null;
+
+    if (!newName || isNaN(newPrice)) { showToast('Name and price are required'); return; }
+    if (!newCat) { showToast('Please select a category'); return; }
+
+    const newItem = { name: newName, price: newPrice, desc: newDesc, allergens: newAllergens, ingredients: newIngredients, sub: newSub, validFrom: '', validTo: '', emoji: '☕', image_url: '', outlet_ids: getApOutletIds() };
+    if (apImgFile) {
+      showToast('Uploading image…');
+      const url = await uploadProductImage(newName, apImgFile);
+      if (url) { newItem.image_url = url; customImgs[newName] = url; } else return;
+    }
+    if (!PRODUCTS[newCat]) PRODUCTS[newCat] = { All: [] };
+    PRODUCTS[newCat].All.push(newItem);
+    await saveProductToDb(newItem, newCat);
+    renderProducts();
+    showToast('Item added ✓');
+    resetAddProductForm();
+  }
+
   // ── Edit Product ──
 
   function renderProducts() {
@@ -4259,8 +4367,8 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function switchPayTab(tab) {
-    const labels = { overview: 'Overview', transactions: 'Transactions', reports: 'Reports', business: 'Business Information' };
-    ['overview','transactions','reports','business'].forEach(t => {
+    const labels = { overview: 'Overview', addproduct: 'Add Product', transactions: 'Transactions', reports: 'Reports', business: 'Business Information' };
+    ['overview','addproduct','transactions','reports','business'].forEach(t => {
       const navItem = document.getElementById('payNavItem_' + t);
       if (navItem) navItem.classList.toggle('active', t === tab);
       const pane = document.getElementById('payPane_' + t);
@@ -4270,6 +4378,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     if (topbar) topbar.textContent = labels[tab] || tab;
     if (tab === 'overview') renderPayDashboard();
     if (tab === 'business') loadBusinessInfoPane();
+    if (tab === 'addproduct') resetAddProductForm();
   }
 
   function switchPayChart(range) {
@@ -5628,6 +5737,12 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   [data-theme="dark"] .edit-cat-btn.active { background: #f2f2f7; color: #1c1c1e; border-color: #f2f2f7; }
   .edit-cat-btn .cat-emoji { font-size: 15px; }
   .edit-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* Visually identical to .edit-cat-btn, but a separate class so the Add Product tab's
+     category selection never interferes with the edit-modal's global querySelectorAll calls. */
+  .ap-cat-btn { display: flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 24px; border: 1.5px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); transition: all 0.15s; white-space: nowrap; }
+  .ap-cat-btn.active { background: #111; color: white; border-color: #111; }
+  [data-theme="dark"] .ap-cat-btn.active { background: #f2f2f7; color: #1c1c1e; border-color: #f2f2f7; }
+  .ap-cat-btn .cat-emoji { font-size: 15px; }
   .edit-modal-footer { padding: 14px 20px; border-top: 0.5px solid var(--border); display: flex; gap: 10px; flex-shrink: 0; }
   .edit-modal-footer button { flex: 1; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
   .edit-outlet-list { display: flex; flex-direction: column; gap: 8px; }
@@ -6518,6 +6633,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       <button class="pay-dash-nav-item active" id="payNavItem_overview" onclick="switchPayTab('overview')">
         <i class="ti ti-layout-dashboard"></i> Overview
       </button>
+      <button class="pay-dash-nav-item" id="payNavItem_addproduct" onclick="switchPayTab('addproduct')">
+        <i class="ti ti-circle-plus"></i> Add Product
+      </button>
       <button class="pay-dash-nav-item" id="payNavItem_transactions" onclick="switchPayTab('transactions')">
         <i class="ti ti-arrows-exchange"></i> Transactions
       </button>
@@ -6618,6 +6736,83 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
         <div></div>
       </div>
 
+    </div>
+
+    <!-- ADD PRODUCT PANE -->
+    <div class="pay-dash-body" id="payPane_addproduct" style="display:none;">
+      <div class="biz-section">
+        <div class="biz-section-title">Add Product</div>
+
+        <!-- Appears In -->
+        <div>
+          <div class="edit-field-label">Appears In <span class="required">*</span></div>
+          <div class="edit-appears-grid" id="apAppearsIn">
+            <button type="button" class="ap-cat-btn" data-cat="Hot Drinks" onclick="toggleApCat(this)"><span class="cat-emoji">☕</span> Hot Drinks</button>
+            <button type="button" class="ap-cat-btn" data-cat="Cold Drinks" onclick="toggleApCat(this)"><span class="cat-emoji">🧊</span> Cold Drinks</button>
+            <button type="button" class="ap-cat-btn" data-cat="Pastries" onclick="toggleApCat(this)"><span class="cat-emoji">🥐</span> Pastries</button>
+            <button type="button" class="ap-cat-btn" data-cat="Merch" onclick="toggleApCat(this)"><span class="cat-emoji">🛍</span> Merch</button>
+            <button type="button" class="ap-cat-btn" data-cat="Bundles" onclick="toggleApCat(this)"><span class="cat-emoji">🎁</span> Bundles</button>
+          </div>
+        </div>
+
+        <!-- Item Name -->
+        <div>
+          <div class="edit-field-label">Item Name <span class="required">*</span></div>
+          <input id="apName" class="edit-input" placeholder="e.g. Pumpkin Spice Latte" />
+        </div>
+
+        <!-- Price + Category Tag -->
+        <div class="edit-row-2">
+          <div>
+            <div class="edit-field-label">Price ($) <span class="required">*</span></div>
+            <input id="apPrice" type="number" step="0.01" class="edit-input" placeholder="5.50" />
+          </div>
+          <div>
+            <div class="edit-field-label">Category Tag</div>
+            <input id="apCategoryTag" class="edit-input" placeholder="e.g. Coffee" />
+          </div>
+        </div>
+
+        <!-- Outlet Availability -->
+        <div>
+          <div class="edit-field-label">Available At <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(select outlets)</span></div>
+          <div class="edit-outlet-list" id="apOutletList"></div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <div class="edit-field-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
+          <textarea id="apDesc" rows="3" class="edit-input" placeholder="Short description shown on receipt" style="resize:vertical;line-height:1.5;"></textarea>
+        </div>
+
+        <!-- Allergens + Ingredients -->
+        <div>
+          <div class="edit-field-label">Allergens <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
+          <input id="apAllergens" class="edit-input" placeholder="e.g. Contains dairy (milk)" />
+        </div>
+
+        <div>
+          <div class="edit-field-label">Ingredients <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
+          <input id="apIngredients" class="edit-input" placeholder="e.g. Espresso · Steamed Milk · Foam" />
+        </div>
+
+        <!-- Product Photo -->
+        <div>
+          <div class="edit-field-label">Product Photo <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
+          <div class="edit-img-row">
+            <div class="edit-img-thumb" id="apImgThumb">
+              <div class="edit-img-thumb-empty" id="apImgThumbEmpty"></div>
+            </div>
+            <button type="button" class="edit-img-upload-btn" onclick="triggerApImgUpload()">
+              <i class="ti ti-photo-up"></i> Upload Photo
+            </button>
+          </div>
+          <div class="edit-img-hint">JPG, PNG or WebP · max 5 MB</div>
+          <input type="file" id="apImgInput" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleApImgUpload(event)" />
+        </div>
+
+        <button class="biz-save-btn" onclick="saveApProduct()">Add Product</button>
+      </div>
     </div>
 
     <!-- TRANSACTIONS PANE -->
