@@ -879,6 +879,12 @@
     .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; padding: 10px 24px; border-radius: 24px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
     .toast.show { opacity: 1; }
 
+    /* SYNC QUEUE INDICATOR */
+    .sync-queue-indicator { position: fixed; top: 20px; right: 20px; display: none; align-items: center; gap: 7px; background: #fff7ed; border: 1px solid #fed7aa; color: #ea580c; padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; z-index: 998; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    [data-theme="dark"] .sync-queue-indicator { background: rgba(234,88,12,0.12); border-color: rgba(234,88,12,0.35); }
+    .sync-queue-indicator i { font-size: 14px; }
+    .sync-queue-indicator .sync-queue-count { background: #ea580c; color: white; border-radius: 10px; padding: 1px 6px; font-size: 11px; }
+
     /* PAYMENTS DASHBOARD */
     /* ── Payments Dashboard ── */
     .pay-dash-overlay { position: fixed; inset: 0; background: var(--bg-secondary); z-index: 500; display: flex; flex-direction: row; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -1092,6 +1098,11 @@
 <body>
 
 <div class="toast" id="toast"></div>
+<div class="sync-queue-indicator" id="syncQueueIndicator" onclick="trySyncQueue(); showToast('Retrying sync…')">
+  <i class="ti ti-cloud-off"></i>
+  <span>Pending sync</span>
+  <span class="sync-queue-count">0</span>
+</div>
 
 <header>
   <div class="header-left">
@@ -1937,7 +1948,105 @@
     addOutlet(name, address);
   }
 
-  // ── Clock ──
+  // ── Offline Sync Queue ──
+  // Queues failed EOD-relevant writes (sales, voids, refunds, wastage, cash float)
+  // in localStorage, then retries them once the connection to Supabase is back.
+  const SYNC_QUEUE_KEY = 'epos_sync_queue';
+
+  function getSyncQueue() {
+    try {
+      return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || '[]');
+    } catch (e) {
+      console.error('getSyncQueue parse error:', e);
+      return [];
+    }
+  }
+
+  function setSyncQueue(queue) {
+    try {
+      localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(queue));
+    } catch (e) {
+      console.error('setSyncQueue error:', e);
+    }
+    updateSyncIndicator(queue.length);
+  }
+
+  // table: Supabase table name. op: 'insert' | 'update' | 'upsert' | 'delete'.
+  // payload: row data (insert/upsert) or update fields (update). match: { column, value } used by update/delete.
+  function queueSyncOp(table, op, payload, match) {
+    const queue = getSyncQueue();
+    queue.push({ id: 'sync_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8), table, op, payload, match, queuedAt: new Date().toISOString() });
+    setSyncQueue(queue);
+  }
+
+  let syncInProgress = false;
+  async function trySyncQueue() {
+    if (!db || syncInProgress) return;
+    let queue = getSyncQueue();
+    if (!queue.length) return;
+    syncInProgress = true;
+    try {
+      while (queue.length) {
+        const item = queue[0];
+        let error;
+        try {
+          if (item.op === 'insert') {
+            ({ error } = await db.from(item.table).insert(item.payload));
+          } else if (item.op === 'upsert') {
+            ({ error } = await db.from(item.table).upsert(item.payload));
+          } else if (item.op === 'update') {
+            ({ error } = await db.from(item.table).update(item.payload).eq(item.match.column, item.match.value));
+          } else if (item.op === 'delete') {
+            ({ error } = await db.from(item.table).delete().eq(item.match.column, item.match.value));
+          } else {
+            error = null; // unknown op type — drop it rather than block the queue forever
+          }
+        } catch (e) {
+          error = e;
+        }
+        if (error) {
+          console.error('trySyncQueue: still failing for', item.table, item.op, JSON.stringify(error));
+          break; // stop here, preserve order, try again later
+        }
+        queue.shift();
+        setSyncQueue(queue);
+      }
+      if (!queue.length) showToast('✓ Synced pending data to database');
+    } finally {
+      syncInProgress = false;
+    }
+  }
+
+  function updateSyncIndicator(pendingCount) {
+    const el = document.getElementById('syncQueueIndicator');
+    if (!el) return;
+    if (pendingCount > 0) {
+      el.style.display = 'flex';
+      el.querySelector('.sync-queue-count').textContent = pendingCount;
+    } else {
+      el.style.display = 'none';
+    }
+  }
+
+  window.addEventListener('online', trySyncQueue);
+  setInterval(trySyncQueue, 30000); // backup poll, in case the 'online' event doesn't fire (e.g. flaky wifi)
+  // Initial sync indicator state + attempt on page load
+  updateSyncIndicator(getSyncQueue().length);
+  trySyncQueue();
+
+  // ── Local mirror for EOD-relevant data ──
+  // Keeps a local copy of sales/wastage/cash-float so the EOD report stays accurate
+  // across a page reload even if Supabase can't be reached. DB data always wins
+  // when available; this is purely a fallback.
+  const LOCAL_MIRROR_KEYS = { sales: 'epos_local_sales_log', wastage: 'epos_local_wastage_log', cashFloat: 'epos_local_cash_float_log' };
+
+  function saveLocalMirror(key, arr) {
+    try { localStorage.setItem(key, JSON.stringify(arr)); } catch (e) { console.error('saveLocalMirror error:', e); }
+  }
+
+  function loadLocalMirror(key) {
+    try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { console.error('loadLocalMirror error:', e); return []; }
+  }
 
   // ── Supabase client (initialised first — required by loadProducts & loadMembers) ──
   const SUPABASE_URL = 'https://bzpcjpwkmwowvpxyoitz.supabase.co';
@@ -4270,19 +4379,28 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   // ── Reports ──
   const SALES_STORAGE_KEY = 'smartepos_sales_log';
   async function loadSalesLog() {
-    if (!db) { renderOrdersTab(); renderRptEod(); return; }
+    if (!db) {
+      salesLog = loadLocalMirror(LOCAL_MIRROR_KEYS.sales).map(t => ({ ...t, date: new Date(t.date) }));
+      renderOrdersTab(); renderRptEod();
+      return;
+    }
     const { data, error } = await db.from('sales_log').select('*').order('date', {ascending: false});
-    if (error) { console.error('loadSalesLog error:', JSON.stringify(error)); return; }
+    if (error) {
+      console.error('loadSalesLog error:', JSON.stringify(error));
+      salesLog = loadLocalMirror(LOCAL_MIRROR_KEYS.sales).map(t => ({ ...t, date: new Date(t.date) }));
+      renderOrdersTab(); renderRptEod();
+      return;
+    }
     salesLog = (data || []).map(t => ({
       ...t, date: new Date(t.date),
       hour: t.hour, day: t.day,
       items: t.items || []
     }));
+    saveLocalMirror(LOCAL_MIRROR_KEYS.sales, salesLog);
     renderOrdersTab();
     renderRptEod();
   }
   async function saveSalesEntry(entry) {
-    if (!db) return;
     const row = {
       ref: entry.ref, method: entry.method, date: entry.date.toISOString(),
       hour: entry.hour, day: entry.day, gross: entry.gross,
@@ -4293,16 +4411,24 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       voided: entry.voided || false,
       refund: entry.refund || false, refunded: entry.refunded || false
     };
+    saveLocalMirror(LOCAL_MIRROR_KEYS.sales, salesLog);
+    if (!db) { queueSyncOp('sales_log', 'insert', row); return; }
     const { error } = await db.from('sales_log').insert(row);
     if (error) {
       console.error('saveSalesEntry error:', JSON.stringify(error));
-      showToast('⚠️ Transaction not saved to DB: ' + (error.message || error.code));
+      queueSyncOp('sales_log', 'insert', row);
+      showToast('⚠️ Offline — transaction saved locally, will sync later');
     }
   }
   async function updateSalesEntry(ref, updates) {
-    if (!db) return;
+    saveLocalMirror(LOCAL_MIRROR_KEYS.sales, salesLog);
+    if (!db) { queueSyncOp('sales_log', 'update', updates, { column: 'ref', value: ref }); return; }
     const { error } = await db.from('sales_log').update(updates).eq('ref', ref);
-    if (error) console.error('updateSalesEntry error:', JSON.stringify(error));
+    if (error) {
+      console.error('updateSalesEntry error:', JSON.stringify(error));
+      queueSyncOp('sales_log', 'update', updates, { column: 'ref', value: ref });
+      showToast('⚠️ Offline — change saved locally, will sync later');
+    }
   }
   let salesLog = [];
   loadSalesLog();
@@ -4833,29 +4959,41 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   async function deleteWastageEntry(id) {
     console.log('deleteWastageEntry called with id:', id, 'db:', !!db);
-    if (!db) { wastageLog = wastageLog.filter(e => String(e.id) !== String(id)); renderRptWastage(); return; }
+    wastageLog = wastageLog.filter(e => String(e.id) !== String(id));
+    saveLocalMirror(LOCAL_MIRROR_KEYS.wastage, wastageLog);
+    renderRptWastage();
+    if (!db) { queueSyncOp('wastage_log', 'delete', null, { column: 'id', value: String(id) }); return; }
     const { error, data } = await db.from('wastage_log').delete().eq('id', String(id)).select();
     console.log('delete result — error:', JSON.stringify(error), 'data:', JSON.stringify(data));
-    if (error) { console.error('deleteWastageEntry error:', JSON.stringify(error)); return; }
-    wastageLog = wastageLog.filter(e => String(e.id) !== String(id));
-    renderRptWastage();
+    if (error) {
+      console.error('deleteWastageEntry error:', JSON.stringify(error));
+      queueSyncOp('wastage_log', 'delete', null, { column: 'id', value: String(id) });
+    }
   }
 
   // ── Cash Float ──
   let cashFloatLog = [];
   async function getCashFloatLog() {
-    if (!db) return cashFloatLog;
+    if (!db) { cashFloatLog = loadLocalMirror(LOCAL_MIRROR_KEYS.cashFloat); return cashFloatLog; }
     const { data, error } = await db.from('cash_float').select('*').order('date', {ascending: false});
-    if (error) { console.error('getCashFloatLog error:', JSON.stringify(error)); return cashFloatLog; }
+    if (error) {
+      console.error('getCashFloatLog error:', JSON.stringify(error));
+      cashFloatLog = loadLocalMirror(LOCAL_MIRROR_KEYS.cashFloat);
+      return cashFloatLog;
+    }
     cashFloatLog = data || [];
+    saveLocalMirror(LOCAL_MIRROR_KEYS.cashFloat, cashFloatLog);
     return cashFloatLog;
   }
   async function saveCashFloatEntry(entry) {
-    if (!db) return;
-    const { data, error } = await db.from('cash_float').insert({
-      amount: entry.amount, note: entry.note, date: entry.date, staff_id: entry.staff_id
-    }).select();
-    if (error) { console.error('saveCashFloatEntry error:', JSON.stringify(error)); return null; }
+    const row = { amount: entry.amount, note: entry.note, date: entry.date, staff_id: entry.staff_id };
+    if (!db) { queueSyncOp('cash_float', 'insert', row); return null; }
+    const { data, error } = await db.from('cash_float').insert(row).select();
+    if (error) {
+      console.error('saveCashFloatEntry error:', JSON.stringify(error));
+      queueSyncOp('cash_float', 'insert', row);
+      return null;
+    }
     return data && data[0] ? data[0] : null;
   }
   function cashFloatForDate(date) {
@@ -4917,6 +5055,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     };
     const saved = await saveCashFloatEntry(entry);
     cashFloatLog.unshift(saved || entry);
+    saveLocalMirror(LOCAL_MIRROR_KEYS.cashFloat, cashFloatLog);
     closeCashFloat();
     showToast('Cash float of $' + amt.toFixed(2) + ' added');
     if (rptEodViewDate === null || isSameDay(rptEodViewDate, new Date())) {
@@ -4928,20 +5067,30 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   const WASTAGE_STORAGE_KEY = 'smartepos_wastage_log';
   let wastageLog = [];
   async function getWastageLog() {
-    if (!db) return wastageLog;
+    if (!db) { wastageLog = loadLocalMirror(LOCAL_MIRROR_KEYS.wastage); return wastageLog; }
     const { data, error } = await db.from('wastage_log').select('*').order('date', {ascending: false});
-    if (error) { console.error('getWastageLog error:', JSON.stringify(error)); return []; }
+    if (error) {
+      console.error('getWastageLog error:', JSON.stringify(error));
+      wastageLog = loadLocalMirror(LOCAL_MIRROR_KEYS.wastage);
+      return wastageLog;
+    }
     wastageLog = (data || []).map(e => ({...e, itemName: e.item_name, date: e.date}));
+    saveLocalMirror(LOCAL_MIRROR_KEYS.wastage, wastageLog);
     return wastageLog;
   }
   async function saveWastageEntry(entry) {
-    if (!db) return;
-    const { error } = await db.from('wastage_log').upsert({
+    const row = {
       id: String(entry.id), item_name: entry.itemName,
       qty: entry.qty, reason: entry.reason, note: entry.note,
       date: entry.date, cost: entry.cost
-    });
-    if (error) console.error('saveWastageEntry error:', JSON.stringify(error));
+    };
+    saveLocalMirror(LOCAL_MIRROR_KEYS.wastage, wastageLog);
+    if (!db) { queueSyncOp('wastage_log', 'upsert', row); return; }
+    const { error } = await db.from('wastage_log').upsert(row);
+    if (error) {
+      console.error('saveWastageEntry error:', JSON.stringify(error));
+      queueSyncOp('wastage_log', 'upsert', row);
+    }
   }
   let wastageSelectedItems = {}; // { itemName: qty }
   let wastageSelectedReason = null;
