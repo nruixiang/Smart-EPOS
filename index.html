@@ -1675,7 +1675,7 @@
     <div class="clockin-header">
       <div>
         <div class="clockin-title">Log In</div>
-        <div class="clockin-sub">Enter your Staff ID and password to log in</div>
+        <div class="clockin-sub">Enter your Staff ID and PIN to log in</div>
       </div>
       <button class="clockin-close" onclick="closeClockIn()"><i class="ti ti-x"></i></button>
     </div>
@@ -1687,12 +1687,13 @@
         </button>
       </div>
       <div>
-        <div class="clockin-field-label">Password</div>
+        <div class="clockin-field-label">PIN</div>
         <button class="clockin-field-box" id="passwordBox" onclick="openNumpad('password')">
-          <span class="placeholder" id="passwordDisplay">Tap to enter password</span>
+          <span class="placeholder" id="passwordDisplay">Tap to enter PIN</span>
         </button>
       </div>
     </div>
+    <div id="clockinError" style="color:var(--red);font-size:12.5px;text-align:center;min-height:16px;margin-top:-4px;"></div>
     <button class="clockin-btn" id="clockinSubmitBtn" onclick="submitClockIn()">Log In</button>
   </div>
 </div>
@@ -2294,6 +2295,44 @@
 
   function loadLocalMirror(key) {
     try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { console.error('loadLocalMirror error:', e); return []; }
+  }
+
+  // ── Offline staff login cache ──
+  // Stores a SHA-256 hash of (staffId:pin:role) for every staff login that was
+  // successfully verified online, so the same staff member can still log in
+  // during an outage — without ever storing their actual PIN on the device.
+  // crypto.subtle requires a secure context (HTTPS or localhost); if it's
+  // unavailable (e.g. running over plain HTTP on a local network IP), the
+  // offline cache is silently skipped — online login is unaffected either way.
+  const STAFF_LOGIN_CACHE_KEY = 'epos_staff_login_cache';
+  const hasSubtleCrypto = typeof crypto !== 'undefined' && !!crypto.subtle;
+
+  async function hashStaffLogin(id, pin, role) {
+    if (!hasSubtleCrypto) return null;
+    const data = new TextEncoder().encode(`${id}:${pin}:${role}`);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function getCachedStaffLogins() {
+    try { return JSON.parse(localStorage.getItem(STAFF_LOGIN_CACHE_KEY) || '{}'); } catch (e) { return {}; }
+  }
+
+  async function cacheVerifiedStaffLogin(id, pin, role) {
+    if (!hasSubtleCrypto) return; // can't safely cache without hashing — skip rather than store the PIN in plaintext
+    const hash = await hashStaffLogin(id, pin, role);
+    const cache = getCachedStaffLogins();
+    cache[id] = { hash, role };
+    try { localStorage.setItem(STAFF_LOGIN_CACHE_KEY, JSON.stringify(cache)); } catch (e) { console.error('cacheVerifiedStaffLogin error:', e); }
+  }
+
+  async function tryOfflineStaffLogin(id, pin) {
+    if (!hasSubtleCrypto) return null;
+    const cache = getCachedStaffLogins();
+    const entry = cache[id];
+    if (!entry) return null;
+    const hash = await hashStaffLogin(id, pin, entry.role);
+    return hash === entry.hash ? entry.role : null;
   }
 
   // ── Supabase client (initialised first — required by loadProducts & loadMembers) ──
@@ -4762,6 +4801,8 @@
     clockinPassword = '';
     updateClockInFields();
     updateClockInBtn();
+    const errEl = document.getElementById('clockinError');
+    if (errEl) errEl.textContent = '';
     document.getElementById('clockinOverlay').classList.add('show');
   }
 
@@ -4784,7 +4825,7 @@
       pwDisplay.textContent = '●'.repeat(clockinPassword.length);
     } else {
       pwDisplay.className = 'placeholder';
-      pwDisplay.textContent = 'Tap to enter password';
+      pwDisplay.textContent = 'Tap to enter PIN';
     }
   }
 
@@ -4917,15 +4958,57 @@
     renderProducts();
   }
 
-  function submitClockIn() {
+  async function submitClockIn() {
     if (!clockinStaffId || !clockinPassword) return;
     const id = clockinStaffId.padStart(4, '0');
-    const role = id === '0000' ? 'Administrator' : 'Staff';
-    localStorage.setItem('epos_staff_id', id);
-    localStorage.setItem('epos_staff_role', role);
-    applySession(id, role);
-    closeClockIn();
-    showToast('Logged in as ' + id + ' · ' + role);
+    const pin = clockinPassword;
+    const errEl = document.getElementById('clockinError');
+    const btn = document.getElementById('clockinSubmitBtn');
+    errEl.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'Checking…';
+
+    try {
+      if (db) {
+        const { data, error } = await db.from('staff').select('*').eq('id', id).maybeSingle();
+        if (error) {
+          console.error('submitClockIn staff lookup error:', JSON.stringify(error));
+          // Treat a lookup failure the same as offline — fall through to cache below
+        } else if (data) {
+          if (String(data.pin) !== pin) {
+            errEl.textContent = 'Incorrect Staff ID or PIN';
+            return;
+          }
+          const role = data.role || (id === '0000' ? 'Administrator' : 'Staff');
+          await cacheVerifiedStaffLogin(id, pin, role);
+          localStorage.setItem('epos_staff_id', id);
+          localStorage.setItem('epos_staff_role', role);
+          applySession(id, role);
+          closeClockIn();
+          showToast('Logged in as ' + id + ' · ' + role);
+          return;
+        } else {
+          // No staff record found online — definitively wrong ID, not an offline situation
+          errEl.textContent = 'Incorrect Staff ID or PIN';
+          return;
+        }
+      }
+
+      // Offline, or the lookup above failed to reach the server — try the verified-before cache
+      const cachedRole = await tryOfflineStaffLogin(id, pin);
+      if (cachedRole) {
+        localStorage.setItem('epos_staff_id', id);
+        localStorage.setItem('epos_staff_role', cachedRole);
+        applySession(id, cachedRole);
+        closeClockIn();
+        showToast('Logged in offline as ' + id + ' · ' + cachedRole);
+      } else {
+        errEl.textContent = 'Cannot verify login while offline. This Staff ID/PIN hasn\'t been used on this device before.';
+      }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Log In';
+    }
   }
 
   // ── Restore session on startup ──
@@ -4949,7 +5032,7 @@
       numpadValue = (input && input.value) ? input.value.replace(/\D/g,'') : '';
     }
     else if (target === 'otpCode') numpadValue = otpValue;
-    document.getElementById('numpadLabel').textContent = target === 'staffId' ? 'STAFF ID' : (target === 'password' ? 'PASSWORD' : (target === 'otpCode' ? 'VERIFICATION CODE' : 'PHONE NUMBER'));
+    document.getElementById('numpadLabel').textContent = target === 'staffId' ? 'STAFF ID' : (target === 'password' ? 'PIN' : (target === 'otpCode' ? 'VERIFICATION CODE' : 'PHONE NUMBER'));
     updateNumpadDisplay();
     document.getElementById('staffIdBox').classList.toggle('active', target === 'staffId');
     document.getElementById('passwordBox').classList.toggle('active', target === 'password');
