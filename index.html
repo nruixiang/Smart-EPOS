@@ -10,6 +10,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Ensure every scrollable container supports click-and-drag / touch-swipe scrolling,
+       including momentum scrolling on older iOS Safari (-webkit-overflow-scrolling). */
+    .admin-body, .pinfo-body, .products-grid, .order-items, .cash-panel, .cardtype-modal-body,
+    .receipt-body, .disc-body, .mem-body, .rpt-body, .cashfloat-body, .wastage-step-pane,
+    .held-modal-body, .pay-dash-body, .edit-modal-body {
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+    }
+    .cat-tabs, .sub-tabs, .rpt-tabs {
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
+    }
     :root {
       --bg-primary: #ffffff;
       --bg-secondary: #f9f8f6;
