@@ -2335,6 +2335,14 @@
     return hash === entry.hash ? entry.role : null;
   }
 
+  function clearCachedStaffLogin(id) {
+    const cache = getCachedStaffLogins();
+    if (cache[id]) {
+      delete cache[id];
+      try { localStorage.setItem(STAFF_LOGIN_CACHE_KEY, JSON.stringify(cache)); } catch (e) { console.error('clearCachedStaffLogin error:', e); }
+    }
+  }
+
   // ── Supabase client (initialised first — required by loadProducts & loadMembers) ──
   const SUPABASE_URL = 'https://bzpcjpwkmwowvpxyoitz.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_HKnoQB5XhK-MfHNwpaTmXA_3479YHTE';
@@ -4954,8 +4962,31 @@
       adminPill.classList.remove('header-pill-btn');
       adminPill.style.cursor = 'default';
     }
+    document.getElementById('staffPill').onclick = logout;
     updateThemeToggleVisibility();
     renderProducts();
+  }
+
+  function logout() {
+    if (!currentStaffId) { openClockIn(); return; } // not logged in — clicking the pill should open login instead
+    if (Object.keys(order).length > 0) {
+      if (!confirm('There is an order in progress. Log out anyway? The current order will be cleared.')) return;
+    } else {
+      if (!confirm('Log out of Staff ID ' + currentStaffId + '?')) return;
+    }
+    clearCachedStaffLogin(currentStaffId);
+    localStorage.removeItem('epos_staff_id');
+    localStorage.removeItem('epos_staff_role');
+    clearOrder();
+    currentStaffId = '';
+    currentStaffRole = '';
+    document.getElementById('headerStaffId').textContent = 'Not logged in';
+    document.getElementById('headerRole').textContent = 'Staff';
+    document.getElementById('adminPill').classList.remove('header-pill-btn');
+    document.getElementById('adminPill').style.cursor = 'default';
+    document.getElementById('staffPill').onclick = openClockIn;
+    renderProducts();
+    showToast('Logged out');
   }
 
   async function submitClockIn() {
