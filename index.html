@@ -2846,6 +2846,7 @@
   loadBusinessInfo();
   getWastageLog(); // populate wastageLog from DB so past entries survive a page reload
   loadProductOptions(); // populate PRODUCT_OPTIONS_BY_CATEGORY from the option_groups/option_choices tables
+  loadDiscounts(); // populate DISCOUNTS from the discounts table
 
   function showEditImgPreview(src) {
     const thumb = document.getElementById('editImgThumb');
@@ -4358,8 +4359,205 @@
     showToast('Discount removed');
   }
 
+  // ── Discounts (admin-editable, used in the manual discount picker at checkout) ──
+  const DEFAULT_DISCOUNTS = [
+    { id: 'default_staff', label: 'Staff Discount (20%)', type: 'percent', value: 20, description: '20% off total', active: true },
+    { id: 'default_student', label: 'Student Discount (10%)', type: 'percent', value: 10, description: '10% off total', active: true },
+    { id: 'default_5off', label: '$5 Off Voucher', type: 'fixed', value: 5, description: '$5 off total', active: true },
+  ];
+  let DISCOUNTS = [];
+  let discountsLoaded = false;
+
+  async function loadDiscounts() {
+    if (!db) { discountsLoaded = false; return; }
+    const { data, error } = await db.from('discounts').select('*').order('sort_order', { ascending: true });
+    if (error) { console.error('loadDiscounts error:', JSON.stringify(error)); discountsLoaded = false; return; }
+    if (!data || data.length === 0) { discountsLoaded = false; return; } // table empty/not migrated yet — use fallback
+    DISCOUNTS = data.map(d => ({ ...d, value: parseFloat(d.value) || 0 }));
+    discountsLoaded = true;
+    renderDiscountManualList();
+    refreshDiscountListIfVisible();
+  }
+
+  function getDiscounts() {
+    return discountsLoaded ? DISCOUNTS : DEFAULT_DISCOUNTS;
+  }
+
+  function getActiveDiscounts() {
+    return getDiscounts().filter(d => d.active !== false);
+  }
+
+  // Used only by the management list — promotes the read-only fallback defaults into
+  // the real, mutable DISCOUNTS array (with fresh default_ ids) so Edit/Delete always
+  // have something real to operate on, even before any DB load has happened.
+  function getEditableDiscounts() {
+    if (!discountsLoaded) {
+      DISCOUNTS = DEFAULT_DISCOUNTS.map(d => ({ ...d }));
+      discountsLoaded = true;
+    }
+    return DISCOUNTS;
+  }
+
+  async function saveDiscountToDb(discount) {
+    const row = { label: discount.label, type: discount.type, value: discount.value, description: discount.description || null, active: discount.active !== false, sort_order: discount.sort_order || 0 };
+    if (discount.id && !String(discount.id).startsWith('default_')) {
+      const { error } = await db.from('discounts').update(row).eq('id', discount.id);
+      if (error) { showToast('Save failed: ' + error.message); return false; }
+    } else {
+      const { data, error } = await db.from('discounts').insert(row).select().single();
+      if (error) { showToast('Save failed: ' + error.message); return false; }
+      discount.id = data.id;
+    }
+    return true;
+  }
+
+  async function deleteDiscountFromDb(id) {
+    if (!id || String(id).startsWith('default_')) return true; // never persisted, nothing to delete
+    const { error } = await db.from('discounts').delete().eq('id', id);
+    if (error) { showToast('Delete failed: ' + error.message); return false; }
+    return true;
+  }
+
+  function renderDiscountManualList() {
+    const container = document.getElementById('discPaneManual');
+    if (!container) return;
+    const active = getActiveDiscounts();
+    if (!active.length) {
+      container.innerHTML = `<div class="pay-table-empty" style="padding:24px 16px;">No discounts available</div>`;
+      return;
+    }
+    container.innerHTML = active.map(d => {
+      const safeLabel = d.label.replace(/'/g, "\\'");
+      return `<div class="disc-manual-item" onclick="applyManualDiscount('${safeLabel}', '${d.type}', ${d.value}, this)">
+        <i class="ti ti-tag disc-manual-icon"></i>
+        <div><div class="disc-manual-name">${d.label}</div><div class="disc-manual-desc">${d.description || ''}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Discounts Management (Discounts tab) ──
+  let editingDiscountId = null;
+
+  function updateDiscFormValueLabel() {
+    const type = document.getElementById('discFormType').value;
+    document.getElementById('discFormValueLabel').textContent = type === 'percent' ? 'Value (%)' : 'Value ($)';
+  }
+
+  function resetDiscountForm() {
+    editingDiscountId = null;
+    document.getElementById('discFormTitle').textContent = 'Add Discount';
+    document.getElementById('discFormSaveBtn').textContent = 'Add Discount';
+    document.getElementById('discFormCancelBtn').style.display = 'none';
+    document.getElementById('discFormLabel').value = '';
+    document.getElementById('discFormType').value = 'percent';
+    document.getElementById('discFormValue').value = '';
+    document.getElementById('discFormDesc').value = '';
+    document.getElementById('discFormActive').checked = true;
+    updateDiscFormValueLabel();
+  }
+
+  async function saveDiscount() {
+    const label = document.getElementById('discFormLabel').value.trim();
+    const type = document.getElementById('discFormType').value;
+    const value = parseFloat(document.getElementById('discFormValue').value);
+    const description = document.getElementById('discFormDesc').value.trim();
+    const active = document.getElementById('discFormActive').checked;
+
+    if (!label) { showToast('Label is required'); return; }
+    if (isNaN(value) || value <= 0) { showToast('Enter a value greater than 0'); return; }
+    if (type === 'percent' && value > 100) { showToast('Percentage discount cannot exceed 100%'); return; }
+
+    const btn = document.getElementById('discFormSaveBtn');
+    btn.disabled = true;
+
+    if (editingDiscountId) {
+      const existing = DISCOUNTS.find(d => String(d.id) === String(editingDiscountId));
+      if (existing) {
+        existing.label = label; existing.type = type; existing.value = value;
+        existing.description = description; existing.active = active;
+        const ok = await saveDiscountToDb(existing);
+        if (!ok) { btn.disabled = false; return; }
+      }
+    } else {
+      const newDiscount = { label, type, value, description, active, sort_order: DISCOUNTS.length };
+      const ok = await saveDiscountToDb(newDiscount);
+      if (!ok) { btn.disabled = false; return; }
+      DISCOUNTS.push(newDiscount);
+      discountsLoaded = true;
+    }
+
+    btn.disabled = false;
+    showToast(editingDiscountId ? 'Discount updated ✓' : 'Discount added ✓');
+    resetDiscountForm();
+    renderDiscountList();
+    renderDiscountManualList();
+  }
+
+  function editDiscount(id) {
+    const d = DISCOUNTS.find(x => String(x.id) === String(id));
+    if (!d) return;
+    editingDiscountId = d.id;
+    document.getElementById('discFormTitle').textContent = 'Edit Discount';
+    document.getElementById('discFormSaveBtn').textContent = 'Save Changes';
+    document.getElementById('discFormCancelBtn').style.display = 'inline-block';
+    document.getElementById('discFormLabel').value = d.label;
+    document.getElementById('discFormType').value = d.type;
+    document.getElementById('discFormValue').value = d.value;
+    document.getElementById('discFormDesc').value = d.description || '';
+    document.getElementById('discFormActive').checked = d.active !== false;
+    updateDiscFormValueLabel();
+  }
+
+  async function deleteDiscountAndRefresh(id) {
+    const d = DISCOUNTS.find(x => String(x.id) === String(id));
+    if (!d) return;
+    if (!confirm('Delete "' + d.label + '"? This cannot be undone.')) return;
+    const ok = await deleteDiscountFromDb(id);
+    if (!ok) return;
+    DISCOUNTS = DISCOUNTS.filter(x => String(x.id) !== String(id));
+    if (String(editingDiscountId) === String(id)) resetDiscountForm();
+    renderDiscountList();
+    renderDiscountManualList();
+    showToast('Discount deleted');
+  }
+
+  function renderDiscountList() {
+    const card = document.getElementById('discListCard');
+    if (!card) return;
+    const list = getEditableDiscounts();
+    if (!list.length) {
+      card.innerHTML = `<div class="pay-table-empty">No discounts yet — add one above</div>`;
+      return;
+    }
+    const header = `<div class="ap-list-header" style="grid-template-columns: 1.8fr 1fr 1fr 1fr 0.9fr;">
+      <div>Label</div><div>Type</div><div>Value</div><div>Status</div><div></div>
+    </div>`;
+    const rows = list.map(d => {
+      const valueText = d.type === 'percent' ? d.value + '%' : '$' + d.value.toFixed(2);
+      const statusText = d.active !== false ? 'Active' : 'Inactive';
+      const statusColor = d.active !== false ? 'var(--green)' : 'var(--text-tertiary)';
+      return `<div class="ap-list-row" style="grid-template-columns: 1.8fr 1fr 1fr 1fr 0.9fr;">
+        <div class="ap-list-cell">${d.label}</div>
+        <div class="ap-list-cell secondary">${d.type === 'percent' ? 'Percentage' : 'Fixed'}</div>
+        <div class="ap-list-cell">${valueText}</div>
+        <div class="ap-list-cell" style="color:${statusColor};">${statusText}</div>
+        <div class="ap-list-actions">
+          <button class="ap-list-action-btn" title="Edit" onclick="editDiscount('${d.id}')"><i class="ti ti-pencil"></i></button>
+          <button class="ap-list-action-btn danger" title="Delete" onclick="deleteDiscountAndRefresh('${d.id}')"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+    card.innerHTML = header + rows;
+  }
+
+  function refreshDiscountListIfVisible() {
+    const pane = document.getElementById('payPane_discounts');
+    if (pane && pane.style.display !== 'none') renderDiscountList();
+  }
+
   function openDiscount() {
     switchDiscTab('manual');
+    renderDiscountManualList();
     updateDiscountBanner();
     document.getElementById('discOverlay').classList.add('show');
   }
@@ -5233,8 +5431,8 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function switchPayTab(tab) {
-    const labels = { overview: 'Overview', addproduct: 'Add Product', transactions: 'Transactions', reports: 'Reports', business: 'Business Information' };
-    ['overview','addproduct','transactions','reports','business'].forEach(t => {
+    const labels = { overview: 'Overview', addproduct: 'Products', discounts: 'Discounts', transactions: 'Transactions', reports: 'Reports', business: 'Business Information' };
+    ['overview','addproduct','discounts','transactions','reports','business'].forEach(t => {
       const navItem = document.getElementById('payNavItem_' + t);
       if (navItem) navItem.classList.toggle('active', t === tab);
       const pane = document.getElementById('payPane_' + t);
@@ -5245,6 +5443,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     if (tab === 'overview') renderPayDashboard();
     if (tab === 'business') loadBusinessInfoPane();
     if (tab === 'addproduct') resetAddProductForm();
+    if (tab === 'discounts') { resetDiscountForm(); renderDiscountList(); }
   }
 
   function switchPayChart(range) {
@@ -7510,7 +7709,10 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
         <i class="ti ti-layout-dashboard"></i> Overview
       </button>
       <button class="pay-dash-nav-item" id="payNavItem_addproduct" onclick="switchPayTab('addproduct')">
-        <i class="ti ti-circle-plus"></i> Add Product
+        <i class="ti ti-circle-plus"></i> Products
+      </button>
+      <button class="pay-dash-nav-item" id="payNavItem_discounts" onclick="switchPayTab('discounts')">
+        <i class="ti ti-discount-2"></i> Discounts
       </button>
       <button class="pay-dash-nav-item" id="payNavItem_transactions" onclick="switchPayTab('transactions')">
         <i class="ti ti-arrows-exchange"></i> Transactions
@@ -7701,6 +7903,54 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
         </div>
         <input class="ap-list-search" id="apListSearch" placeholder="Search products…" oninput="renderApProductList()" />
         <div class="ap-list-card" id="apListCard"></div>
+      </div>
+    </div>
+
+    <!-- DISCOUNTS PANE -->
+    <div class="pay-dash-body" id="payPane_discounts" style="display:none;">
+      <div class="biz-section">
+        <div class="biz-section-title" id="discFormTitle">Add Discount</div>
+
+        <div>
+          <div class="edit-field-label">Label <span class="required">*</span></div>
+          <input id="discFormLabel" class="edit-input" placeholder="e.g. Staff Discount (20%)" />
+        </div>
+
+        <div class="edit-row-2">
+          <div>
+            <div class="edit-field-label">Type <span class="required">*</span></div>
+            <select id="discFormType" class="edit-input" onchange="updateDiscFormValueLabel()">
+              <option value="percent">Percentage off</option>
+              <option value="fixed">Fixed amount off</option>
+            </select>
+          </div>
+          <div>
+            <div class="edit-field-label" id="discFormValueLabel">Value (%)</div>
+            <input id="discFormValue" type="number" step="0.01" class="edit-input" placeholder="20" />
+          </div>
+        </div>
+
+        <div>
+          <div class="edit-field-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional, shown under the label at checkout)</span></div>
+          <input id="discFormDesc" class="edit-input" placeholder="e.g. 20% off total" />
+        </div>
+
+        <div class="biz-outlet-row">
+          <div class="biz-outlet-name">Active <span style="font-weight:400;font-size:11px;color:var(--text-tertiary);">(inactive discounts are hidden at checkout)</span></div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="discFormActive" checked style="width:16px;height:16px;cursor:pointer;" />
+          </label>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button class="customize-btn-cancel" id="discFormCancelBtn" onclick="resetDiscountForm()" style="display:none;">Cancel Edit</button>
+          <button class="biz-save-btn" id="discFormSaveBtn" onclick="saveDiscount()">Add Discount</button>
+        </div>
+      </div>
+
+      <div class="biz-section" style="margin-top:16px;">
+        <div class="biz-section-title">All Discounts</div>
+        <div class="ap-list-card" id="discListCard"></div>
       </div>
     </div>
 
