@@ -6175,14 +6175,28 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const key = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
     return salesLog.filter(t => {
       const d = t.date;
-      return !t.voided && !t.refund && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === key;
+      const matchesDate = !t.voided && !t.refund && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === key;
+      if (!matchesDate) return false;
+      // Only include sales from the outlet this till is currently set to.
+      // Genuinely untagged old transactions (no outlet_id and no outlet name)
+      // are shown everywhere rather than silently hidden from every report.
+      if (t.outlet_id == null && !t.outlet) return true;
+      if (t.outlet_id != null) return String(t.outlet_id) === String(currentOutletId);
+      return t.outlet === currentOutletName;
     });
   }
 
   function wastageForDate(date) {
     return wastageLog.filter(e => {
       const d = new Date(e.date);
-      return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
+      const matchesDate = d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
+      if (!matchesDate) return false;
+      // Only include entries logged at the outlet this till is currently set to.
+      // Entries from before outlet tracking existed (outletId == null and no
+      // outlet name either) are shown everywhere, same as untagged sales.
+      if (e.outletId == null && !e.outlet) return true;
+      if (e.outletId != null) return String(e.outletId) === String(currentOutletId);
+      return e.outlet === currentOutletName;
     });
   }
 
@@ -6682,7 +6696,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     return cashFloatLog;
   }
   async function saveCashFloatEntry(entry) {
-    const row = { amount: entry.amount, note: entry.note, date: entry.date, staff_id: entry.staff_id };
+    const row = { amount: entry.amount, note: entry.note, date: entry.date, staff_id: entry.staff_id, outlet_id: entry.outlet_id != null ? String(entry.outlet_id) : null, outlet: entry.outlet || null };
     if (!db) { queueSyncOp('cash_float', 'insert', row); return null; }
     const { data, error } = await db.from('cash_float').insert(row).select();
     if (error) {
@@ -6696,7 +6710,14 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     return cashFloatLog.filter(e => {
       if (!e.date) return false;
       const d = new Date(e.date);
-      return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
+      const matchesDate = d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
+      if (!matchesDate) return false;
+      // Only include float entries logged at the outlet this till is currently set to.
+      // Genuinely untagged old entries (no outlet_id and no outlet name) are shown
+      // everywhere rather than silently hidden from every report.
+      if (e.outlet_id == null && !e.outlet) return true;
+      if (e.outlet_id != null) return String(e.outlet_id) === String(currentOutletId);
+      return e.outlet === currentOutletName;
     });
   }
 
@@ -6747,7 +6768,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       amount: amt,
       note: note || null,
       date: new Date().toISOString(),
-      staff_id: currentStaffId || null
+      staff_id: currentStaffId || null,
+      outlet_id: currentOutletId,
+      outlet: currentOutletName
     };
     const saved = await saveCashFloatEntry(entry);
     cashFloatLog.unshift(saved || entry);
@@ -6770,7 +6793,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       wastageLog = loadLocalMirror(LOCAL_MIRROR_KEYS.wastage);
       return wastageLog;
     }
-    wastageLog = (data || []).map(e => ({...e, itemName: e.item_name, staffName: e.staff_name, date: e.date}));
+    wastageLog = (data || []).map(e => ({...e, itemName: e.item_name, staffName: e.staff_name, outletId: e.outlet_id, date: e.date}));
     saveLocalMirror(LOCAL_MIRROR_KEYS.wastage, wastageLog);
     return wastageLog;
   }
@@ -6778,7 +6801,8 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const row = {
       id: String(entry.id), item_name: entry.itemName,
       qty: entry.qty, reason: entry.reason, note: entry.note,
-      date: entry.date, cost: entry.cost, staff_name: entry.staffName || null
+      date: entry.date, cost: entry.cost, staff_name: entry.staffName || null,
+      outlet_id: entry.outletId != null ? String(entry.outletId) : null, outlet: entry.outlet || null
     };
     saveLocalMirror(LOCAL_MIRROR_KEYS.wastage, wastageLog);
     if (!db) { queueSyncOp('wastage_log', 'upsert', row); return; }
@@ -6959,7 +6983,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const note = document.getElementById('wastageNote').value.trim();
     const newEntries = entries.map(([name, qty]) => {
       const p = getAllProducts().find(x => x.name === name);
-      return { id: String(Date.now() + Math.random()), itemName: name, qty, reason: wastageSelectedReason, note, date: now.toISOString(), cost: p ? p.price * qty : 0, staffName: currentStaffName || currentStaffId || null };
+      return { id: String(Date.now() + Math.random()), itemName: name, qty, reason: wastageSelectedReason, note, date: now.toISOString(), cost: p ? p.price * qty : 0, staffName: currentStaffName || currentStaffId || null, outletId: currentOutletId, outlet: currentOutletName };
     });
     for (const entry of newEntries) {
       wastageLog.push(entry);
