@@ -6164,7 +6164,47 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   loadSalesLog();
   let rptMonthOffset = 0; // 0 = current month
   let boMonthOffset = 0; // same as above, but for the Back Office Overview tab's own Month view
-  let rptSalesTarget = 15000;
+  const DEFAULT_SALES_TARGET = 15000; // used only when an outlet has no target saved yet (e.g. offline, or before migration)
+
+  // Sales targets are stored per-outlet (outlets.sales_target). 'All Outlets' sums
+  // every outlet's individual target, since that's what a combined monthly total
+  // is being measured against.
+  function getSalesTargetForOutletId(outletId) {
+    const outlet = outlets.find(o => String(o.id) === String(outletId));
+    const val = outlet ? parseFloat(outlet.sales_target) : NaN;
+    return !isNaN(val) && val > 0 ? val : DEFAULT_SALES_TARGET;
+  }
+
+  function getSalesTargetForAllOutlets() {
+    if (!outlets.length) return DEFAULT_SALES_TARGET;
+    return outlets.reduce((sum, o) => {
+      const val = parseFloat(o.sales_target);
+      return sum + (!isNaN(val) && val > 0 ? val : DEFAULT_SALES_TARGET);
+    }, 0);
+  }
+
+  // Used by the original standalone Reports modal, which is always tied to the
+  // till's own active outlet (currentOutletId) — there's no 'All Outlets' concept there.
+  function getCurrentOutletSalesTarget() {
+    return getSalesTargetForOutletId(currentOutletId);
+  }
+
+  // Used by the Back Office Month to Date tab, which respects the outlet filter
+  // dropdown — a specific outlet, or the combined total across all of them.
+  function getPayOutletSalesTarget() {
+    if (payOutletFilter === 'All') return getSalesTargetForAllOutlets();
+    const targetOutlet = outlets.find(o => o.name === payOutletFilter);
+    return targetOutlet ? getSalesTargetForOutletId(targetOutlet.id) : DEFAULT_SALES_TARGET;
+  }
+
+  async function saveOutletSalesTarget(outletId, value) {
+    const outlet = outlets.find(o => String(o.id) === String(outletId));
+    if (outlet) outlet.sales_target = value;
+    if (!db) { showToast('No database connection — target not saved'); return; }
+    const { error } = await db.from('outlets').update({ sales_target: value }).eq('id', outletId);
+    if (error) { showToast('Failed to save target: ' + error.message); console.error(error); }
+  }
+
   let rptEodViewDate = null; // null = today; otherwise a Date object for the day being viewed
   let boEodViewDate = null; // same as above, but for the Back Office Overview tab's own EOD view
 
@@ -6748,12 +6788,13 @@ function renderBoMonth() {
     const monthOrders = monthTxs.length;
 
     // Target stats
+    const target = getPayOutletSalesTarget();
     const dayOfMonth = isCurrentMonth ? now.getDate() : daysInMonth;
     const daysLeft = isCurrentMonth ? daysInMonth - dayOfMonth : 0;
-    const pct = Math.min(100, monthTotal / rptSalesTarget * 100);
-    const dailyTarget = (rptSalesTarget / daysInMonth).toFixed(0);
+    const pct = Math.min(100, monthTotal / target * 100);
+    const dailyTarget = (target / daysInMonth).toFixed(0);
     const projected = isCurrentMonth && dayOfMonth > 0 ? (monthTotal / dayOfMonth * daysInMonth) : monthTotal;
-    const needPerDay = isCurrentMonth && daysLeft > 0 ? Math.max(0, (rptSalesTarget - monthTotal) / daysLeft) : 0;
+    const needPerDay = isCurrentMonth && daysLeft > 0 ? Math.max(0, (target - monthTotal) / daysLeft) : 0;
     const avgDay = dayOfMonth > 0 ? monthTotal / dayOfMonth : 0;
     const avgOrder = monthOrders > 0 ? monthTotal / monthOrders : 0;
 
@@ -6765,7 +6806,7 @@ function renderBoMonth() {
     document.getElementById('boTargetPct').textContent = pct.toFixed(1) + '% of target';
     document.getElementById('boTargetCollected').textContent = '$' + monthTotal.toFixed(2) + ' collected';
     document.getElementById('boTargetFill').style.width = pct + '%';
-    document.getElementById('boTargetVal').textContent = '$' + rptSalesTarget.toLocaleString();
+    document.getElementById('boTargetVal').textContent = '$' + target.toLocaleString();
     document.getElementById('boDailyTarget').textContent = '$' + dailyTarget;
     document.getElementById('boProjected').textContent = '$' + projected.toFixed(0);
     document.getElementById('boNeedPerDay').textContent = '$' + needPerDay.toFixed(0);
@@ -6778,7 +6819,7 @@ function renderBoMonth() {
     const alertEl = document.getElementById('boTargetAlert');
     if (isCurrentMonth && daysLeft > 0 && needPerDay > 0) {
       alertEl.style.display = 'flex';
-      alertEl.querySelector('span').textContent = `Need $${needPerDay.toFixed(0)}/day for the remaining ${daysLeft} days to hit the $${rptSalesTarget.toLocaleString()} target.`;
+      alertEl.querySelector('span').textContent = `Need $${needPerDay.toFixed(0)}/day for the remaining ${daysLeft} days to hit the $${target.toLocaleString()} target.`;
     } else {
       alertEl.style.display = 'none';
     }
@@ -6967,12 +7008,13 @@ function exportBoMonthToExcel() {
     const monthOrders = monthTxs.length;
 
     // Target stats
+    const target = getCurrentOutletSalesTarget();
     const dayOfMonth = isCurrentMonth ? now.getDate() : daysInMonth;
     const daysLeft = isCurrentMonth ? daysInMonth - dayOfMonth : 0;
-    const pct = Math.min(100, monthTotal / rptSalesTarget * 100);
-    const dailyTarget = (rptSalesTarget / daysInMonth).toFixed(0);
+    const pct = Math.min(100, monthTotal / target * 100);
+    const dailyTarget = (target / daysInMonth).toFixed(0);
     const projected = isCurrentMonth && dayOfMonth > 0 ? (monthTotal / dayOfMonth * daysInMonth) : monthTotal;
-    const needPerDay = isCurrentMonth && daysLeft > 0 ? Math.max(0, (rptSalesTarget - monthTotal) / daysLeft) : 0;
+    const needPerDay = isCurrentMonth && daysLeft > 0 ? Math.max(0, (target - monthTotal) / daysLeft) : 0;
     const avgDay = dayOfMonth > 0 ? monthTotal / dayOfMonth : 0;
     const avgOrder = monthOrders > 0 ? monthTotal / monthOrders : 0;
 
@@ -6984,7 +7026,7 @@ function exportBoMonthToExcel() {
     document.getElementById('rptTargetPct').textContent = pct.toFixed(1) + '% of target';
     document.getElementById('rptTargetCollected').textContent = '$' + monthTotal.toFixed(2) + ' collected';
     document.getElementById('rptTargetFill').style.width = pct + '%';
-    document.getElementById('rptTargetVal').textContent = '$' + rptSalesTarget.toLocaleString();
+    document.getElementById('rptTargetVal').textContent = '$' + target.toLocaleString();
     document.getElementById('rptDailyTarget').textContent = '$' + dailyTarget;
     document.getElementById('rptProjected').textContent = '$' + projected.toFixed(0);
     document.getElementById('rptNeedPerDay').textContent = '$' + needPerDay.toFixed(0);
@@ -6997,7 +7039,7 @@ function exportBoMonthToExcel() {
     const alertEl = document.getElementById('rptTargetAlert');
     if (isCurrentMonth && daysLeft > 0 && needPerDay > 0) {
       alertEl.style.display = 'flex';
-      alertEl.querySelector('span').textContent = `Need $${needPerDay.toFixed(0)}/day for the remaining ${daysLeft} days to hit the $${rptSalesTarget.toLocaleString()} target.`;
+      alertEl.querySelector('span').textContent = `Need $${needPerDay.toFixed(0)}/day for the remaining ${daysLeft} days to hit the $${target.toLocaleString()} target.`;
     } else {
       alertEl.style.display = 'none';
     }
@@ -7047,19 +7089,28 @@ function exportBoMonthToExcel() {
     renderBoMonth();
   }
 
-  function rptEditTarget() {
-    const val = prompt('Set monthly sales target ($):', rptSalesTarget);
-    if (val && !isNaN(parseFloat(val))) {
-      rptSalesTarget = parseFloat(val);
+  async function rptEditTarget() {
+    if (!currentOutletId) return;
+    const current = getCurrentOutletSalesTarget();
+    const val = prompt(`Set monthly sales target for ${currentOutletName} ($):`, current);
+    if (val && !isNaN(parseFloat(val)) && parseFloat(val) > 0) {
+      await saveOutletSalesTarget(currentOutletId, parseFloat(val));
       renderRptMonth();
       renderBoMonth();
     }
   }
 
-  function boEditTarget() {
-    const val = prompt('Set monthly sales target ($):', rptSalesTarget);
-    if (val && !isNaN(parseFloat(val))) {
-      rptSalesTarget = parseFloat(val);
+  async function boEditTarget() {
+    if (payOutletFilter === 'All') {
+      showToast('Select a specific outlet to set its target');
+      return;
+    }
+    const targetOutlet = outlets.find(o => o.name === payOutletFilter);
+    if (!targetOutlet) return;
+    const current = getSalesTargetForOutletId(targetOutlet.id);
+    const val = prompt(`Set monthly sales target for ${targetOutlet.name} ($):`, current);
+    if (val && !isNaN(parseFloat(val)) && parseFloat(val) > 0) {
+      await saveOutletSalesTarget(targetOutlet.id, parseFloat(val));
       renderRptMonth();
       renderBoMonth();
     }
