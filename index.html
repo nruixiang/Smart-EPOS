@@ -6171,18 +6171,21 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     });
   }
 
+  // Shared outlet-matching rule used by every report/export that filters by outlet:
+  // genuinely untagged old records (no id and no name) show everywhere; records with
+  // an outlet_id match strictly by id; older records with only an outlet name match by name.
+  function matchesCurrentOutlet(recordOutletId, recordOutletName) {
+    if (recordOutletId == null && !recordOutletName) return true;
+    if (recordOutletId != null) return String(recordOutletId) === String(currentOutletId);
+    return recordOutletName === currentOutletName;
+  }
+
   function salesForDate(date) {
     const key = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
     return salesLog.filter(t => {
       const d = t.date;
       const matchesDate = !t.voided && !t.refund && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === key;
-      if (!matchesDate) return false;
-      // Only include sales from the outlet this till is currently set to.
-      // Genuinely untagged old transactions (no outlet_id and no outlet name)
-      // are shown everywhere rather than silently hidden from every report.
-      if (t.outlet_id == null && !t.outlet) return true;
-      if (t.outlet_id != null) return String(t.outlet_id) === String(currentOutletId);
-      return t.outlet === currentOutletName;
+      return matchesDate && matchesCurrentOutlet(t.outlet_id, t.outlet);
     });
   }
 
@@ -6190,13 +6193,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     return wastageLog.filter(e => {
       const d = new Date(e.date);
       const matchesDate = d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
-      if (!matchesDate) return false;
-      // Only include entries logged at the outlet this till is currently set to.
-      // Entries from before outlet tracking existed (outletId == null and no
-      // outlet name either) are shown everywhere, same as untagged sales.
-      if (e.outletId == null && !e.outlet) return true;
-      if (e.outletId != null) return String(e.outletId) === String(currentOutletId);
-      return e.outlet === currentOutletName;
+      return matchesDate && matchesCurrentOutlet(e.outletId, e.outlet);
     });
   }
 
@@ -6394,7 +6391,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const topItemRows = [];
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const dayTxs = salesLog.filter(t => !t.voided && t.date.getFullYear() === yr && t.date.getMonth() === mo && t.date.getDate() === day);
+      const dayTxs = salesLog.filter(t => !t.voided && t.date.getFullYear() === yr && t.date.getMonth() === mo && t.date.getDate() === day && matchesCurrentOutlet(t.outlet_id, t.outlet));
       if (dayTxs.length === 0) continue;
 
       const gross = dayTxs.reduce((a,t) => a + t.gross, 0);
@@ -6415,7 +6412,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
       const dayWastage = wastageLog.filter(e => {
         const d = new Date(e.date);
-        return d.getFullYear() === yr && d.getMonth() === mo && d.getDate() === day;
+        return d.getFullYear() === yr && d.getMonth() === mo && d.getDate() === day && matchesCurrentOutlet(e.outletId, e.outlet);
       });
       const wastageCost = dayWastage.reduce((a,e) => a + (e.cost || 0), 0);
 
@@ -6619,7 +6616,8 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const log = wastageLog;
     const todayEntries = log.filter(e => {
       const d = new Date(e.date);
-      return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+      const matchesDate = d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+      return matchesDate && matchesCurrentOutlet(e.outletId, e.outlet);
     });
     document.getElementById('rptWastageCount').textContent = todayEntries.length;
     // Top reason
@@ -6711,13 +6709,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       if (!e.date) return false;
       const d = new Date(e.date);
       const matchesDate = d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
-      if (!matchesDate) return false;
-      // Only include float entries logged at the outlet this till is currently set to.
-      // Genuinely untagged old entries (no outlet_id and no outlet name) are shown
-      // everywhere rather than silently hidden from every report.
-      if (e.outlet_id == null && !e.outlet) return true;
-      if (e.outlet_id != null) return String(e.outlet_id) === String(currentOutletId);
-      return e.outlet === currentOutletName;
+      return matchesDate && matchesCurrentOutlet(e.outlet_id, e.outlet);
     });
   }
 
@@ -6818,7 +6810,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   function getAllProducts() {
     const all = [];
-    Object.values(PRODUCTS).forEach(cat => cat.All.forEach(p => all.push(p)));
+    Object.values(PRODUCTS).forEach(cat => cat.All.forEach(p => {
+      if (Array.isArray(p.outlet_ids) && p.outlet_ids.includes(String(currentOutletId))) all.push(p);
+    }));
     return all;
   }
 
