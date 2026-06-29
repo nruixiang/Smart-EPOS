@@ -1034,9 +1034,10 @@
     .pay-dash-topbar-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
     .pay-outlet-select { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 13px; font-weight: 500; font-family: var(--font); cursor: pointer; outline: none; margin-left: 14px; }
     .pay-outlet-select:focus { border-color: #2563eb; }
-    .pay-topbar-link-tabs { display: flex; gap: 8px; margin-left: auto; }
-    .pay-topbar-link-tab { display: flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 12.5px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: all 0.15s; }
-    .pay-topbar-link-tab:hover { border-color: var(--border-hover); }
+    .pay-topbar-tabs { display: flex; gap: 4px; height: 100%; }
+    .pay-topbar-tab { display: flex; align-items: center; padding: 0 4px; height: 100%; font-size: 14px; font-weight: 600; color: var(--text-tertiary); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-family: var(--font); transition: color 0.15s; margin-right: 18px; }
+    .pay-topbar-tab:hover { color: var(--text-secondary); }
+    .pay-topbar-tab.active { color: var(--text-primary); border-bottom-color: #2563eb; }
     .pay-dash-body { flex: 1; overflow-y: scroll; padding: 28px; display: flex; flex-direction: column; gap: 24px; min-height: 0; height: 0; }
     .biz-section { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 18px; }
     .biz-section-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
@@ -5857,9 +5858,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   function openPayments() {
     payOutletFilter = 'All';
-    renderPayDashboard();
-    const linkTabs = document.getElementById('payTopbarLinkTabs');
-    if (linkTabs) linkTabs.style.display = 'flex';
+    switchPayTab('overview');
     document.getElementById('payDashOverlay').classList.add('show');
   }
 
@@ -5868,18 +5867,28 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function switchPayTab(tab) {
-    const labels = { overview: 'Overview', addproduct: 'Products', discounts: 'Discounts', members: 'Members', transactions: 'Transactions', reports: 'Reports', business: 'Business Information' };
-    ['overview','addproduct','discounts','members','transactions','reports','business'].forEach(t => {
+    const labels = { overview: 'Overview', eod: 'End of Day', month: 'Month to Date', addproduct: 'Products', discounts: 'Discounts', members: 'Members', transactions: 'Transactions', reports: 'Reports', business: 'Business Information' };
+    const isOverviewGroup = ['overview', 'eod', 'month'].includes(tab);
+    ['overview','eod','month','addproduct','discounts','members','transactions','reports','business'].forEach(t => {
       const navItem = document.getElementById('payNavItem_' + t);
       if (navItem) navItem.classList.toggle('active', t === tab);
       const pane = document.getElementById('payPane_' + t);
       if (pane) pane.style.display = t === tab ? 'flex' : 'none';
     });
+    ['overview', 'eod', 'month'].forEach(t => {
+      const tabBtn = document.getElementById('payTopbarTab_' + t);
+      if (tabBtn) tabBtn.classList.toggle('active', t === tab);
+    });
+    const topbarTabs = document.getElementById('payTopbarTabs');
     const topbar = document.getElementById('payTopbarTitle');
-    if (topbar) topbar.textContent = labels[tab] || tab;
-    const linkTabs = document.getElementById('payTopbarLinkTabs');
-    if (linkTabs) linkTabs.style.display = tab === 'overview' ? 'flex' : 'none';
+    if (topbarTabs) topbarTabs.style.display = isOverviewGroup ? 'flex' : 'none';
+    if (topbar) {
+      topbar.style.display = isOverviewGroup ? 'none' : 'block';
+      topbar.textContent = labels[tab] || tab;
+    }
     if (tab === 'overview') renderPayDashboard();
+    if (tab === 'eod') renderBoEod();
+    if (tab === 'month') renderBoMonth();
     if (tab === 'business') loadBusinessInfoPane();
     if (tab === 'addproduct') resetAddProductForm();
     if (tab === 'discounts') { resetDiscountForm(); renderDiscountList(); }
@@ -6150,8 +6159,10 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   let salesLog = [];
   loadSalesLog();
   let rptMonthOffset = 0; // 0 = current month
+  let boMonthOffset = 0; // same as above, but for the Back Office Overview tab's own Month view
   let rptSalesTarget = 15000;
   let rptEodViewDate = null; // null = today; otherwise a Date object for the day being viewed
+  let boEodViewDate = null; // same as above, but for the Back Office Overview tab's own EOD view
 
   function openOrdersModal() {
     document.getElementById('ordersOverlay').classList.add('show');
@@ -6310,6 +6321,11 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     switchRptTab('eod', true);
   }
 
+  function openBoEodForDate(yr, mo, day) {
+    boEodViewDate = new Date(yr, mo, day);
+    switchPayTab('eod');
+  }
+
   function rptEodBackToToday() {
     rptEodViewDate = null;
     renderRptEod();
@@ -6410,6 +6426,163 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     document.getElementById('rptDtWastageRow').style.display = wastageEntries.length > 0 ? '' : 'none';
     document.getElementById('rptDtWastage').textContent = wastageEntries.length + ' entries';
   }
+function renderBoEod() {
+    const viewDate = boEodViewDate || new Date();
+    const txs = salesForDate(viewDate);
+    const gross = txs.reduce((a, t) => a + t.gross, 0);
+    const disc  = txs.reduce((a, t) => a + t.discount, 0);
+    const tax   = txs.reduce((a, t) => a + t.tax, 0);
+    const net   = txs.reduce((a, t) => a + t.total, 0);
+    const customers = txs.filter(t => t.customer).length;
+    const avgReceipt = txs.length ? net / txs.length : 0;
+    const profit = net * 0.65;
+
+    const wastageEntries = wastageForDate(viewDate);
+    const wastageCost = wastageEntries.reduce((a, e) => a + (e.cost || 0), 0);
+
+    // Date label / back-to-today control
+    const isToday = !boEodViewDate || isSameDay(boEodViewDate, new Date());
+    const dateLabelEl = document.getElementById('boEodDateLabel');
+    const backBtnEl = document.getElementById('boEodBackBtn');
+    if (dateLabelEl) {
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      dateLabelEl.textContent = isToday ? 'Today' : (monthNames[viewDate.getMonth()] + ' ' + viewDate.getDate() + ', ' + viewDate.getFullYear());
+    }
+    if (backBtnEl) backBtnEl.style.display = isToday ? 'none' : '';
+
+    document.getElementById('boEodGross').textContent  = '$' + gross.toFixed(2);
+    document.getElementById('boEodNet').textContent    = '$' + net.toFixed(2);
+    document.getElementById('boEodCust').textContent   = customers;
+    document.getElementById('boEodAvg').textContent    = 'Avg per receipt: $' + avgReceipt.toFixed(2);
+    document.getElementById('boEodTx').textContent     = txs.length;
+    document.getElementById('boBdGross').textContent   = '$' + gross.toFixed(2);
+    document.getElementById('boBdDisc').textContent    = '-$' + disc.toFixed(2);
+    document.getElementById('boBdWastage').textContent = '-$' + wastageCost.toFixed(2);
+    document.getElementById('boBdWastageRow').style.display = wastageCost > 0 ? '' : 'none';
+    document.getElementById('boBdTax').textContent     = '$' + tax.toFixed(2);
+    document.getElementById('boBdTotal').textContent   = '$' + net.toFixed(2);
+    document.getElementById('boBdProfit').textContent  = '$' + profit.toFixed(2);
+
+    // Cash float (excluded from profit calc — only affects cash drawer tally)
+    const cashSalesAmt = txs.filter(t => t.method === 'Cash').reduce((a,t) => a + t.total, 0);
+    const floatEntries = cashFloatForDate(viewDate).sort((a,b) => new Date(b.date) - new Date(a.date));
+    const floatTotal = floatEntries.reduce((a,e) => a + (parseFloat(e.amount) || 0), 0);
+    const expectedDrawer = cashSalesAmt + floatTotal;
+    document.getElementById('boCfCashSales').textContent = '$' + cashSalesAmt.toFixed(2);
+    document.getElementById('boCfFloatTotal').textContent = '$' + floatTotal.toFixed(2);
+    document.getElementById('boCfExpected').textContent = '$' + expectedDrawer.toFixed(2);
+    document.getElementById('boDtCashFloat').textContent = '$' + floatTotal.toFixed(2);
+    document.getElementById('boDtCashDrawer').textContent = '$' + expectedDrawer.toFixed(2);
+
+    const floatBtn = document.getElementById('boCashFloatBtn');
+    if (floatBtn) floatBtn.style.display = isToday ? '' : 'none';
+
+    const logEl = document.getElementById('boCashFloatLog');
+    if (logEl) {
+      if (!floatEntries.length) {
+        logEl.innerHTML = '';
+      } else {
+        logEl.innerHTML = floatEntries.map(e => {
+          const t = new Date(e.date);
+          const timeStr = isNaN(t) ? '' : t.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+          const noteStr = e.note ? e.note : (e.staff_id ? ('Staff ' + e.staff_id) : 'Cash float');
+          return '<div class="rpt-cashfloat-log-entry">' +
+            '<div class="rpt-cashfloat-log-icon"><i class="ti ti-cash-banknote"></i></div>' +
+            '<div><div style="font-size:13px;font-weight:600;color:var(--text-primary);">' + noteStr + '</div>' +
+            '<div class="rpt-cashfloat-log-meta">' + timeStr + (e.staff_id ? (' \u00B7 Staff ' + e.staff_id) : '') + '</div></div>' +
+            '<div class="rpt-cashfloat-log-amt">+$' + (parseFloat(e.amount)||0).toFixed(2) + '</div>' +
+            '</div>';
+        }).join('');
+      }
+    }
+
+    renderBoEodDetail(txs, wastageEntries);
+  }
+
+function boEodBackToToday() {
+    boEodViewDate = null;
+    renderBoEod();
+  }
+
+function toggleBoEodDetail() {
+    const panel = document.getElementById('boEodDetail');
+    const btn = document.getElementById('boEodDetailBtn');
+    const label = document.getElementById('boEodDetailBtnLabel');
+    const showing = panel.style.display !== 'none';
+    panel.style.display = showing ? 'none' : 'block';
+    btn.classList.toggle('active', !showing);
+    label.textContent = showing ? 'View Detailed Breakdown' : 'Hide Detailed Breakdown';
+  }
+
+function renderBoEodDetail(txs, wastageEntries) {
+    // Payment methods
+    const cash = txs.filter(t => getPaymentCategory(t.method) === 'Cash').reduce((a,t) => a + t.total, 0);
+    const card = txs.filter(t => getPaymentCategory(t.method) === 'Card').reduce((a,t) => a + t.total, 0);
+    const mobile = txs.filter(t => getPaymentCategory(t.method) === 'Mobile').reduce((a,t) => a + t.total, 0);
+    document.getElementById('boDtCash').textContent = '$' + cash.toFixed(2);
+    document.getElementById('boDtCard').textContent = '$' + card.toFixed(2);
+    document.getElementById('boDtMobile').textContent = '$' + mobile.toFixed(2);
+
+    // Sales analysis
+    const net = txs.reduce((a,t) => a + (t.gross - t.discount), 0);
+    const gst = txs.reduce((a,t) => a + t.tax, 0);
+    const totalSales = txs.reduce((a,t) => a + t.total, 0);
+    document.getElementById('boDtNet').textContent = '$' + net.toFixed(2);
+    document.getElementById('boDtGst').textContent = '$' + gst.toFixed(2);
+    document.getElementById('boDtTotalSales').textContent = '$' + totalSales.toFixed(2);
+
+    // Order stats
+    const allItems = txs.flatMap(t => t.items);
+    const itemsSold = allItems.reduce((a,i) => a + i.qty, 0);
+    const uniqueProducts = new Set(allItems.map(i => i.name)).size;
+    const avgItems = txs.length ? (itemsSold / txs.length) : 0;
+    const ordersWithCust = txs.filter(t => t.customer).length;
+    document.getElementById('boDtOrders').textContent = txs.length;
+    document.getElementById('boDtItemsSold').textContent = itemsSold;
+    document.getElementById('boDtUniqueProducts').textContent = uniqueProducts;
+    document.getElementById('boDtAvgItems').textContent = avgItems.toFixed(1);
+    document.getElementById('boDtOrdersWithCust').textContent = ordersWithCust;
+
+    // Category breakdown
+    const catMap = {};
+    allItems.forEach(i => {
+      const cat = getProductCategory(i.name);
+      if (!catMap[cat]) catMap[cat] = {sales: 0, qty: 0};
+      catMap[cat].sales += i.price * i.qty;
+      catMap[cat].qty += i.qty;
+    });
+    const catEntries = Object.entries(catMap).sort((a,b) => b[1].sales - a[1].sales);
+    const catTotalSales = catEntries.reduce((a,[,v]) => a + v.sales, 0);
+    const catTotalQty = catEntries.reduce((a,[,v]) => a + v.qty, 0);
+    document.getElementById('boDtCatBody').innerHTML = catEntries.length
+      ? catEntries.map(([cat,v]) => `<tr><td>${cat}</td><td>$${v.sales.toFixed(2)}</td><td>${v.qty}</td></tr>`).join('')
+      : `<tr><td colspan="3" style="text-align:center;color:var(--text-tertiary);">No sales yet</td></tr>`;
+    document.getElementById('boDtCatFoot').innerHTML = catEntries.length
+      ? `<tr><td>TOTAL</td><td>$${catTotalSales.toFixed(2)}</td><td>${catTotalQty}</td></tr>`
+      : '';
+
+    // Top selling items
+    const itemMap = {};
+    allItems.forEach(i => {
+      if (!itemMap[i.name]) itemMap[i.name] = {qty: 0, sales: 0};
+      itemMap[i.name].qty += i.qty;
+      itemMap[i.name].sales += i.price * i.qty;
+    });
+    const topItems = Object.entries(itemMap).sort((a,b) => b[1].sales - a[1].sales).slice(0, 5);
+    document.getElementById('boDtTopItems').innerHTML = topItems.length
+      ? topItems.map(([name,v]) => `<div class="rpt-top-item-row">
+          <div><div class="rpt-top-item-name">${name}</div><div class="rpt-top-item-meta">${v.qty} sold</div></div>
+          <div class="rpt-top-item-sales">$${v.sales.toFixed(2)}</div>
+        </div>`).join('')
+      : `<div class="rpt-empty" style="padding:12px 0;color:var(--text-tertiary);font-size:13px;text-align:center;">No items sold yet</div>`;
+
+    // Profit & wastage
+    const profit = totalSales * 0.65;
+    document.getElementById('boDtProfit').textContent = '$' + profit.toFixed(2);
+    document.getElementById('boDtWastageRow').style.display = wastageEntries.length > 0 ? '' : 'none';
+    document.getElementById('boDtWastage').textContent = wastageEntries.length + ' entries';
+  }
+
   function exportMonthToExcel() {
     const now = new Date();
     const viewDate = new Date(now.getFullYear(), now.getMonth() + rptMonthOffset, 1);
@@ -6528,6 +6701,207 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     showToast('Excel report downloaded');
   }
 
+function renderBoMonth() {
+    const now = new Date();
+    const viewDate = new Date(now.getFullYear(), now.getMonth() + boMonthOffset, 1);
+    const yr = viewDate.getFullYear(), mo = viewDate.getMonth();
+    const daysInMonth = new Date(yr, mo + 1, 0).getDate();
+    const isCurrentMonth = yr === now.getFullYear() && mo === now.getMonth();
+
+    // Month sales
+    const monthTxs = salesLog.filter(t => t.date.getFullYear() === yr && t.date.getMonth() === mo);
+    const monthTotal = monthTxs.reduce((a, t) => a + t.total, 0);
+    const monthOrders = monthTxs.length;
+
+    // Target stats
+    const dayOfMonth = isCurrentMonth ? now.getDate() : daysInMonth;
+    const daysLeft = isCurrentMonth ? daysInMonth - dayOfMonth : 0;
+    const pct = Math.min(100, monthTotal / rptSalesTarget * 100);
+    const dailyTarget = (rptSalesTarget / daysInMonth).toFixed(0);
+    const projected = isCurrentMonth && dayOfMonth > 0 ? (monthTotal / dayOfMonth * daysInMonth) : monthTotal;
+    const needPerDay = isCurrentMonth && daysLeft > 0 ? Math.max(0, (rptSalesTarget - monthTotal) / daysLeft) : 0;
+    const avgDay = dayOfMonth > 0 ? monthTotal / dayOfMonth : 0;
+    const avgOrder = monthOrders > 0 ? monthTotal / monthOrders : 0;
+
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('boMonthTitle').textContent = monthNames[mo] + ' ' + yr;
+    document.getElementById('boMonthSub').textContent = isCurrentMonth
+      ? `Day ${dayOfMonth} of ${daysInMonth} · ${daysLeft} days left`
+      : `${daysInMonth} days`;
+    document.getElementById('boTargetPct').textContent = pct.toFixed(1) + '% of target';
+    document.getElementById('boTargetCollected').textContent = '$' + monthTotal.toFixed(2) + ' collected';
+    document.getElementById('boTargetFill').style.width = pct + '%';
+    document.getElementById('boTargetVal').textContent = '$' + rptSalesTarget.toLocaleString();
+    document.getElementById('boDailyTarget').textContent = '$' + dailyTarget;
+    document.getElementById('boProjected').textContent = '$' + projected.toFixed(0);
+    document.getElementById('boNeedPerDay').textContent = '$' + needPerDay.toFixed(0);
+    document.getElementById('boMonthBannerTotal').textContent = '$' + monthTotal.toFixed(2);
+    document.getElementById('boMonthBannerLabel').textContent = monthNames[mo].toUpperCase() + ' ' + yr + ' — TOTAL SALES';
+    document.getElementById('boMonthBannerOrders').textContent = monthOrders + ' orders';
+    document.getElementById('boMonthBannerAvgDay').textContent = '$' + avgDay.toFixed(2) + ' avg/day';
+    document.getElementById('boMonthBannerAvgOrder').textContent = '$' + avgOrder.toFixed(2) + ' avg/order';
+
+    const alertEl = document.getElementById('boTargetAlert');
+    if (isCurrentMonth && daysLeft > 0 && needPerDay > 0) {
+      alertEl.style.display = 'flex';
+      alertEl.querySelector('span').textContent = `Need $${needPerDay.toFixed(0)}/day for the remaining ${daysLeft} days to hit the $${rptSalesTarget.toLocaleString()} target.`;
+    } else {
+      alertEl.style.display = 'none';
+    }
+
+    // Build day sales map
+    const dayMap = {};
+    monthTxs.forEach(t => {
+      const d = t.date.getDate();
+      if (!dayMap[d]) dayMap[d] = { total: 0, orders: 0 };
+      dayMap[d].total += t.total;
+      dayMap[d].orders++;
+    });
+
+    // Calendar
+    const firstDow = new Date(yr, mo, 1).getDay();
+    const today = now.getDate();
+    let cal = '<div class="rpt-cal-grid">';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => cal += `<div class="rpt-cal-dow">${d}</div>`);
+    for (let i = 0; i < firstDow; i++) cal += '<div></div>';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const isToday = isCurrentMonth && d === today;
+      const data = dayMap[d];
+      const isFuture = new Date(yr, mo, d) > new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const clickable = !isFuture;
+      cal += `<div class="rpt-cal-day${data ? ' has-sales' : ''}${isToday ? ' today' : ''}${clickable ? ' clickable' : ''}"${clickable ? ` onclick="openBoEodForDate(${yr},${mo},${d})"` : ''}>
+        <div class="rpt-cal-day-num">${d}${isToday ? ' ·' : ''}</div>
+        ${data ? `<div class="rpt-cal-day-sal">$${data.total.toFixed(0)}</div><div class="rpt-cal-day-ord">${data.orders} order${data.orders>1?'s':''}</div>` : ''}
+      </div>`;
+    }
+    cal += '</div>';
+    cal += `<div class="rpt-cal-legend">
+      <div class="rpt-cal-dot" style="background:#d1fae5;border:1px solid #6ee7b7;"></div> Low
+      <div class="rpt-cal-dot" style="background:#6ee7b7;"></div>
+      <div class="rpt-cal-dot" style="background:#16a34a;"></div>
+      <div class="rpt-cal-dot" style="background:#065f46;"></div> High
+    </div>`;
+    document.getElementById('boCalendar').innerHTML = cal;
+  }
+
+function exportBoMonthToExcel() {
+    const now = new Date();
+    const viewDate = new Date(now.getFullYear(), now.getMonth() + boMonthOffset, 1);
+    const yr = viewDate.getFullYear(), mo = viewDate.getMonth();
+    const daysInMonth = new Date(yr, mo + 1, 0).getDate();
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    const dailySummary = [];
+    const categoryRows = [];
+    const topItemRows = [];
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayTxs = salesLog.filter(t => !t.voided && t.date.getFullYear() === yr && t.date.getMonth() === mo && t.date.getDate() === day && matchesCurrentOutlet(t.outlet_id, t.outlet));
+      if (dayTxs.length === 0) continue;
+
+      const gross = dayTxs.reduce((a,t) => a + t.gross, 0);
+      const disc  = dayTxs.reduce((a,t) => a + t.discount, 0);
+      const tax   = dayTxs.reduce((a,t) => a + t.tax, 0);
+      const net   = dayTxs.reduce((a,t) => a + t.total, 0);
+      const customers = dayTxs.filter(t => t.customer).length;
+      const profit = net * 0.65;
+
+      const cash = dayTxs.filter(t => getPaymentCategory(t.method) === 'Cash').reduce((a,t) => a + t.total, 0);
+      const card = dayTxs.filter(t => getPaymentCategory(t.method) === 'Card').reduce((a,t) => a + t.total, 0);
+      const mobile = dayTxs.filter(t => getPaymentCategory(t.method) === 'Mobile').reduce((a,t) => a + t.total, 0);
+
+      const allItems = dayTxs.flatMap(t => t.items);
+      const itemsSold = allItems.reduce((a,i) => a + i.qty, 0);
+      const uniqueProducts = new Set(allItems.map(i => i.name)).size;
+      const avgItems = dayTxs.length ? (itemsSold / dayTxs.length) : 0;
+
+      const dayWastage = wastageLog.filter(e => {
+        const d = new Date(e.date);
+        return d.getFullYear() === yr && d.getMonth() === mo && d.getDate() === day && matchesCurrentOutlet(e.outletId, e.outlet);
+      });
+      const wastageCost = dayWastage.reduce((a,e) => a + (e.cost || 0), 0);
+
+      const dateLabel = `${String(day).padStart(2,'0')}/${String(mo+1).padStart(2,'0')}/${yr}`;
+
+      dailySummary.push({
+        'Date': dateLabel,
+        'Gross Sales': gross,
+        'Discounts': disc,
+        'Wastage (est. cost)': wastageCost,
+        'GST Collected': tax,
+        'Total Collected': net,
+        'Est. Gross Profit (65%)': profit,
+        'Cash': cash,
+        'Credit Card': card,
+        'Mobile / PayNow': mobile,
+        'No. of Orders': dayTxs.length,
+        'No. of Customers': customers,
+        'Items Sold': itemsSold,
+        'Unique Products Sold': uniqueProducts,
+        'Avg Items per Order': Number(avgItems.toFixed(2)),
+        'Wastage Entries': dayWastage.length
+      });
+
+      // Category breakdown
+      const catMap = {};
+      allItems.forEach(i => {
+        const cat = getProductCategory(i.name);
+        if (!catMap[cat]) catMap[cat] = {sales: 0, qty: 0};
+        catMap[cat].sales += i.price * i.qty;
+        catMap[cat].qty += i.qty;
+      });
+      Object.entries(catMap).forEach(([cat, v]) => {
+        categoryRows.push({ 'Date': dateLabel, 'Category': cat, 'Sales ($)': Number(v.sales.toFixed(2)), 'Qty Sold': v.qty });
+      });
+
+      // Top items
+      const itemMap = {};
+      allItems.forEach(i => {
+        if (!itemMap[i.name]) itemMap[i.name] = {qty: 0, sales: 0};
+        itemMap[i.name].qty += i.qty;
+        itemMap[i.name].sales += i.price * i.qty;
+      });
+      Object.entries(itemMap)
+        .sort((a,b) => b[1].sales - a[1].sales)
+        .forEach(([name, v]) => {
+          topItemRows.push({ 'Date': dateLabel, 'Item': name, 'Qty Sold': v.qty, 'Sales ($)': Number(v.sales.toFixed(2)) });
+        });
+    }
+
+    if (dailySummary.length === 0) {
+      showToast('No sales data to export for this month');
+      return;
+    }
+
+    // Month totals row
+    const totals = { 'Date': 'TOTAL' };
+    ['Gross Sales','Discounts','Wastage (est. cost)','GST Collected','Total Collected','Est. Gross Profit (65%)','Cash','Credit Card','Mobile / PayNow','No. of Orders','No. of Customers','Items Sold','Wastage Entries'].forEach(key => {
+      totals[key] = dailySummary.reduce((a,r) => a + (r[key] || 0), 0);
+    });
+    totals['Unique Products Sold'] = '';
+    totals['Avg Items per Order'] = '';
+
+    const wb = XLSX.utils.book_new();
+
+    const wsDaily = XLSX.utils.json_to_sheet([...dailySummary, totals]);
+    wsDaily['!cols'] = [
+      {wch:12},{wch:12},{wch:11},{wch:14},{wch:13},{wch:14},{wch:18},
+      {wch:10},{wch:12},{wch:14},{wch:11},{wch:13},{wch:10},{wch:16},{wch:16},{wch:14}
+    ];
+    XLSX.utils.book_append_sheet(wb, wsDaily, 'Daily Summary');
+
+    const wsCat = XLSX.utils.json_to_sheet(categoryRows);
+    wsCat['!cols'] = [{wch:12},{wch:18},{wch:10},{wch:10}];
+    XLSX.utils.book_append_sheet(wb, wsCat, 'Category Breakdown');
+
+    const wsItems = XLSX.utils.json_to_sheet(topItemRows);
+    wsItems['!cols'] = [{wch:12},{wch:22},{wch:10},{wch:10}];
+    XLSX.utils.book_append_sheet(wb, wsItems, 'Item Breakdown');
+
+    XLSX.writeFile(wb, `Month_To_Date_Report_${monthNames[mo]}_${yr}.xlsx`); // same naming as the original export — intentional, same report
+    showToast('Excel report downloaded');
+  }
+
   function renderRptHourly() {
     const txs = todaySales();
     const hours = {};
@@ -6634,11 +7008,26 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     renderRptMonth();
   }
 
+  function boMonthNav(dir) {
+    boMonthOffset += dir;
+    renderBoMonth();
+  }
+
   function rptEditTarget() {
     const val = prompt('Set monthly sales target ($):', rptSalesTarget);
     if (val && !isNaN(parseFloat(val))) {
       rptSalesTarget = parseFloat(val);
       renderRptMonth();
+      renderBoMonth();
+    }
+  }
+
+  function boEditTarget() {
+    const val = prompt('Set monthly sales target ($):', rptSalesTarget);
+    if (val && !isNaN(parseFloat(val))) {
+      rptSalesTarget = parseFloat(val);
+      renderRptMonth();
+      renderBoMonth();
     }
   }
 
@@ -6802,6 +7191,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     showToast('Cash float of $' + amt.toFixed(2) + ' added');
     if (rptEodViewDate === null || isSameDay(rptEodViewDate, new Date())) {
       renderRptEod();
+      renderBoEod();
     }
   }
 
@@ -8224,14 +8614,15 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   <!-- Main Content -->
   <div class="pay-dash-main">
     <div class="pay-dash-topbar">
-      <span class="pay-dash-topbar-title" id="payTopbarTitle">Overview</span>
+      <div class="pay-topbar-tabs" id="payTopbarTabs">
+        <button class="pay-topbar-tab active" id="payTopbarTab_overview" onclick="switchPayTab('overview')">Overview</button>
+        <button class="pay-topbar-tab" id="payTopbarTab_eod" onclick="switchPayTab('eod')">End of Day</button>
+        <button class="pay-topbar-tab" id="payTopbarTab_month" onclick="switchPayTab('month')">Month to Date</button>
+      </div>
+      <span class="pay-dash-topbar-title" id="payTopbarTitle" style="display:none;">Overview</span>
       <select class="pay-outlet-select" id="payOutletSelect" onchange="onPayOutletChange(this.value)" style="display:none;">
         <option value="All">All Outlets</option>
       </select>
-      <div class="pay-topbar-link-tabs" id="payTopbarLinkTabs" style="display:none;">
-        <button class="pay-topbar-link-tab" onclick="openReports('eod')"><i class="ti ti-calendar-event"></i> End of Day</button>
-        <button class="pay-topbar-link-tab" onclick="openReports('month')"><i class="ti ti-calendar-stats"></i> Month to Date</button>
-      </div>
     </div>
 
     <!-- OVERVIEW PANE -->
@@ -8506,6 +8897,159 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
         <div class="biz-section-title">Purchase History</div>
         <div class="ap-list-card" id="mtabHistoryCard"></div>
       </div>
+    </div>
+
+    <!-- END OF DAY PANE (Back Office) -->
+<div class="rpt-body pay-dash-body" id="payPane_eod" style="display:none;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:-4px;">
+        <div style="font-size:13px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.06em;" id="boEodDateLabel">Today</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="rpt-detail-btn" id="boEodBackBtn" style="display:none;" onclick="boEodBackToToday()">
+            <i class="ti ti-arrow-back"></i> Back to Today
+          </button>
+          <button class="rpt-cashfloat-btn" id="boCashFloatBtn" onclick="openCashFloat()" style="width:auto; margin-bottom:0; padding:8px 14px; font-size:12.5px;">
+            <i class="ti ti-cash-banknote" style="font-size:15px;"></i> Add Cash Float
+          </button>
+        </div>
+      </div>
+      <div class="rpt-stat-grid">
+        <div class="rpt-stat-card">
+          <div class="rpt-stat-label">Gross Sales <i class="ti ti-currency-dollar"></i></div>
+          <div class="rpt-stat-val" id="boEodGross">$0.00</div>
+        </div>
+        <div class="rpt-stat-card">
+          <div class="rpt-stat-label">Net Sales <i class="ti ti-currency-dollar green"></i></div>
+          <div class="rpt-stat-val green" id="boEodNet">$0.00</div>
+        </div>
+        <div class="rpt-stat-card">
+          <div class="rpt-stat-label">Customers <i class="ti ti-users"></i></div>
+          <div class="rpt-stat-val" id="boEodCust">0</div>
+          <div class="rpt-stat-sub" id="boEodAvg">Avg per receipt: $0.00</div>
+        </div>
+        <div class="rpt-stat-card">
+          <div class="rpt-stat-label">Transactions <i class="ti ti-receipt"></i></div>
+          <div class="rpt-stat-val" id="boEodTx">0</div>
+        </div>
+      </div>
+      <div class="rpt-breakdown">
+        <div class="rpt-breakdown-header">
+          <div class="rpt-breakdown-title">Summary Breakdown</div>
+          <button class="rpt-detail-btn" onclick="toggleBoEodDetail()" id="boEodDetailBtn">
+            <i class="ti ti-list-details"></i> <span id="boEodDetailBtnLabel">View Detailed Breakdown</span>
+          </button>
+        </div>
+        <div class="rpt-breakdown-row"><span>Gross Sales</span><span id="boBdGross">$0.00</span></div>
+        <div class="rpt-breakdown-row red"><span>Discounts</span><span id="boBdDisc">-$0.00</span></div>
+        <div class="rpt-breakdown-row red" id="boBdWastageRow" style="display:none;"><span>Wastage (est. cost)</span><span id="boBdWastage">-$0.00</span></div>
+        <div class="rpt-breakdown-row"><span>Tax Collected</span><span id="boBdTax">$0.00</span></div>
+        <div class="rpt-breakdown-row strong"><span>Total Collected</span><span id="boBdTotal">$0.00</span></div>
+        <div class="rpt-breakdown-row green"><span>Estimated Gross Profit (65% margin)</span><span id="boBdProfit">$0.00</span></div>
+      </div>
+
+      <!-- CASH DRAWER TALLY -->
+      <div class="rpt-breakdown">
+        <div class="rpt-breakdown-header">
+          <div class="rpt-breakdown-title">Cash Drawer Tally</div>
+        </div>
+        <div class="rpt-breakdown-row"><span>Cash Sales</span><span id="boCfCashSales">$0.00</span></div>
+        <div class="rpt-breakdown-row" style="color:var(--blue);"><span>Cash Float Added</span><span id="boCfFloatTotal">$0.00</span></div>
+        <div class="rpt-breakdown-row strong"><span>Expected Cash in Drawer</span><span id="boCfExpected">$0.00</span></div>
+        <div id="boCashFloatLog" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;"></div>
+      </div>
+
+      <!-- DETAILED BREAKDOWN (toggled) -->
+      <div class="rpt-breakdown" id="boEodDetail" style="display:none;">
+        <div class="rpt-breakdown-title">Detailed Breakdown</div>
+
+        <div class="rpt-detail-section-label">Payment Methods</div>
+        <div class="rpt-breakdown-row"><span>Cash</span><span id="boDtCash">$0.00</span></div>
+        <div class="rpt-breakdown-row"><span>Credit Card</span><span id="boDtCard">$0.00</span></div>
+        <div class="rpt-breakdown-row"><span>Mobile / PayNow</span><span id="boDtMobile">$0.00</span></div>
+        <div class="rpt-breakdown-row" style="color:var(--blue);"><span>Cash Float Added</span><span id="boDtCashFloat">$0.00</span></div>
+        <div class="rpt-breakdown-row strong"><span>Expected Cash in Drawer</span><span id="boDtCashDrawer">$0.00</span></div>
+
+        <div class="rpt-detail-section-label">Sales Analysis</div>
+        <div class="rpt-breakdown-row"><span>Net Sales (excl. tax)</span><span id="boDtNet">$0.00</span></div>
+        <div class="rpt-breakdown-row"><span>GST Collected</span><span id="boDtGst">$0.00</span></div>
+        <div class="rpt-breakdown-row strong"><span>Total Sales (incl. tax)</span><span id="boDtTotalSales">$0.00</span></div>
+
+        <div class="rpt-detail-section-label">Order Stats</div>
+        <div class="rpt-breakdown-row"><span>No. of Sales Orders</span><span id="boDtOrders">0</span></div>
+        <div class="rpt-breakdown-row"><span>No. of Items Sold</span><span id="boDtItemsSold">0</span></div>
+        <div class="rpt-breakdown-row"><span>Unique Products Sold</span><span id="boDtUniqueProducts">0</span></div>
+        <div class="rpt-breakdown-row"><span>Avg. Items per Order</span><span id="boDtAvgItems">0</span></div>
+        <div class="rpt-breakdown-row"><span>Orders with Customer Attached</span><span id="boDtOrdersWithCust">0</span></div>
+
+        <div class="rpt-detail-section-label">Item Breakdown by Category</div>
+        <table class="rpt-cat-table">
+          <thead>
+            <tr><th>Category</th><th style="text-align:right;">Sales ($)</th><th style="text-align:right;">Qty Sold</th></tr>
+          </thead>
+          <tbody id="boDtCatBody"></tbody>
+          <tfoot id="boDtCatFoot"></tfoot>
+        </table>
+
+        <div class="rpt-detail-section-label">Top Selling Items</div>
+        <div id="boDtTopItems"></div>
+
+        <div class="rpt-breakdown-row green" style="margin-top:6px;"><span>Estimated Gross Profit (65% margin)</span><span id="boDtProfit">$0.00</span></div>
+        <div class="rpt-breakdown-row red" id="boDtWastageRow" style="display:none;"><span>Wastage entries logged today</span><span id="boDtWastage">0 entries</span></div>
+      </div>
+    </div>
+
+    <!-- MONTH TO DATE PANE (Back Office) -->
+<div class="rpt-body pay-dash-body" id="payPane_month" style="display:none;">
+      <div class="rpt-month-nav">
+        <button class="rpt-month-nav-btn" onclick="boMonthNav(-1)"><i class="ti ti-chevron-left"></i></button>
+        <div>
+          <div class="rpt-month-title" id="boMonthTitle">June 2026</div>
+          <div class="rpt-month-sub" id="boMonthSub"></div>
+        </div>
+        <button class="rpt-month-nav-btn" onclick="boMonthNav(1)"><i class="ti ti-chevron-right"></i></button>
+      </div>
+      <div class="rpt-target-card">
+        <div class="rpt-target-top">
+          <div class="rpt-target-label"><i class="ti ti-trending-up" style="font-size:16px;color:var(--green);"></i> Sales Target</div>
+          <div class="rpt-target-edit">
+            <div class="rpt-target-val" id="boTargetVal">$15,000</div>
+            <button class="rpt-target-edit-btn" onclick="boEditTarget()"><i class="ti ti-pencil"></i></button>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);" id="boTargetCollected">$0 collected</div>
+        <div class="rpt-target-progress"><div class="rpt-target-fill" id="boTargetFill" style="width:0%;"></div></div>
+        <div style="font-size:11px;color:var(--text-tertiary);text-align:right;" id="boTargetPct">0.0% of target</div>
+        <div class="rpt-target-stats">
+          <div class="rpt-target-stat">
+            <div class="rpt-target-stat-label">Daily Target</div>
+            <div class="rpt-target-stat-val" id="boDailyTarget">$500</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">needed/day</div>
+          </div>
+          <div class="rpt-target-stat">
+            <div class="rpt-target-stat-label">Projected</div>
+            <div class="rpt-target-stat-val" id="boProjected">$0</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">at current pace</div>
+          </div>
+          <div class="rpt-target-stat">
+            <div class="rpt-target-stat-label">Need/Day Left</div>
+            <div class="rpt-target-stat-val red" id="boNeedPerDay">$0</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">to hit target</div>
+          </div>
+        </div>
+      </div>
+      <div class="rpt-alert" id="boTargetAlert" style="display:none;"><i class="ti ti-alert-circle" style="font-size:14px;flex-shrink:0;"></i><span></span></div>
+      <div class="rpt-total-banner">
+        <div class="rpt-total-banner-label" id="boMonthBannerLabel">JUNE 2026 — TOTAL SALES</div>
+        <div class="rpt-total-banner-val" id="boMonthBannerTotal">$0.00</div>
+        <div class="rpt-total-banner-meta">
+          <span id="boMonthBannerOrders">0 orders</span>
+          <span id="boMonthBannerAvgDay">$0.00 avg/day</span>
+          <span id="boMonthBannerAvgOrder">$0.00 avg/order</span>
+        </div>
+      </div>
+      <button class="rpt-export-btn" onclick="exportBoMonthToExcel()">
+        <i class="ti ti-file-spreadsheet"></i> Export Month to Date Report (Excel)
+      </button>
+      <div id="boCalendar"></div>
     </div>
 
     <!-- TRANSACTIONS PANE -->
