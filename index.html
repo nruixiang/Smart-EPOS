@@ -5937,6 +5937,10 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   function onPayOutletChange(val) {
     payOutletFilter = val;
     renderPayDashboard();
+    const eodPane = document.getElementById('payPane_eod');
+    const monthPane = document.getElementById('payPane_month');
+    if (eodPane && eodPane.style.display !== 'none') renderBoEod();
+    if (monthPane && monthPane.style.display !== 'none') renderBoMonth();
   }
 
   function renderPayDashboard() {
@@ -6222,12 +6226,33 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     return recordOutletName === currentOutletName;
   }
 
+  // Same idea, but respects the Back Office Overview tab's own outlet dropdown
+  // (payOutletFilter) instead of the till's actual active outlet — so 'All Outlets'
+  // genuinely means everything, and picking one specific outlet there is independent
+  // of whatever outlet this till happens to be set to right now.
+  function matchesPayOutletFilter(recordOutletId, recordOutletName) {
+    if (payOutletFilter === 'All') return true;
+    if (recordOutletId == null && !recordOutletName) return true;
+    const targetOutlet = outlets.find(o => o.name === payOutletFilter);
+    if (recordOutletId != null && targetOutlet) return String(recordOutletId) === String(targetOutlet.id);
+    return recordOutletName === payOutletFilter;
+  }
+
   function salesForDate(date) {
     const key = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
     return salesLog.filter(t => {
       const d = t.date;
       const matchesDate = !t.voided && !t.refund && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === key;
       return matchesDate && matchesCurrentOutlet(t.outlet_id, t.outlet);
+    });
+  }
+
+  function boSalesForDate(date) {
+    const key = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
+    return salesLog.filter(t => {
+      const d = t.date;
+      const matchesDate = !t.voided && !t.refund && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === key;
+      return matchesDate && matchesPayOutletFilter(t.outlet_id, t.outlet);
     });
   }
 
@@ -6238,6 +6263,15 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       return matchesDate && matchesCurrentOutlet(e.outletId, e.outlet);
     });
   }
+
+  function boWastageForDate(date) {
+    return wastageLog.filter(e => {
+      const d = new Date(e.date);
+      const matchesDate = d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
+      return matchesDate && matchesPayOutletFilter(e.outletId, e.outlet);
+    });
+  }
+
 
   function renderRptEod() {
     const viewDate = rptEodViewDate || new Date();
@@ -6428,7 +6462,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 function renderBoEod() {
     const viewDate = boEodViewDate || new Date();
-    const txs = salesForDate(viewDate);
+    const txs = boSalesForDate(viewDate);
     const gross = txs.reduce((a, t) => a + t.gross, 0);
     const disc  = txs.reduce((a, t) => a + t.discount, 0);
     const tax   = txs.reduce((a, t) => a + t.tax, 0);
@@ -6437,7 +6471,7 @@ function renderBoEod() {
     const avgReceipt = txs.length ? net / txs.length : 0;
     const profit = net * 0.65;
 
-    const wastageEntries = wastageForDate(viewDate);
+    const wastageEntries = boWastageForDate(viewDate);
     const wastageCost = wastageEntries.reduce((a, e) => a + (e.cost || 0), 0);
 
     // Date label / back-to-today control
@@ -6465,7 +6499,7 @@ function renderBoEod() {
 
     // Cash float (excluded from profit calc — only affects cash drawer tally)
     const cashSalesAmt = txs.filter(t => t.method === 'Cash').reduce((a,t) => a + t.total, 0);
-    const floatEntries = cashFloatForDate(viewDate).sort((a,b) => new Date(b.date) - new Date(a.date));
+    const floatEntries = boCashFloatForDate(viewDate).sort((a,b) => new Date(b.date) - new Date(a.date));
     const floatTotal = floatEntries.reduce((a,e) => a + (parseFloat(e.amount) || 0), 0);
     const expectedDrawer = cashSalesAmt + floatTotal;
     document.getElementById('boCfCashSales').textContent = '$' + cashSalesAmt.toFixed(2);
@@ -6709,7 +6743,7 @@ function renderBoMonth() {
     const isCurrentMonth = yr === now.getFullYear() && mo === now.getMonth();
 
     // Month sales
-    const monthTxs = salesLog.filter(t => t.date.getFullYear() === yr && t.date.getMonth() === mo);
+    const monthTxs = salesLog.filter(t => !t.voided && !t.refund && t.date.getFullYear() === yr && t.date.getMonth() === mo && matchesPayOutletFilter(t.outlet_id, t.outlet));
     const monthTotal = monthTxs.reduce((a, t) => a + t.total, 0);
     const monthOrders = monthTxs.length;
 
@@ -6796,7 +6830,7 @@ function exportBoMonthToExcel() {
     const topItemRows = [];
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const dayTxs = salesLog.filter(t => !t.voided && t.date.getFullYear() === yr && t.date.getMonth() === mo && t.date.getDate() === day && matchesCurrentOutlet(t.outlet_id, t.outlet));
+      const dayTxs = salesLog.filter(t => !t.voided && t.date.getFullYear() === yr && t.date.getMonth() === mo && t.date.getDate() === day && matchesPayOutletFilter(t.outlet_id, t.outlet));
       if (dayTxs.length === 0) continue;
 
       const gross = dayTxs.reduce((a,t) => a + t.gross, 0);
@@ -6817,7 +6851,7 @@ function exportBoMonthToExcel() {
 
       const dayWastage = wastageLog.filter(e => {
         const d = new Date(e.date);
-        return d.getFullYear() === yr && d.getMonth() === mo && d.getDate() === day && matchesCurrentOutlet(e.outletId, e.outlet);
+        return d.getFullYear() === yr && d.getMonth() === mo && d.getDate() === day && matchesPayOutletFilter(e.outletId, e.outlet);
       });
       const wastageCost = dayWastage.reduce((a,e) => a + (e.cost || 0), 0);
 
@@ -7130,6 +7164,15 @@ function exportBoMonthToExcel() {
       const d = new Date(e.date);
       const matchesDate = d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
       return matchesDate && matchesCurrentOutlet(e.outlet_id, e.outlet);
+    });
+  }
+
+  function boCashFloatForDate(date) {
+    return cashFloatLog.filter(e => {
+      if (!e.date) return false;
+      const d = new Date(e.date);
+      const matchesDate = d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
+      return matchesDate && matchesPayOutletFilter(e.outlet_id, e.outlet);
     });
   }
 
