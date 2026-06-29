@@ -1034,6 +1034,9 @@
     .pay-dash-topbar-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
     .pay-outlet-select { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 13px; font-weight: 500; font-family: var(--font); cursor: pointer; outline: none; margin-left: 14px; }
     .pay-outlet-select:focus { border-color: #2563eb; }
+    .pay-topbar-link-tabs { display: flex; gap: 8px; margin-left: auto; }
+    .pay-topbar-link-tab { display: flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 12.5px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+    .pay-topbar-link-tab:hover { border-color: var(--border-hover); }
     .pay-dash-body { flex: 1; overflow-y: scroll; padding: 28px; display: flex; flex-direction: column; gap: 24px; min-height: 0; height: 0; }
     .biz-section { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 18px; }
     .biz-section-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
@@ -5855,6 +5858,8 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   function openPayments() {
     payOutletFilter = 'All';
     renderPayDashboard();
+    const linkTabs = document.getElementById('payTopbarLinkTabs');
+    if (linkTabs) linkTabs.style.display = 'flex';
     document.getElementById('payDashOverlay').classList.add('show');
   }
 
@@ -5872,6 +5877,8 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     });
     const topbar = document.getElementById('payTopbarTitle');
     if (topbar) topbar.textContent = labels[tab] || tab;
+    const linkTabs = document.getElementById('payTopbarLinkTabs');
+    if (linkTabs) linkTabs.style.display = tab === 'overview' ? 'flex' : 'none';
     if (tab === 'overview') renderPayDashboard();
     if (tab === 'business') loadBusinessInfoPane();
     if (tab === 'addproduct') resetAddProductForm();
@@ -6155,10 +6162,10 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     document.getElementById('ordersOverlay').classList.remove('show');
   }
 
-  function openReports() {
+  function openReports(startTab) {
     rptMonthOffset = 0;
     document.getElementById('rptOverlay').classList.add('show');
-    switchRptTab('eod');
+    switchRptTab(startTab || 'eod');
     getCashFloatLog().then(() => renderRptEod());
   }
 
@@ -7767,7 +7774,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   </div>
 </div>
 <!-- Reports Modal -->
-<div class="rpt-overlay" id="rptOverlay" onclick="closeIfBg(event, 'rptOverlay', closeReports)">
+<div class="rpt-overlay" id="rptOverlay" style="z-index:600;" onclick="closeIfBg(event, 'rptOverlay', closeReports)">
   <div class="rpt-modal">
     <div class="rpt-header">
       <div class="rpt-title">Business Reports</div>
@@ -8221,6 +8228,10 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       <select class="pay-outlet-select" id="payOutletSelect" onchange="onPayOutletChange(this.value)" style="display:none;">
         <option value="All">All Outlets</option>
       </select>
+      <div class="pay-topbar-link-tabs" id="payTopbarLinkTabs" style="display:none;">
+        <button class="pay-topbar-link-tab" onclick="openReports('eod')"><i class="ti ti-calendar-event"></i> End of Day</button>
+        <button class="pay-topbar-link-tab" onclick="openReports('month')"><i class="ti ti-calendar-stats"></i> Month to Date</button>
+      </div>
     </div>
 
     <!-- OVERVIEW PANE -->
