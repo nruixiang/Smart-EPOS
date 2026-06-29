@@ -2329,9 +2329,9 @@
   const STAFF_LOGIN_CACHE_KEY = 'epos_staff_login_cache';
   const hasSubtleCrypto = typeof crypto !== 'undefined' && !!crypto.subtle;
 
-  async function hashStaffLogin(id, pin, role) {
+  async function hashStaffLogin(id, pin, role, name) {
     if (!hasSubtleCrypto) return null;
-    const data = new TextEncoder().encode(`${id}:${pin}:${role}`);
+    const data = new TextEncoder().encode(`${id}:${pin}:${role}:${name || ''}`);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
@@ -2340,11 +2340,11 @@
     try { return JSON.parse(localStorage.getItem(STAFF_LOGIN_CACHE_KEY) || '{}'); } catch (e) { return {}; }
   }
 
-  async function cacheVerifiedStaffLogin(id, pin, role) {
+  async function cacheVerifiedStaffLogin(id, pin, role, name) {
     if (!hasSubtleCrypto) return; // can't safely cache without hashing — skip rather than store the PIN in plaintext
-    const hash = await hashStaffLogin(id, pin, role);
+    const hash = await hashStaffLogin(id, pin, role, name);
     const cache = getCachedStaffLogins();
-    cache[id] = { hash, role };
+    cache[id] = { hash, role, name };
     try { localStorage.setItem(STAFF_LOGIN_CACHE_KEY, JSON.stringify(cache)); } catch (e) { console.error('cacheVerifiedStaffLogin error:', e); }
   }
 
@@ -2353,8 +2353,8 @@
     const cache = getCachedStaffLogins();
     const entry = cache[id];
     if (!entry) return null;
-    const hash = await hashStaffLogin(id, pin, entry.role);
-    return hash === entry.hash ? entry.role : null;
+    const hash = await hashStaffLogin(id, pin, entry.role, entry.name);
+    return hash === entry.hash ? { role: entry.role, name: entry.name } : null;
   }
 
   function clearCachedStaffLogin(id) {
@@ -4032,7 +4032,7 @@
       <table class="receipt-meta">
         <tr><td>Date</td><td>${dateStr}</td></tr>
         <tr><td>Time</td><td>${timeStr}</td></tr>
-        <tr><td>Cashier</td><td>${currentStaffId || '0000'}</td></tr>
+        <tr><td>Cashier</td><td>${currentStaffName || currentStaffId || '0000'}</td></tr>
         ${customerRow}
       </table>
       <hr class="receipt-divider"/>
@@ -5081,6 +5081,7 @@
   // ── Clock In / Staff ──
   let currentStaffId = '';
   let currentStaffRole = 'Administrator';
+  let currentStaffName = '';
   let numpadTarget = null; // 'staffId' | 'password' | 'customerPhone' | 'phoneField'
   let numpadValue = '';
   let numpadFieldId = null;
@@ -5231,11 +5232,12 @@
 
   function updateThemeToggleVisibility() { /* no-op, replaced by admin panel */ }
 
-  function applySession(staffId, staffRole) {
+  function applySession(staffId, staffRole, staffName) {
     currentStaffId = staffId;
     currentStaffRole = staffRole;
+    currentStaffName = staffName || staffId;
     const roleLabel = staffId === '0000' ? 'Admin' : 'Staff';
-    document.getElementById('headerStaffId').textContent = staffId + ' · ' + staffRole;
+    document.getElementById('headerStaffId').textContent = currentStaffName + ' · ' + staffRole;
     document.getElementById('headerRole').textContent = roleLabel;
     const adminPill = document.getElementById('adminPill');
     if (staffId === '0000') {
@@ -5255,14 +5257,16 @@
     if (Object.keys(order).length > 0) {
       if (!confirm('There is an order in progress. Log out anyway? The current order will be cleared.')) return;
     } else {
-      if (!confirm('Log out of Staff ID ' + currentStaffId + '?')) return;
+      if (!confirm('Log out of ' + (currentStaffName || currentStaffId) + '?')) return;
     }
     clearCachedStaffLogin(currentStaffId);
     localStorage.removeItem('epos_staff_id');
     localStorage.removeItem('epos_staff_role');
+    localStorage.removeItem('epos_staff_name');
     clearOrder();
     currentStaffId = '';
     currentStaffRole = '';
+    currentStaffName = '';
     document.getElementById('headerStaffId').textContent = 'Not logged in';
     document.getElementById('headerRole').textContent = 'Staff';
     document.getElementById('adminPill').classList.remove('header-pill-btn');
@@ -5294,12 +5298,14 @@
             return;
           }
           const role = data.role || (id === '0000' ? 'Administrator' : 'Staff');
-          await cacheVerifiedStaffLogin(id, pin, role);
+          const name = data.name || id;
+          await cacheVerifiedStaffLogin(id, pin, role, name);
           localStorage.setItem('epos_staff_id', id);
           localStorage.setItem('epos_staff_role', role);
-          applySession(id, role);
+          localStorage.setItem('epos_staff_name', name);
+          applySession(id, role, name);
           closeClockIn();
-          showToast('Logged in as ' + id + ' · ' + role);
+          showToast('Logged in as ' + name);
           return;
         } else {
           // No staff record found online — definitively wrong ID, not an offline situation
@@ -5309,13 +5315,14 @@
       }
 
       // Offline, or the lookup above failed to reach the server — try the verified-before cache
-      const cachedRole = await tryOfflineStaffLogin(id, pin);
-      if (cachedRole) {
+      const cached = await tryOfflineStaffLogin(id, pin);
+      if (cached) {
         localStorage.setItem('epos_staff_id', id);
-        localStorage.setItem('epos_staff_role', cachedRole);
-        applySession(id, cachedRole);
+        localStorage.setItem('epos_staff_role', cached.role);
+        localStorage.setItem('epos_staff_name', cached.name || id);
+        applySession(id, cached.role, cached.name);
         closeClockIn();
-        showToast('Logged in offline as ' + id + ' · ' + cachedRole);
+        showToast('Logged in offline as ' + (cached.name || id));
       } else {
         errEl.textContent = 'Cannot verify login while offline. This Staff ID/PIN hasn\'t been used on this device before.';
       }
@@ -5329,8 +5336,9 @@
   (function restoreSession() {
     const savedId = localStorage.getItem('epos_staff_id');
     const savedRole = localStorage.getItem('epos_staff_role');
+    const savedName = localStorage.getItem('epos_staff_name');
     if (savedId) {
-      applySession(savedId, savedRole || (savedId === '0000' ? 'Administrator' : 'Staff'));
+      applySession(savedId, savedRole || (savedId === '0000' ? 'Administrator' : 'Staff'), savedName);
     }
   })();
 
@@ -6637,7 +6645,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
         <div class="rpt-wastage-log-icon">${imgHtml}</div>
         <div style="flex:1;min-width:0;">
           <div class="rpt-wastage-log-name">${e.itemName}</div>
-          <div class="rpt-wastage-log-meta">${e.reason} · ${currentStaffId || '0000'} · ${timeStr}</div>
+          <div class="rpt-wastage-log-meta">${e.reason} · ${e.staffName || 'Unknown'} · ${timeStr}</div>
         </div>
         <div class="rpt-wastage-log-qty">−${e.qty} units</div>
         <button onclick="deleteWastageEntry('${e.id}')" style="margin-left:10px;background:none;border:none;cursor:pointer;color:var(--text-tertiary);font-size:16px;display:flex;align-items:center;padding:4px;border-radius:6px;transition:color 0.15s,background 0.15s;" onmouseover="this.style.color='var(--red)';this.style.background='#fef2f2';" onmouseout="this.style.color='var(--text-tertiary)';this.style.background='none';"><i class="ti ti-trash"></i></button>`;
@@ -6762,7 +6770,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       wastageLog = loadLocalMirror(LOCAL_MIRROR_KEYS.wastage);
       return wastageLog;
     }
-    wastageLog = (data || []).map(e => ({...e, itemName: e.item_name, date: e.date}));
+    wastageLog = (data || []).map(e => ({...e, itemName: e.item_name, staffName: e.staff_name, date: e.date}));
     saveLocalMirror(LOCAL_MIRROR_KEYS.wastage, wastageLog);
     return wastageLog;
   }
@@ -6770,7 +6778,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const row = {
       id: String(entry.id), item_name: entry.itemName,
       qty: entry.qty, reason: entry.reason, note: entry.note,
-      date: entry.date, cost: entry.cost
+      date: entry.date, cost: entry.cost, staff_name: entry.staffName || null
     };
     saveLocalMirror(LOCAL_MIRROR_KEYS.wastage, wastageLog);
     if (!db) { queueSyncOp('wastage_log', 'upsert', row); return; }
@@ -6951,7 +6959,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const note = document.getElementById('wastageNote').value.trim();
     const newEntries = entries.map(([name, qty]) => {
       const p = getAllProducts().find(x => x.name === name);
-      return { id: String(Date.now() + Math.random()), itemName: name, qty, reason: wastageSelectedReason, note, date: now.toISOString(), cost: p ? p.price * qty : 0 };
+      return { id: String(Date.now() + Math.random()), itemName: name, qty, reason: wastageSelectedReason, note, date: now.toISOString(), cost: p ? p.price * qty : 0, staffName: currentStaffName || currentStaffId || null };
     });
     for (const entry of newEntries) {
       wastageLog.push(entry);
@@ -7163,7 +7171,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
       <table class="receipt-meta">
         <tr><td>Date</td><td>${dateStr}</td></tr>
         <tr><td>Time</td><td>${timeStr}</td></tr>
-        <tr><td>Cashier</td><td>${currentStaffId || '0000'}</td></tr>
+        <tr><td>Cashier</td><td>${currentStaffName || currentStaffId || '0000'}</td></tr>
         <tr><td>Original Order</td><td>${tx.ref}</td></tr>
         ${customerRow}
       </table>
