@@ -2029,6 +2029,29 @@
     showToast('Outlet name saved ✓');
   }
 
+  function showBizAddOutletForm() {
+    const form = document.getElementById('bizAddOutletForm');
+    if (!form) return;
+    form.style.display = 'flex';
+    document.getElementById('bizNewOutletName').value = '';
+    document.getElementById('bizNewOutletAddress').value = '';
+    document.getElementById('bizNewOutletName').focus();
+  }
+
+  function hideBizAddOutletForm() {
+    const form = document.getElementById('bizAddOutletForm');
+    if (form) form.style.display = 'none';
+  }
+
+  async function saveBizNewOutlet() {
+    const name = (document.getElementById('bizNewOutletName') || {}).value || '';
+    const address = (document.getElementById('bizNewOutletAddress') || {}).value || '';
+    if (!name.trim()) { showToast('Please enter an outlet name'); return; }
+    await addOutlet(name, address);
+    hideBizAddOutletForm();
+    renderBizOutletList();
+  }
+
   document.addEventListener('DOMContentLoaded', initSetup);
 
   // ── Outlets ──
@@ -8563,8 +8586,28 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
       <!-- Outlets -->
       <div class="biz-section">
-        <div class="biz-section-title">Outlets</div>
+        <div class="ap-section-head">
+          <div class="biz-section-title">Outlets</div>
+          <button class="ap-view-toggle-btn" onclick="showBizAddOutletForm()"><i class="ti ti-plus"></i> Add Outlet</button>
+        </div>
         <div id="bizOutletList" style="display:flex;flex-direction:column;gap:12px;"></div>
+
+        <div id="bizAddOutletForm" style="display:none;flex-direction:column;gap:12px;border-top:0.5px solid var(--border);padding-top:16px;margin-top:4px;">
+          <div class="edit-row-2">
+            <div>
+              <div class="edit-field-label">Outlet Name <span class="required">*</span></div>
+              <input id="bizNewOutletName" class="edit-input" placeholder="e.g. Bugis · T2" />
+            </div>
+            <div>
+              <div class="edit-field-label">Address <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-tertiary);">(optional)</span></div>
+              <input id="bizNewOutletAddress" class="edit-input" placeholder="e.g. 200 Victoria St, #03-22" />
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button class="customize-btn-cancel" onclick="hideBizAddOutletForm()">Cancel</button>
+            <button class="biz-save-btn" onclick="saveBizNewOutlet()">Save Outlet</button>
+          </div>
+        </div>
       </div>
 
     </div>
