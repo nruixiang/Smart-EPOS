@@ -5509,6 +5509,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
       const data = await res.json();
       console.log('Forecast response:', JSON.stringify(data));
+      if (data?.error) {
+        throw new Error(data.error);
+      }
       const raw = data?.content || '';
       const clean = raw.replace(/```json|```/g, '').trim();
       const forecast = JSON.parse(clean);
@@ -5546,7 +5549,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     } catch (err) {
       document.getElementById('forecastLoading').style.display = 'none';
       document.getElementById('forecastEmpty').style.display = 'flex';
-      showToast('Forecast failed — check your API key');
+      showToast('Forecast failed: ' + (err.message || 'unknown error'));
       console.error('Forecast error:', err);
     }
 
