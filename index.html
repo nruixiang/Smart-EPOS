@@ -2476,14 +2476,20 @@
 
   const SUPPLIER_CATEGORIES = ['Coffee & Beans','Dairy & Milk','Tea','Bakery & Pastry','Produce','Syrups & Flavourings','Packaging & Disposables','Cleaning Supplies','Equipment','Other'];
   let suppFormDates = [];
+  let supplierHost = 'adminSuppliersContent';
 
   function suppWaLink(phone) {
     const digits = String(phone || '').replace(/[^\d]/g, '');
     return digits ? ('https://wa.me/' + digits) : '';
   }
 
-  function renderSuppliersTab() {
-    const el = document.getElementById('adminSuppliersContent');
+  function renderSuppliersTab(hostId) {
+    if (hostId) supplierHost = hostId;
+    // keep only the active host populated so form/panel IDs stay unique
+    ['adminSuppliersContent', 'boSuppliersContent'].forEach(id => {
+      if (id !== supplierHost) { const o = document.getElementById(id); if (o) { o.innerHTML = ''; delete o.dataset.loaded; } }
+    });
+    const el = document.getElementById(supplierHost);
     if (!el) return;
 
     if (suppliers.length === 0 && !el.dataset.loaded) {
@@ -6487,7 +6493,7 @@
     document.getElementById('adminIngredientsContent').style.display = tab === 'ingredients' ? 'block' : 'none';
     if (tab === 'settings') { document.getElementById('adminSettingsContent').style.flexDirection = 'column'; document.getElementById('adminSettingsContent').style.gap = '0'; }
     if (tab === 'outlets') renderOutletsTab();
-    if (tab === 'suppliers') renderSuppliersTab();
+    if (tab === 'suppliers') renderSuppliersTab('adminSuppliersContent');
     if (tab === 'ingredients') renderIngredientsTab();
   }
 
@@ -7155,9 +7161,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function switchPayTab(tab) {
-    const labels = { overview: 'Overview', eod: 'End of Day', month: 'Month to Date', addproduct: 'Products', discounts: 'Discounts', members: 'Members', transactions: 'Transactions', orders: 'Orders', reports: 'Reports', business: 'Business Information' };
+    const labels = { overview: 'Overview', eod: 'End of Day', month: 'Month to Date', addproduct: 'Products', discounts: 'Discounts', members: 'Members', transactions: 'Transactions', suppliers: 'Suppliers', orders: 'Orders', reports: 'Reports', business: 'Business Information' };
     const isOverviewGroup = ['overview', 'eod', 'month'].includes(tab);
-    ['overview','eod','month','addproduct','discounts','members','transactions','orders','reports','business'].forEach(t => {
+    ['overview','eod','month','addproduct','discounts','members','transactions','suppliers','orders','reports','business'].forEach(t => {
       const navItem = document.getElementById('payNavItem_' + t);
       if (navItem) navItem.classList.toggle('active', t === tab);
       const pane = document.getElementById('payPane_' + t);
@@ -7182,6 +7188,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     if (tab === 'discounts') { resetDiscountForm(); renderDiscountList(); }
     if (tab === 'members') showMemberListView();
     if (tab === 'orders') renderBoOrders();
+    if (tab === 'suppliers') renderSuppliersTab('boSuppliersContent');
   }
 
   function switchPayChart(range) {
@@ -10014,6 +10021,9 @@ function exportBoMonthToExcel() {
       <button class="pay-dash-nav-item" id="payNavItem_transactions" onclick="switchPayTab('transactions')">
         <i class="ti ti-arrows-exchange"></i> Transactions
       </button>
+      <button class="pay-dash-nav-item" id="payNavItem_suppliers" onclick="switchPayTab('suppliers')">
+        <i class="ti ti-building-warehouse"></i> Suppliers
+      </button>
       <button class="pay-dash-nav-item" id="payNavItem_orders" onclick="switchPayTab('orders')">
         <i class="ti ti-truck-delivery"></i> Orders
       </button>
@@ -10489,6 +10499,11 @@ function exportBoMonthToExcel() {
           Transaction history coming soon.
         </div>
       </div>
+    </div>
+
+    <!-- SUPPLIERS PANE -->
+    <div class="pay-dash-body" id="payPane_suppliers" style="display:none;">
+      <div id="boSuppliersContent"></div>
     </div>
 
     <!-- ORDERS PANE -->
