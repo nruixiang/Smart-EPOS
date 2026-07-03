@@ -1254,6 +1254,9 @@
     .outlet-add-btn:hover { background:var(--bg-secondary); }
     .outlet-save-btn { display:flex; align-items:center; gap:6px; justify-content:center; width:100%; padding:10px 16px; border-radius:var(--radius-md); border:none; background:var(--green); color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); margin-top:4px; }
     /* SUPPLIERS TAB */
+    .supp-dir-head { font-size:18px; font-weight:700; color:var(--text-primary); }
+    .supp-dir-sub { font-size:12.5px; color:var(--text-secondary); margin-top:3px; margin-bottom:16px; }
+    /* directory list card */
     .supp-card { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-radius:var(--radius-md); border:0.5px solid var(--border); margin-bottom:10px; }
     .supp-avatar { width:38px; height:38px; border-radius:10px; background:var(--bg-tertiary); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--text-secondary); flex-shrink:0; }
     .supp-main { flex:1; min-width:0; }
@@ -1263,12 +1266,48 @@
     .supp-contact { font-size:12.5px; color:var(--text-secondary); margin-top:5px; display:flex; flex-direction:column; gap:3px; }
     .supp-contact span { display:flex; align-items:center; gap:6px; }
     .supp-contact i { font-size:13px; color:var(--text-tertiary); width:14px; text-align:center; }
+    .supp-meta { font-size:11.5px; color:var(--text-tertiary); margin-top:6px; display:flex; gap:12px; flex-wrap:wrap; }
     .supp-actions { display:flex; gap:6px; flex-shrink:0; }
     .supp-icon-btn { width:30px; height:30px; border-radius:8px; border:0.5px solid var(--border); background:var(--bg-secondary); color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:var(--font); }
     .supp-icon-btn:hover { color:var(--text-primary); border-color:var(--border-hover); }
     .supp-icon-btn.del:hover { color:var(--red); border-color:var(--red); }
+    .supp-wa-btn { width:30px; height:30px; border-radius:8px; border:none; background:#25D366; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; text-decoration:none; }
+    .supp-wa-btn.disabled { background:var(--bg-tertiary); color:var(--text-tertiary); cursor:not-allowed; pointer-events:none; }
     .supp-empty { padding:36px 20px; text-align:center; color:var(--text-tertiary); font-size:13px; }
     .supp-empty i { font-size:30px; display:block; margin-bottom:10px; }
+    /* New Supplier form card */
+    .supp-form-card { border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:20px; background:var(--bg-primary); }
+    .supp-form-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+    .supp-form-title { font-size:15px; font-weight:700; color:var(--text-primary); }
+    .supp-form-x { background:none; border:none; cursor:pointer; color:var(--text-tertiary); font-size:18px; display:flex; align-items:center; }
+    .supp-form-x:hover { color:var(--text-primary); }
+    .supp-field { margin-bottom:14px; }
+    .supp-row2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+    .supp-row2 .supp-field { margin-bottom:0; }
+    .supp-label { font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; display:flex; align-items:center; gap:5px; }
+    .supp-label .req { color:var(--red); }
+    .supp-label i { font-size:13px; color:var(--text-tertiary); }
+    .supp-input, .supp-select, .supp-textarea { width:100%; padding:9px 12px; border-radius:var(--radius-md); border:0.5px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); font-size:13px; font-family:var(--font); outline:none; }
+    .supp-input:focus, .supp-select:focus, .supp-textarea:focus { border-color:var(--border-hover); }
+    .supp-textarea { resize:vertical; line-height:1.5; min-height:70px; }
+    .supp-help { font-size:11px; color:var(--text-tertiary); margin-top:5px; }
+    .supp-section-div { border-top:0.5px solid var(--border); margin:20px 0 16px; padding-top:16px; }
+    .supp-section-head { display:flex; align-items:center; gap:7px; font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:14px; }
+    .supp-section-head i { font-size:15px; color:var(--text-secondary); }
+    .supp-date-row { display:flex; gap:8px; }
+    .supp-date-row .supp-input { flex:1; }
+    .supp-date-add { display:flex; align-items:center; gap:5px; padding:0 14px; border-radius:var(--radius-md); border:0.5px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); font-size:12.5px; font-weight:600; cursor:pointer; font-family:var(--font); white-space:nowrap; }
+    .supp-date-add:hover { border-color:var(--border-hover); }
+    .supp-chips { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+    .supp-chip { display:flex; align-items:center; gap:6px; padding:4px 8px 4px 10px; border-radius:14px; background:var(--bg-tertiary); font-size:11.5px; color:var(--text-primary); }
+    .supp-chip button { background:none; border:none; cursor:pointer; color:var(--text-tertiary); font-size:13px; display:flex; align-items:center; padding:0; }
+    .supp-chip button:hover { color:var(--red); }
+    .supp-footer { display:flex; align-items:center; gap:16px; margin-top:20px; }
+    .supp-save { display:flex; align-items:center; gap:6px; padding:9px 20px; border-radius:20px; border:none; background:var(--green); color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); }
+    .supp-save:hover { opacity:0.9; }
+    .supp-cancel { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:13px; font-weight:600; font-family:var(--font); }
+    .supp-cancel:hover { color:var(--text-primary); }
+    @media (max-width:560px) { .supp-row2 { grid-template-columns:1fr; } }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2288,6 +2327,14 @@
     localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
   }
 
+  const SUPPLIER_CATEGORIES = ['Coffee & Beans','Dairy & Milk','Tea','Bakery & Pastry','Produce','Syrups & Flavourings','Packaging & Disposables','Cleaning Supplies','Equipment','Other'];
+  let suppFormDates = [];
+
+  function suppWaLink(phone) {
+    const digits = String(phone || '').replace(/[^\d]/g, '');
+    return digits ? ('https://wa.me/' + digits) : '';
+  }
+
   function renderSuppliersTab() {
     const el = document.getElementById('adminSuppliersContent');
     if (!el) return;
@@ -2299,8 +2346,14 @@
     }
     el.dataset.loaded = '1';
 
-    const listItems = suppliers.length
-      ? suppliers.map(s => `
+    const n = suppliers.length;
+    const listItems = n
+      ? suppliers.map(s => {
+          const wa = suppWaLink(s.phone);
+          const metaBits = [];
+          if (s.lead_time_days != null && s.lead_time_days !== '') metaBits.push('<span><i class="ti ti-clock-hour-4"></i> ' + escapeHtml(s.lead_time_days) + 'd lead</span>');
+          if (s.delivery_from || s.delivery_by) metaBits.push('<span><i class="ti ti-truck"></i> ' + escapeHtml(s.delivery_from || '?') + '–' + escapeHtml(s.delivery_by || '?') + '</span>');
+          return `
         <div class="supp-card">
           <div class="supp-avatar">${escapeHtml((s.name || '?').trim().charAt(0).toUpperCase())}</div>
           <div class="supp-main">
@@ -2310,23 +2363,27 @@
             </div>
             <div class="supp-contact">
               ${s.contact_person ? `<span><i class="ti ti-user"></i>${escapeHtml(s.contact_person)}</span>` : ''}
-              ${s.phone ? `<span><i class="ti ti-phone"></i>${escapeHtml(s.phone)}</span>` : ''}
+              ${s.phone ? `<span><i class="ti ti-brand-whatsapp"></i>${escapeHtml(s.phone)}</span>` : ''}
               ${s.email ? `<span><i class="ti ti-mail"></i>${escapeHtml(s.email)}</span>` : ''}
-              ${s.address ? `<span><i class="ti ti-map-pin"></i>${escapeHtml(s.address)}</span>` : ''}
-              ${s.notes ? `<span><i class="ti ti-note"></i>${escapeHtml(s.notes)}</span>` : ''}
+              ${s.packaging_notes ? `<span><i class="ti ti-package"></i>${escapeHtml(s.packaging_notes)}</span>` : ''}
             </div>
+            ${metaBits.length ? `<div class="supp-meta">${metaBits.join('')}</div>` : ''}
           </div>
           <div class="supp-actions">
+            <a class="supp-wa-btn ${wa ? '' : 'disabled'}" ${wa ? `href="${wa}" target="_blank" rel="noopener"` : ''} title="Send order via WhatsApp"><i class="ti ti-brand-whatsapp"></i></a>
             <button class="supp-icon-btn" onclick="editSupplier('${s.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
             <button class="supp-icon-btn del" onclick="deleteSupplier('${s.id}')" title="Delete"><i class="ti ti-trash"></i></button>
           </div>
-        </div>`).join('')
+        </div>`;
+        }).join('')
       : `<div class="supp-empty"><i class="ti ti-truck-delivery"></i>No suppliers yet.<br>Add your first supplier to get started.</div>`;
+
+    const catOptions = SUPPLIER_CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
 
     el.innerHTML = `
       <div id="supplierPanelMain" style="display:flex;flex-direction:column;gap:0;">
-        <div class="admin-section-label">Your Suppliers</div>
-        <div class="admin-section-note">Keep track of who you order stock from.</div>
+        <div class="supp-dir-head">Supplier Directory</div>
+        <div class="supp-dir-sub">${n} supplier${n === 1 ? '' : 's'} · tap WhatsApp to send orders directly</div>
         <div>${listItems}</div>
         <div style="margin-top:12px;">
           <button class="outlet-add-btn" onclick="showSupplierForm()">
@@ -2335,46 +2392,122 @@
         </div>
       </div>
 
-      <div id="supplierPanelForm" style="display:none;flex-direction:column;gap:12px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
-          <button onclick="showSupplierMain()"
-            style="background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:4px;display:flex;align-items:center;border-radius:6px;">
-            <i class="ti ti-arrow-left" style="font-size:18px;"></i>
-          </button>
-          <div class="admin-section-label" id="supplierFormTitle" style="margin:0;">New Supplier</div>
+      <div id="supplierPanelForm" style="display:none;">
+        <div class="supp-form-card">
+          <div class="supp-form-head">
+            <span class="supp-form-title" id="supplierFormTitle">New Supplier</span>
+            <button class="supp-form-x" onclick="showSupplierMain()"><i class="ti ti-x"></i></button>
+          </div>
+
+          <div class="supp-field">
+            <div class="supp-label">Supplier / Company Name <span class="req">*</span></div>
+            <input class="supp-input" id="suppName" placeholder="e.g. SG Fresh Beans Pte Ltd" />
+          </div>
+
+          <div class="supp-row2">
+            <div class="supp-field">
+              <div class="supp-label">Contact Person</div>
+              <input class="supp-input" id="suppContact" placeholder="e.g. David Lim" />
+            </div>
+            <div class="supp-field">
+              <div class="supp-label">Category</div>
+              <select class="supp-select" id="suppCategory">
+                <option value="">Select category…</option>
+                ${catOptions}
+              </select>
+            </div>
+          </div>
+
+          <div class="supp-row2">
+            <div class="supp-field">
+              <div class="supp-label">WhatsApp / Phone</div>
+              <input class="supp-input" id="suppPhone" placeholder="+65 9123 4567" />
+            </div>
+            <div class="supp-field">
+              <div class="supp-label">Email</div>
+              <input class="supp-input" id="suppEmail" type="email" placeholder="orders@supplier.com" />
+            </div>
+          </div>
+
+          <div class="supp-field">
+            <div class="supp-label"><i class="ti ti-package"></i> Packaging / Order Format Notes</div>
+            <textarea class="supp-textarea" id="suppPackaging" placeholder="e.g. Espresso beans in 1kg bags, oat milk in 12-pack cartons, MOQ $80"></textarea>
+          </div>
+
+          <div class="supp-section-div">
+            <div class="supp-section-head"><i class="ti ti-route"></i> Logistics &amp; Lead Time</div>
+
+            <div class="supp-row2">
+              <div class="supp-field">
+                <div class="supp-label">Lead Time (days)</div>
+                <input class="supp-input" id="suppLeadTime" type="number" min="0" step="1" placeholder="2" />
+                <div class="supp-help">Days from order to delivery</div>
+              </div>
+              <div class="supp-field">
+                <div class="supp-label">Risk Buffer (days)</div>
+                <input class="supp-input" id="suppRiskBuffer" type="number" min="0" step="1" placeholder="1" />
+                <div class="supp-help">Extra safety days to order early</div>
+              </div>
+            </div>
+
+            <div class="supp-field">
+              <div class="supp-label">Logistics Risk Notes</div>
+              <textarea class="supp-textarea" id="suppLogistics" placeholder="e.g. No weekend deliveries, frequent CNY delays, perishable — must arrive cold"></textarea>
+            </div>
+
+            <div class="supp-row2">
+              <div class="supp-field">
+                <div class="supp-label">Usual delivery — from</div>
+                <input class="supp-input" id="suppDeliveryFrom" type="time" />
+              </div>
+              <div class="supp-field">
+                <div class="supp-label">Usual delivery — by</div>
+                <input class="supp-input" id="suppDeliveryBy" type="time" />
+              </div>
+            </div>
+
+            <div class="supp-field">
+              <div class="supp-label">Non-operating dates (no deliveries)</div>
+              <div class="supp-date-row">
+                <input class="supp-input" id="suppNonOpDate" type="date" />
+                <button class="supp-date-add" onclick="addNonOpDate()"><i class="ti ti-plus"></i> Add</button>
+              </div>
+              <div class="supp-chips" id="suppDateChips"></div>
+            </div>
+          </div>
+
+          <div class="supp-footer">
+            <button class="supp-save" onclick="saveSupplierFromForm()"><i class="ti ti-check" style="font-size:14px;"></i> <span id="suppSaveLabel">Save</span></button>
+            <button class="supp-cancel" onclick="showSupplierMain()">Cancel</button>
+          </div>
         </div>
-        <div>
-          <div class="outlet-field-label">Supplier Name <span style="color:var(--red);">*</span></div>
-          <input class="outlet-input" id="suppName" placeholder="e.g. Kim Guan Coffee Supplies" />
-        </div>
-        <div>
-          <div class="outlet-field-label">Category <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
-          <input class="outlet-input" id="suppCategory" placeholder="e.g. Coffee Beans" />
-        </div>
-        <div>
-          <div class="outlet-field-label">Contact Person <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
-          <input class="outlet-input" id="suppContact" placeholder="e.g. Mr Tan" />
-        </div>
-        <div>
-          <div class="outlet-field-label">Phone <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
-          <input class="outlet-input" id="suppPhone" placeholder="e.g. +65 6123 4567" />
-        </div>
-        <div>
-          <div class="outlet-field-label">Email <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
-          <input class="outlet-input" id="suppEmail" placeholder="e.g. sales@kimguan.sg" />
-        </div>
-        <div>
-          <div class="outlet-field-label">Address <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
-          <input class="outlet-input" id="suppAddress" placeholder="e.g. 12 Woodlands Ave, #05-01" />
-        </div>
-        <div>
-          <div class="outlet-field-label">Notes <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
-          <input class="outlet-input" id="suppNotes" placeholder="e.g. Delivers Tue and Fri, min order $80" />
-        </div>
-        <button class="outlet-save-btn" onclick="saveSupplierFromForm()">
-          <i class="ti ti-check" style="font-size:14px;"></i> <span id="suppSaveLabel">Save Supplier</span>
-        </button>
       </div>`;
+
+    renderNonOpChips();
+  }
+
+  function renderNonOpChips() {
+    const box = document.getElementById('suppDateChips');
+    if (!box) return;
+    box.innerHTML = suppFormDates.map((d, i) =>
+      `<div class="supp-chip">${escapeHtml(d)}<button onclick="removeNonOpDate(${i})"><i class="ti ti-x"></i></button></div>`
+    ).join('');
+  }
+
+  function addNonOpDate() {
+    const inp = document.getElementById('suppNonOpDate');
+    if (!inp || !inp.value) return;
+    if (!suppFormDates.includes(inp.value)) {
+      suppFormDates.push(inp.value);
+      suppFormDates.sort();
+      renderNonOpChips();
+    }
+    inp.value = '';
+  }
+
+  function removeNonOpDate(i) {
+    suppFormDates.splice(i, 1);
+    renderNonOpChips();
   }
 
   function showSupplierMain() {
@@ -2386,14 +2519,16 @@
 
   function showSupplierForm() {
     editingSupplierId = null;
+    suppFormDates = [];
     const main = document.getElementById('supplierPanelMain');
     const form = document.getElementById('supplierPanelForm');
     if (main) main.style.display = 'none';
-    if (form) form.style.display = 'flex';
-    ['suppName','suppCategory','suppContact','suppPhone','suppEmail','suppAddress','suppNotes']
+    if (form) form.style.display = 'block';
+    ['suppName','suppContact','suppCategory','suppPhone','suppEmail','suppPackaging','suppLeadTime','suppRiskBuffer','suppLogistics','suppDeliveryFrom','suppDeliveryBy']
       .forEach(id => { const inp = document.getElementById(id); if (inp) inp.value = ''; });
+    renderNonOpChips();
     const title = document.getElementById('supplierFormTitle'); if (title) title.textContent = 'New Supplier';
-    const lbl = document.getElementById('suppSaveLabel'); if (lbl) lbl.textContent = 'Save Supplier';
+    const lbl = document.getElementById('suppSaveLabel'); if (lbl) lbl.textContent = 'Save';
     const nameInput = document.getElementById('suppName'); if (nameInput) nameInput.focus();
   }
 
@@ -2403,30 +2538,42 @@
     editingSupplierId = s.id;
     showSupplierForm();
     document.getElementById('suppName').value = s.name || '';
-    document.getElementById('suppCategory').value = s.category || '';
     document.getElementById('suppContact').value = s.contact_person || '';
+    document.getElementById('suppCategory').value = s.category || '';
     document.getElementById('suppPhone').value = s.phone || '';
     document.getElementById('suppEmail').value = s.email || '';
-    document.getElementById('suppAddress').value = s.address || '';
-    document.getElementById('suppNotes').value = s.notes || '';
+    document.getElementById('suppPackaging').value = s.packaging_notes || '';
+    document.getElementById('suppLeadTime').value = (s.lead_time_days == null ? '' : s.lead_time_days);
+    document.getElementById('suppRiskBuffer').value = (s.risk_buffer_days == null ? '' : s.risk_buffer_days);
+    document.getElementById('suppLogistics').value = s.logistics_notes || '';
+    document.getElementById('suppDeliveryFrom').value = s.delivery_from || '';
+    document.getElementById('suppDeliveryBy').value = s.delivery_by || '';
+    suppFormDates = Array.isArray(s.non_operating_dates) ? s.non_operating_dates.slice() : [];
+    renderNonOpChips();
     const title = document.getElementById('supplierFormTitle'); if (title) title.textContent = 'Edit Supplier';
     const lbl = document.getElementById('suppSaveLabel'); if (lbl) lbl.textContent = 'Save Changes';
   }
 
   async function saveSupplierFromForm() {
+    const leadRaw = (document.getElementById('suppLeadTime').value || '').trim();
+    const buffRaw = (document.getElementById('suppRiskBuffer').value || '').trim();
     const row = {
       name: (document.getElementById('suppName').value || '').trim(),
-      category: (document.getElementById('suppCategory').value || '').trim(),
       contact_person: (document.getElementById('suppContact').value || '').trim(),
+      category: (document.getElementById('suppCategory').value || '').trim(),
       phone: (document.getElementById('suppPhone').value || '').trim(),
       email: (document.getElementById('suppEmail').value || '').trim(),
-      address: (document.getElementById('suppAddress').value || '').trim(),
-      notes: (document.getElementById('suppNotes').value || '').trim(),
+      packaging_notes: (document.getElementById('suppPackaging').value || '').trim(),
+      lead_time_days: leadRaw === '' ? null : parseInt(leadRaw, 10),
+      risk_buffer_days: buffRaw === '' ? null : parseInt(buffRaw, 10),
+      logistics_notes: (document.getElementById('suppLogistics').value || '').trim(),
+      delivery_from: (document.getElementById('suppDeliveryFrom').value || '').trim(),
+      delivery_by: (document.getElementById('suppDeliveryBy').value || '').trim(),
+      non_operating_dates: suppFormDates.slice(),
     };
     if (!row.name) { showToast('Please enter a supplier name'); return; }
 
     if (!db) {
-      // Offline: store locally with a temp id
       if (editingSupplierId) {
         suppliers = suppliers.map(s => String(s.id) === String(editingSupplierId) ? { ...s, ...row } : s);
       } else {
