@@ -1412,6 +1412,46 @@
     .so-send-btn.sent { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
     .so-send-btn.disabled { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
     @media (max-width:560px) { .so-grid { grid-template-columns:1fr 1fr; } .so-modal { height:94vh; max-width:100vw; border-radius:0; } }
+    /* ── BACK OFFICE: ORDERS PANE ── */
+    .bo-ord-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .bo-ord-filters { display:flex; gap:6px; background:var(--bg-secondary); padding:4px; border-radius:10px; }
+    .bo-ord-filter { padding:7px 16px; border-radius:7px; border:none; background:transparent; color:var(--text-secondary); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); }
+    .bo-ord-filter.active { background:var(--bg-primary); color:var(--text-primary); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .bo-ord-refresh { display:flex; align-items:center; gap:6px; padding:9px 14px; border-radius:10px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--text-secondary); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); }
+    .bo-ord-refresh:hover { color:var(--text-primary); border-color:var(--border-hover); }
+    .bo-ord-new-btn { display:flex; align-items:center; gap:6px; padding:9px 16px; border-radius:10px; border:none; background:var(--green); color:#fff; font-size:13px; font-weight:700; cursor:pointer; font-family:var(--font); }
+    .bo-ord-new-btn:hover { opacity:0.93; }
+    .bo-ord-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .bo-ord-stat { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:12px; padding:16px 18px; }
+    .bo-ord-stat-num { font-size:26px; font-weight:800; color:var(--text-primary); }
+    .bo-ord-stat-label { font-size:12px; color:var(--text-tertiary); margin-top:2px; }
+    .bo-ord-card { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:12px; margin-bottom:12px; overflow:hidden; }
+    .bo-ord-row { display:flex; align-items:center; gap:14px; padding:16px 18px; cursor:pointer; }
+    .bo-ord-row:hover { background:var(--bg-secondary); }
+    .bo-ord-chev { color:var(--text-tertiary); font-size:16px; transition:transform 0.2s; }
+    .bo-ord-card.open .bo-ord-chev { transform:rotate(90deg); }
+    .bo-ord-num { font-size:14px; font-weight:700; color:var(--text-primary); }
+    .bo-ord-sub { font-size:12px; color:var(--text-tertiary); margin-top:3px; }
+    .bo-ord-mid { flex:1; min-width:0; }
+    .bo-ord-badge { font-size:11px; font-weight:700; padding:4px 10px; border-radius:12px; white-space:nowrap; }
+    .bo-ord-badge.placed { background:#fef3c7; color:#b45309; }
+    .bo-ord-badge.sent { background:#d1fae5; color:#047857; }
+    .bo-ord-badge.partial { background:#dbeafe; color:#1d4ed8; }
+    .bo-ord-del { width:32px; height:32px; border-radius:8px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--text-tertiary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:var(--font); }
+    .bo-ord-del:hover { color:var(--red); border-color:var(--red); }
+    .bo-ord-detail { border-top:0.5px solid var(--border); padding:16px 18px; background:var(--bg-secondary); display:flex; flex-direction:column; gap:12px; }
+    .bo-ord-supp { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:10px; padding:13px 15px; }
+    .bo-ord-supp-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .bo-ord-supp-name { font-size:13.5px; font-weight:700; color:var(--text-primary); }
+    .bo-ord-supp-line { display:flex; align-items:center; justify-content:space-between; font-size:12.5px; padding:2px 0; }
+    .bo-ord-supp-line span:first-child { color:var(--text-secondary); }
+    .bo-ord-supp-line span:last-child { color:var(--green); font-weight:700; }
+    .bo-ord-send { margin-top:10px; width:100%; padding:9px; border-radius:9px; border:none; background:var(--green); color:#fff; font-size:12.5px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:6px; }
+    .bo-ord-send:hover { opacity:0.93; }
+    .bo-ord-send.sent { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
+    .bo-ord-send.disabled { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
+    .bo-ord-empty { padding:44px 20px; text-align:center; color:var(--text-tertiary); font-size:14px; }
+    .bo-ord-empty i { font-size:34px; display:block; margin-bottom:12px; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2991,6 +3031,9 @@
     btn.disabled = false;
     soRenderRouting();
     document.getElementById('soRouteSheet').classList.add('show');
+    // keep Back Office Orders pane in sync if it's open
+    const boPane = document.getElementById('payPane_orders');
+    if (boPane && boPane.style.display !== 'none' && typeof renderBoOrders === 'function') renderBoOrders();
   }
 
   function soBuildRoutingJson() {
@@ -3076,6 +3119,166 @@
   function soCloseRoute() {
     const s = document.getElementById('soRouteSheet');
     if (s) s.classList.remove('show');
+  }
+
+  // ── Back Office: Orders tracking ──
+  let boOrders = [];
+  let boOrdersFilter = 'all';
+  let boOrdersExpanded = null;
+
+  async function loadBoOrders() {
+    if (!db) { boOrders = []; return; }
+    const { data, error } = await db.from('orders').select('*').order('created_at', { ascending: false });
+    if (error) { console.error('loadBoOrders error:', JSON.stringify(error)); boOrders = []; return; }
+    boOrders = data || [];
+  }
+
+  function boSetOrdersFilter(f) {
+    boOrdersFilter = f;
+    ['all', 'placed', 'sent'].forEach(x => {
+      const b = document.getElementById('boOrdFilter_' + x);
+      if (b) b.classList.toggle('active', x === f);
+    });
+    boRenderOrdersList();
+  }
+
+  async function renderBoOrders() {
+    const list = document.getElementById('boOrdList');
+    if (list) list.innerHTML = '<div class="bo-ord-empty">Loading orders\u2026</div>';
+    if (suppliers.length === 0) { try { await loadSuppliers(); } catch (e) {} }
+    await loadBoOrders();
+    boRenderStats();
+    boRenderOrdersList();
+  }
+
+  function boRenderStats() {
+    const el = document.getElementById('boOrdStats');
+    if (!el) return;
+    const total = boOrders.length;
+    const sent = boOrders.filter(o => boOrderStatusInfo(o).cls === 'sent').length;
+    const placed = total - sent;
+    el.innerHTML =
+      `<div class="bo-ord-stat"><div class="bo-ord-stat-num">${total}</div><div class="bo-ord-stat-label">Total orders</div></div>` +
+      `<div class="bo-ord-stat"><div class="bo-ord-stat-num">${placed}</div><div class="bo-ord-stat-label">Awaiting send</div></div>` +
+      `<div class="bo-ord-stat"><div class="bo-ord-stat-num">${sent}</div><div class="bo-ord-stat-label">Fully sent</div></div>`;
+  }
+
+  function boOrderStatusInfo(o) {
+    const routing = Array.isArray(o.routing) ? o.routing : [];
+    const withSupp = routing.filter(r => r.supplier_id != null);
+    const sentCount = withSupp.filter(r => r.sent).length;
+    if (o.status === 'sent' || (withSupp.length > 0 && sentCount === withSupp.length)) return { cls: 'sent', label: 'Sent' };
+    if (sentCount > 0) return { cls: 'partial', label: 'Partly sent' };
+    return { cls: 'placed', label: 'Placed' };
+  }
+
+  function boRenderOrdersList() {
+    const el = document.getElementById('boOrdList');
+    if (!el) return;
+    let rows = boOrders.slice();
+    if (boOrdersFilter === 'placed') rows = rows.filter(o => boOrderStatusInfo(o).cls !== 'sent');
+    else if (boOrdersFilter === 'sent') rows = rows.filter(o => boOrderStatusInfo(o).cls === 'sent');
+
+    if (!rows.length) {
+      el.innerHTML = '<div class="bo-ord-empty"><i class="ti ti-truck-delivery"></i>No orders here yet.<br>Tap \u201CNew Order\u201D to create one.</div>';
+      return;
+    }
+
+    el.innerHTML = rows.map(o => {
+      const routing = Array.isArray(o.routing) ? o.routing : [];
+      const info = boOrderStatusInfo(o);
+      const isOpen = String(boOrdersExpanded) === String(o.id);
+      const d = o.created_at ? new Date(o.created_at) : null;
+      const dateStr = d ? (d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' \u00B7 ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : '';
+      const suppNames = routing.map(r => r.supplier_name).filter(Boolean);
+      const detail = isOpen ? boRenderOrderDetail(o) : '';
+      return `<div class="bo-ord-card ${isOpen ? 'open' : ''}">
+        <div class="bo-ord-row" onclick="boToggleOrder('${o.id}')">
+          <i class="ti ti-chevron-right bo-ord-chev"></i>
+          <div class="bo-ord-mid">
+            <div class="bo-ord-num">${escapeHtml(o.order_number || ('Order #' + o.id))}</div>
+            <div class="bo-ord-sub">${dateStr} \u00B7 ${o.item_count || 0} item${o.item_count === 1 ? '' : 's'}${suppNames.length ? ' \u00B7 ' + escapeHtml(suppNames.join(', ')) : ''}</div>
+          </div>
+          <span class="bo-ord-badge ${info.cls}">${info.label}</span>
+          <button class="bo-ord-del" onclick="event.stopPropagation(); boDeleteOrder('${o.id}')"><i class="ti ti-trash"></i></button>
+        </div>
+        ${detail}
+      </div>`;
+    }).join('');
+  }
+
+  function boRenderOrderDetail(o) {
+    const routing = Array.isArray(o.routing) ? o.routing : [];
+    if (!routing.length) {
+      const items = Array.isArray(o.items) ? o.items : [];
+      const lines = items.map(it => `<div class="bo-ord-supp-line"><span>${escapeHtml(it.name)}</span><span>${escapeHtml(it.pack || (it.qty + (it.unit || '')))}</span></div>`).join('');
+      return `<div class="bo-ord-detail"><div class="bo-ord-supp">${lines || 'No items.'}</div></div>`;
+    }
+    const groups = routing.map((r, idx) => {
+      const lines = (r.items || []).map(it => `<div class="bo-ord-supp-line"><span>${escapeHtml(it.name)}</span><span>${escapeHtml(it.pack || (it.qty + (it.unit || '')))}</span></div>`).join('');
+      const supObj = r.supplier_id != null ? suppliers.find(s => String(s.id) === String(r.supplier_id)) : null;
+      const hasPhone = supObj && supObj.phone && String(supObj.phone).replace(/[^\d]/g, '');
+      let btn;
+      if (r.sent) btn = `<button class="bo-ord-send sent"><i class="ti ti-check"></i> Sent to ${escapeHtml(r.supplier_name)}</button>`;
+      else if (!hasPhone) btn = `<button class="bo-ord-send disabled"><i class="ti ti-alert-triangle"></i> ${r.supplier_id == null ? 'No supplier assigned' : 'No phone on file'}</button>`;
+      else btn = `<button class="bo-ord-send" onclick="boSendOrderSupplier('${o.id}', ${idx})"><i class="ti ti-brand-whatsapp"></i> Send to ${escapeHtml(r.supplier_name)}</button>`;
+      return `<div class="bo-ord-supp">
+        <div class="bo-ord-supp-head"><span class="bo-ord-supp-name">${escapeHtml(r.supplier_name || 'Unassigned')}</span></div>
+        ${lines}
+        ${btn}
+      </div>`;
+    }).join('');
+    return `<div class="bo-ord-detail">${groups}</div>`;
+  }
+
+  function boToggleOrder(id) {
+    boOrdersExpanded = (String(boOrdersExpanded) === String(id)) ? null : id;
+    boRenderOrdersList();
+  }
+
+  function boNewOrder() {
+    openSmartOrder();
+  }
+
+  async function boSendOrderSupplier(orderId, idx) {
+    const o = boOrders.find(x => String(x.id) === String(orderId));
+    if (!o) return;
+    const routing = Array.isArray(o.routing) ? o.routing : [];
+    const r = routing[idx];
+    if (!r) return;
+    const supObj = r.supplier_id != null ? suppliers.find(s => String(s.id) === String(r.supplier_id)) : null;
+    const phone = supObj ? String(supObj.phone || '').replace(/[^\d]/g, '') : '';
+    if (!phone) { showToast('No phone number for this supplier'); return; }
+    const contact = (supObj && supObj.contact_person) || r.supplier_name;
+    let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
+    (r.items || []).forEach(it => { msg += '\u2022 ' + it.name + ': ' + (it.qty + (it.unit || '')) + (it.pack ? ' (' + it.pack + ')' : '') + '\n'; });
+    msg += '\nOrder ref: ' + (o.order_number || ('#' + o.id)) + '\nThank you';
+    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+    r.sent = true;
+    const withSupp = routing.filter(x => x.supplier_id != null);
+    const allSent = withSupp.length > 0 && withSupp.every(x => x.sent);
+    if (allSent) o.status = 'sent';
+    if (db) {
+      const { error } = await db.from('orders').update({ routing: routing, status: o.status }).eq('id', o.id);
+      if (error) console.error('update order error:', JSON.stringify(error));
+    }
+    boRenderStats();
+    boRenderOrdersList();
+  }
+
+  async function boDeleteOrder(id) {
+    const o = boOrders.find(x => String(x.id) === String(id));
+    if (!o) return;
+    if (!confirm('Delete order ' + (o.order_number || ('#' + o.id)) + '?')) return;
+    if (db) {
+      const { error } = await db.from('orders').delete().eq('id', id);
+      if (error) { showToast('Failed to delete order'); console.error(error); return; }
+    }
+    boOrders = boOrders.filter(x => String(x.id) !== String(id));
+    if (String(boOrdersExpanded) === String(id)) boOrdersExpanded = null;
+    boRenderStats();
+    boRenderOrdersList();
+    showToast('Order deleted');
   }
 
   // ── Offline Sync Queue ──
@@ -6701,9 +6904,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function switchPayTab(tab) {
-    const labels = { overview: 'Overview', eod: 'End of Day', month: 'Month to Date', addproduct: 'Products', discounts: 'Discounts', members: 'Members', transactions: 'Transactions', reports: 'Reports', business: 'Business Information' };
+    const labels = { overview: 'Overview', eod: 'End of Day', month: 'Month to Date', addproduct: 'Products', discounts: 'Discounts', members: 'Members', transactions: 'Transactions', orders: 'Orders', reports: 'Reports', business: 'Business Information' };
     const isOverviewGroup = ['overview', 'eod', 'month'].includes(tab);
-    ['overview','eod','month','addproduct','discounts','members','transactions','reports','business'].forEach(t => {
+    ['overview','eod','month','addproduct','discounts','members','transactions','orders','reports','business'].forEach(t => {
       const navItem = document.getElementById('payNavItem_' + t);
       if (navItem) navItem.classList.toggle('active', t === tab);
       const pane = document.getElementById('payPane_' + t);
@@ -6727,6 +6930,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     if (tab === 'addproduct') resetAddProductForm();
     if (tab === 'discounts') { resetDiscountForm(); renderDiscountList(); }
     if (tab === 'members') showMemberListView();
+    if (tab === 'orders') renderBoOrders();
   }
 
   function switchPayChart(range) {
@@ -9559,6 +9763,9 @@ function exportBoMonthToExcel() {
       <button class="pay-dash-nav-item" id="payNavItem_transactions" onclick="switchPayTab('transactions')">
         <i class="ti ti-arrows-exchange"></i> Transactions
       </button>
+      <button class="pay-dash-nav-item" id="payNavItem_orders" onclick="switchPayTab('orders')">
+        <i class="ti ti-truck-delivery"></i> Orders
+      </button>
       <button class="pay-dash-nav-item" id="payNavItem_reports" onclick="switchPayTab('reports')">
         <i class="ti ti-chart-bar"></i> Reports
       </button>
@@ -10031,6 +10238,23 @@ function exportBoMonthToExcel() {
           Transaction history coming soon.
         </div>
       </div>
+    </div>
+
+    <!-- ORDERS PANE -->
+    <div class="pay-dash-body" id="payPane_orders" style="display:none;">
+      <div class="bo-ord-toolbar">
+        <div class="bo-ord-filters" id="boOrdFilters">
+          <button class="bo-ord-filter active" id="boOrdFilter_all" onclick="boSetOrdersFilter('all')">All</button>
+          <button class="bo-ord-filter" id="boOrdFilter_placed" onclick="boSetOrdersFilter('placed')">Placed</button>
+          <button class="bo-ord-filter" id="boOrdFilter_sent" onclick="boSetOrdersFilter('sent')">Sent</button>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="bo-ord-refresh" onclick="renderBoOrders()"><i class="ti ti-refresh"></i> Refresh</button>
+          <button class="bo-ord-new-btn" onclick="boNewOrder()"><i class="ti ti-plus"></i> New Order</button>
+        </div>
+      </div>
+      <div class="bo-ord-stats" id="boOrdStats"></div>
+      <div id="boOrdList"></div>
     </div>
 
     <!-- REPORTS PANE -->
