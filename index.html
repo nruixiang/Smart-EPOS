@@ -1253,6 +1253,22 @@
     .outlet-add-btn { display:flex; align-items:center; gap:6px; justify-content:center; width:100%; padding:10px 16px; border-radius:var(--radius-md); border:0.5px solid var(--border); background:transparent; color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); }
     .outlet-add-btn:hover { background:var(--bg-secondary); }
     .outlet-save-btn { display:flex; align-items:center; gap:6px; justify-content:center; width:100%; padding:10px 16px; border-radius:var(--radius-md); border:none; background:var(--green); color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); margin-top:4px; }
+    /* SUPPLIERS TAB */
+    .supp-card { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-radius:var(--radius-md); border:0.5px solid var(--border); margin-bottom:10px; }
+    .supp-avatar { width:38px; height:38px; border-radius:10px; background:var(--bg-tertiary); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--text-secondary); flex-shrink:0; }
+    .supp-main { flex:1; min-width:0; }
+    .supp-name-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .supp-name { font-size:14px; font-weight:600; color:var(--text-primary); }
+    .supp-tag { font-size:11px; font-weight:600; padding:2px 8px; border-radius:12px; background:var(--bg-tertiary); color:var(--text-secondary); }
+    .supp-contact { font-size:12.5px; color:var(--text-secondary); margin-top:5px; display:flex; flex-direction:column; gap:3px; }
+    .supp-contact span { display:flex; align-items:center; gap:6px; }
+    .supp-contact i { font-size:13px; color:var(--text-tertiary); width:14px; text-align:center; }
+    .supp-actions { display:flex; gap:6px; flex-shrink:0; }
+    .supp-icon-btn { width:30px; height:30px; border-radius:8px; border:0.5px solid var(--border); background:var(--bg-secondary); color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:var(--font); }
+    .supp-icon-btn:hover { color:var(--text-primary); border-color:var(--border-hover); }
+    .supp-icon-btn.del:hover { color:var(--red); border-color:var(--red); }
+    .supp-empty { padding:36px 20px; text-align:center; color:var(--text-tertiary); font-size:13px; }
+    .supp-empty i { font-size:30px; display:block; margin-bottom:10px; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1640,6 +1656,7 @@
       <button class="admin-tab" id="adminTabMenu" onclick="switchAdminTab('menu')"><i class="ti ti-calendar"></i>Menu Items</button>
       <button class="admin-tab active" id="adminTabSettings" onclick="switchAdminTab('settings')"><i class="ti ti-settings"></i>Settings</button>
       <button class="admin-tab" id="adminTabOutlets" onclick="switchAdminTab('outlets')"><i class="ti ti-building-store"></i>Outlets</button>
+      <button class="admin-tab" id="adminTabSuppliers" onclick="switchAdminTab('suppliers')"><i class="ti ti-truck-delivery"></i>Suppliers</button>
     </div>
     <div class="admin-body" id="adminBody">
       <!-- Settings tab (default) -->
@@ -1692,6 +1709,7 @@
         <p style="font-size:13px;color:var(--text-secondary);">Menu item management coming soon.</p>
       </div>
       <div id="adminOutletsContent" style="display:none;"></div>
+      <div id="adminSuppliersContent" style="display:none;"></div>
     </div>
   </div>
 </div>
@@ -1784,6 +1802,8 @@
   let currentOutletId = null;
   let currentOutletName = 'Orchard · T1';
   let outlets = [];
+  let suppliers = [];
+  let editingSupplierId = null;
   let BUSINESS_TYPE = '';
 
   function updateSetupBtn() {
@@ -2245,6 +2265,212 @@
     const address = (document.getElementById('newOutletAddress') || {}).value || '';
     if (!name.trim()) { showToast('Please enter an outlet name'); return; }
     addOutlet(name, address);
+  }
+
+  // ── Suppliers (Supabase) ──
+  const SUPPLIERS_LOCAL_KEY = 'smartepos_suppliers';
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  async function loadSuppliers() {
+    if (!db) {
+      try { suppliers = JSON.parse(localStorage.getItem(SUPPLIERS_LOCAL_KEY) || '[]'); }
+      catch (e) { suppliers = []; }
+      return;
+    }
+    const { data, error } = await db.from('suppliers').select('*').order('name', { ascending: true });
+    if (error) { console.error('loadSuppliers error:', JSON.stringify(error)); return; }
+    suppliers = data || [];
+    localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
+  }
+
+  function renderSuppliersTab() {
+    const el = document.getElementById('adminSuppliersContent');
+    if (!el) return;
+
+    if (suppliers.length === 0 && !el.dataset.loaded) {
+      el.innerHTML = '<div class="supp-empty">Loading suppliers…</div>';
+      loadSuppliers().then(() => { el.dataset.loaded = '1'; renderSuppliersTab(); });
+      return;
+    }
+    el.dataset.loaded = '1';
+
+    const listItems = suppliers.length
+      ? suppliers.map(s => `
+        <div class="supp-card">
+          <div class="supp-avatar">${escapeHtml((s.name || '?').trim().charAt(0).toUpperCase())}</div>
+          <div class="supp-main">
+            <div class="supp-name-row">
+              <span class="supp-name">${escapeHtml(s.name)}</span>
+              ${s.category ? `<span class="supp-tag">${escapeHtml(s.category)}</span>` : ''}
+            </div>
+            <div class="supp-contact">
+              ${s.contact_person ? `<span><i class="ti ti-user"></i>${escapeHtml(s.contact_person)}</span>` : ''}
+              ${s.phone ? `<span><i class="ti ti-phone"></i>${escapeHtml(s.phone)}</span>` : ''}
+              ${s.email ? `<span><i class="ti ti-mail"></i>${escapeHtml(s.email)}</span>` : ''}
+              ${s.address ? `<span><i class="ti ti-map-pin"></i>${escapeHtml(s.address)}</span>` : ''}
+              ${s.notes ? `<span><i class="ti ti-note"></i>${escapeHtml(s.notes)}</span>` : ''}
+            </div>
+          </div>
+          <div class="supp-actions">
+            <button class="supp-icon-btn" onclick="editSupplier('${s.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
+            <button class="supp-icon-btn del" onclick="deleteSupplier('${s.id}')" title="Delete"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>`).join('')
+      : `<div class="supp-empty"><i class="ti ti-truck-delivery"></i>No suppliers yet.<br>Add your first supplier to get started.</div>`;
+
+    el.innerHTML = `
+      <div id="supplierPanelMain" style="display:flex;flex-direction:column;gap:0;">
+        <div class="admin-section-label">Your Suppliers</div>
+        <div class="admin-section-note">Keep track of who you order stock from.</div>
+        <div>${listItems}</div>
+        <div style="margin-top:12px;">
+          <button class="outlet-add-btn" onclick="showSupplierForm()">
+            <i class="ti ti-plus" style="font-size:14px;"></i> Add New Supplier
+          </button>
+        </div>
+      </div>
+
+      <div id="supplierPanelForm" style="display:none;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <button onclick="showSupplierMain()"
+            style="background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:4px;display:flex;align-items:center;border-radius:6px;">
+            <i class="ti ti-arrow-left" style="font-size:18px;"></i>
+          </button>
+          <div class="admin-section-label" id="supplierFormTitle" style="margin:0;">New Supplier</div>
+        </div>
+        <div>
+          <div class="outlet-field-label">Supplier Name <span style="color:var(--red);">*</span></div>
+          <input class="outlet-input" id="suppName" placeholder="e.g. Kim Guan Coffee Supplies" />
+        </div>
+        <div>
+          <div class="outlet-field-label">Category <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
+          <input class="outlet-input" id="suppCategory" placeholder="e.g. Coffee Beans" />
+        </div>
+        <div>
+          <div class="outlet-field-label">Contact Person <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
+          <input class="outlet-input" id="suppContact" placeholder="e.g. Mr Tan" />
+        </div>
+        <div>
+          <div class="outlet-field-label">Phone <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
+          <input class="outlet-input" id="suppPhone" placeholder="e.g. +65 6123 4567" />
+        </div>
+        <div>
+          <div class="outlet-field-label">Email <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
+          <input class="outlet-input" id="suppEmail" placeholder="e.g. sales@kimguan.sg" />
+        </div>
+        <div>
+          <div class="outlet-field-label">Address <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
+          <input class="outlet-input" id="suppAddress" placeholder="e.g. 12 Woodlands Ave, #05-01" />
+        </div>
+        <div>
+          <div class="outlet-field-label">Notes <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></div>
+          <input class="outlet-input" id="suppNotes" placeholder="e.g. Delivers Tue and Fri, min order $80" />
+        </div>
+        <button class="outlet-save-btn" onclick="saveSupplierFromForm()">
+          <i class="ti ti-check" style="font-size:14px;"></i> <span id="suppSaveLabel">Save Supplier</span>
+        </button>
+      </div>`;
+  }
+
+  function showSupplierMain() {
+    const main = document.getElementById('supplierPanelMain');
+    const form = document.getElementById('supplierPanelForm');
+    if (main) main.style.display = 'flex';
+    if (form) form.style.display = 'none';
+  }
+
+  function showSupplierForm() {
+    editingSupplierId = null;
+    const main = document.getElementById('supplierPanelMain');
+    const form = document.getElementById('supplierPanelForm');
+    if (main) main.style.display = 'none';
+    if (form) form.style.display = 'flex';
+    ['suppName','suppCategory','suppContact','suppPhone','suppEmail','suppAddress','suppNotes']
+      .forEach(id => { const inp = document.getElementById(id); if (inp) inp.value = ''; });
+    const title = document.getElementById('supplierFormTitle'); if (title) title.textContent = 'New Supplier';
+    const lbl = document.getElementById('suppSaveLabel'); if (lbl) lbl.textContent = 'Save Supplier';
+    const nameInput = document.getElementById('suppName'); if (nameInput) nameInput.focus();
+  }
+
+  function editSupplier(id) {
+    const s = suppliers.find(x => String(x.id) === String(id));
+    if (!s) return;
+    editingSupplierId = s.id;
+    showSupplierForm();
+    document.getElementById('suppName').value = s.name || '';
+    document.getElementById('suppCategory').value = s.category || '';
+    document.getElementById('suppContact').value = s.contact_person || '';
+    document.getElementById('suppPhone').value = s.phone || '';
+    document.getElementById('suppEmail').value = s.email || '';
+    document.getElementById('suppAddress').value = s.address || '';
+    document.getElementById('suppNotes').value = s.notes || '';
+    const title = document.getElementById('supplierFormTitle'); if (title) title.textContent = 'Edit Supplier';
+    const lbl = document.getElementById('suppSaveLabel'); if (lbl) lbl.textContent = 'Save Changes';
+  }
+
+  async function saveSupplierFromForm() {
+    const row = {
+      name: (document.getElementById('suppName').value || '').trim(),
+      category: (document.getElementById('suppCategory').value || '').trim(),
+      contact_person: (document.getElementById('suppContact').value || '').trim(),
+      phone: (document.getElementById('suppPhone').value || '').trim(),
+      email: (document.getElementById('suppEmail').value || '').trim(),
+      address: (document.getElementById('suppAddress').value || '').trim(),
+      notes: (document.getElementById('suppNotes').value || '').trim(),
+    };
+    if (!row.name) { showToast('Please enter a supplier name'); return; }
+
+    if (!db) {
+      // Offline: store locally with a temp id
+      if (editingSupplierId) {
+        suppliers = suppliers.map(s => String(s.id) === String(editingSupplierId) ? { ...s, ...row } : s);
+      } else {
+        suppliers.push({ id: 'local_' + Date.now(), ...row });
+      }
+      localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
+      showSupplierMain();
+      renderSuppliersTab();
+      showToast('Saved locally (offline) ✓');
+      return;
+    }
+
+    if (editingSupplierId) {
+      const { error } = await db.from('suppliers').update(row).eq('id', editingSupplierId);
+      if (error) { showToast('Failed to update supplier'); console.error(error); return; }
+      showToast('Supplier updated ✓');
+    } else {
+      const { error } = await db.from('suppliers').insert(row);
+      if (error) { showToast('Failed to add supplier'); console.error(error); return; }
+      showToast('Supplier added ✓');
+    }
+    editingSupplierId = null;
+    await loadSuppliers();
+    showSupplierMain();
+    renderSuppliersTab();
+  }
+
+  async function deleteSupplier(id) {
+    const s = suppliers.find(x => String(x.id) === String(id));
+    if (!s) return;
+    if (!confirm('Delete supplier "' + s.name + '"?')) return;
+    if (!db) {
+      suppliers = suppliers.filter(x => String(x.id) !== String(id));
+      localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
+      renderSuppliersTab();
+      showToast('Supplier removed');
+      return;
+    }
+    const { error } = await db.from('suppliers').delete().eq('id', id);
+    if (error) { showToast('Failed to delete supplier'); console.error(error); return; }
+    suppliers = suppliers.filter(x => String(x.id) !== String(id));
+    localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
+    renderSuppliersTab();
+    showToast('Supplier removed');
   }
 
   // ── Offline Sync Queue ──
@@ -5196,11 +5422,14 @@
     document.getElementById('adminTabMenu').classList.toggle('active', tab === 'menu');
     document.getElementById('adminTabSettings').classList.toggle('active', tab === 'settings');
     document.getElementById('adminTabOutlets').classList.toggle('active', tab === 'outlets');
+    document.getElementById('adminTabSuppliers').classList.toggle('active', tab === 'suppliers');
     document.getElementById('adminSettingsContent').style.display = tab === 'settings' ? 'flex' : 'none';
     document.getElementById('adminMenuContent').style.display = tab === 'menu' ? 'block' : 'none';
     document.getElementById('adminOutletsContent').style.display = tab === 'outlets' ? 'block' : 'none';
+    document.getElementById('adminSuppliersContent').style.display = tab === 'suppliers' ? 'block' : 'none';
     if (tab === 'settings') { document.getElementById('adminSettingsContent').style.flexDirection = 'column'; document.getElementById('adminSettingsContent').style.gap = '0'; }
     if (tab === 'outlets') renderOutletsTab();
+    if (tab === 'suppliers') renderSuppliersTab();
   }
 
   // ── Supervisor PIN Modal ──
