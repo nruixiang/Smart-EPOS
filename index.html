@@ -1837,7 +1837,6 @@
       <button class="admin-close" onclick="closeAdminPanel()"><i class="ti ti-x"></i></button>
     </div>
     <div class="admin-tabs">
-      <button class="admin-tab" id="adminTabMenu" onclick="switchAdminTab('menu')"><i class="ti ti-calendar"></i>Menu Items</button>
       <button class="admin-tab active" id="adminTabSettings" onclick="switchAdminTab('settings')"><i class="ti ti-settings"></i>Settings</button>
       <button class="admin-tab" id="adminTabOutlets" onclick="switchAdminTab('outlets')"><i class="ti ti-building-store"></i>Outlets</button>
       <button class="admin-tab" id="adminTabSuppliers" onclick="switchAdminTab('suppliers')"><i class="ti ti-truck-delivery"></i>Suppliers</button>
@@ -1889,9 +1888,6 @@
         <button class="admin-resetup-btn" onclick="closeAdminPanel(); openSetupScreen();">
           <i class="ti ti-refresh"></i> Re-run Setup
         </button>
-      </div>
-      <div id="adminMenuContent" style="display:none;">
-        <p style="font-size:13px;color:var(--text-secondary);">Menu item management coming soon.</p>
       </div>
       <div id="adminOutletsContent" style="display:none;"></div>
       <div id="adminSuppliersContent" style="display:none;"></div>
@@ -6481,13 +6477,11 @@
 
   // ── Admin Tab Switch ──
   function switchAdminTab(tab) {
-    document.getElementById('adminTabMenu').classList.toggle('active', tab === 'menu');
     document.getElementById('adminTabSettings').classList.toggle('active', tab === 'settings');
     document.getElementById('adminTabOutlets').classList.toggle('active', tab === 'outlets');
     document.getElementById('adminTabSuppliers').classList.toggle('active', tab === 'suppliers');
     document.getElementById('adminTabIngredients').classList.toggle('active', tab === 'ingredients');
     document.getElementById('adminSettingsContent').style.display = tab === 'settings' ? 'flex' : 'none';
-    document.getElementById('adminMenuContent').style.display = tab === 'menu' ? 'block' : 'none';
     document.getElementById('adminOutletsContent').style.display = tab === 'outlets' ? 'block' : 'none';
     document.getElementById('adminSuppliersContent').style.display = tab === 'suppliers' ? 'block' : 'none';
     document.getElementById('adminIngredientsContent').style.display = tab === 'ingredients' ? 'block' : 'none';
@@ -10029,18 +10023,6 @@ function exportBoMonthToExcel() {
       </button>
       <button class="pay-dash-nav-item" id="payNavItem_reports" onclick="switchPayTab('reports')">
         <i class="ti ti-chart-bar"></i> Reports
-      </button>
-    </div>
-    <div class="pay-dash-sidebar-section" style="margin-top:4px;">
-      <div class="pay-dash-sidebar-label">No-Code Tools</div>
-      <button class="pay-dash-nav-item" style="opacity:0.45;cursor:not-allowed;">
-        <i class="ti ti-link"></i> Payment Links
-      </button>
-      <button class="pay-dash-nav-item" style="opacity:0.45;cursor:not-allowed;">
-        <i class="ti ti-file-invoice"></i> Invoicing
-      </button>
-      <button class="pay-dash-nav-item" style="opacity:0.45;cursor:not-allowed;">
-        <i class="ti ti-qrcode"></i> Static QRs
       </button>
     </div>
     <div class="pay-dash-sidebar-footer">
