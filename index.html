@@ -3094,7 +3094,7 @@
     soShowStep(1);
     if (suppliers.length === 0) { try { await loadSuppliers(); } catch (e) {} }
     await loadSoIngredients();
-    soIngredients.forEach(i => { const q = Number(i.suggested_qty) || 0; if (q > 0) soCart[i.id] = q; });
+    soIngredients.forEach(i => { const q = Number(i.suggested_qty) || 0; if (q > 0) soLastQty[i.id] = q; });
     soRenderStep1();
   }
 
