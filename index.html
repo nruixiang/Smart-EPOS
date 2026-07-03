@@ -1412,6 +1412,21 @@
     .so-send-btn.sent { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
     .so-send-btn.disabled { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
     @media (max-width:560px) { .so-grid { grid-template-columns:1fr 1fr; } .so-modal { height:94vh; max-width:100vw; border-radius:0; } }
+    /* multi-select toolbar */
+    .so-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+    .so-search-wrap { position:relative; flex:1; min-width:180px; }
+    .so-search-wrap > i { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-tertiary); font-size:16px; pointer-events:none; }
+    .so-search { width:100%; padding:9px 12px 9px 34px; border-radius:10px; border:0.5px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); font-size:13px; font-family:var(--font); outline:none; }
+    .so-search:focus { border-color:var(--border-hover); }
+    .so-bulk-btn { padding:9px 14px; border-radius:10px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--text-secondary); font-size:12.5px; font-weight:600; cursor:pointer; font-family:var(--font); white-space:nowrap; display:flex; align-items:center; gap:6px; }
+    .so-bulk-btn:hover { color:var(--text-primary); border-color:var(--border-hover); }
+    .so-card { position:relative; cursor:pointer; transition:border-color 0.15s, opacity 0.15s, box-shadow 0.15s; }
+    .so-card.selected { border-color:var(--blue); box-shadow:0 0 0 1px var(--blue) inset; }
+    .so-card.deselected { opacity:0.5; }
+    .so-check { position:absolute; top:12px; right:12px; width:22px; height:22px; border-radius:50%; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; background:var(--bg-primary); transition:background 0.15s, border-color 0.15s; }
+    .so-card.selected .so-check { background:var(--blue); border-color:var(--blue); }
+    .so-card .so-card-name { padding-right:26px; }
+    .so-empty-filter { grid-column:1 / -1; text-align:center; color:var(--text-tertiary); font-size:13px; padding:34px 20px; }
     /* ── BACK OFFICE: ORDERS PANE ── */
     .bo-ord-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
     .bo-ord-filters { display:flex; gap:6px; background:var(--bg-secondary); padding:4px; border-radius:10px; }
@@ -3014,6 +3029,8 @@
   let soIngredients = [];
   let soCart = {};        // ingredientId -> qty
   let soCategory = 'All';
+  let soSearch = '';
+  let soLastQty = {};     // remembers qty when an item is deselected
   let soOrderLines = [];  // [{ing, qty}]
   let soRouting = [];     // [{supplier|null, items:[{ing,qty}], sent}]
   let soOrderNumber = null;
@@ -3070,6 +3087,7 @@
   async function openSmartOrder() {
     document.getElementById('soOverlay').classList.add('show');
     soCart = {}; soOrderLines = []; soRouting = []; soOrderNumber = null; soOrderRowId = null; soCategory = 'All';
+    soSearch = ''; soLastQty = {};
     soCloseRoute();
     document.getElementById('soStep1').innerHTML = '<div class="so-empty">Loading items\u2026</div>';
     document.getElementById('soStep2').innerHTML = '';
@@ -3101,6 +3119,13 @@
     else { closeSmartOrder(); }
   }
 
+  function soFilteredIngredients() {
+    let list = soCategory === 'All' ? soIngredients : soIngredients.filter(i => i.category === soCategory);
+    const q = (soSearch || '').trim().toLowerCase();
+    if (q) list = list.filter(i => (i.name || '').toLowerCase().includes(q));
+    return list;
+  }
+
   function soRenderStep1() {
     const step1 = document.getElementById('soStep1');
     if (!soIngredients.length) {
@@ -3112,7 +3137,7 @@
     soIngredients.forEach(i => { if (i.category && !cats.includes(i.category)) cats.push(i.category); });
     const sugg = soIngredients.filter(i => Number(i.suggested_qty) > 0)
       .sort((a, b) => Number(b.suggested_qty) - Number(a.suggested_qty)).slice(0, 3);
-    const list = soCategory === 'All' ? soIngredients : soIngredients.filter(i => i.category === soCategory);
+    const list = soFilteredIngredients();
 
     const suggHtml = sugg.length ? `
       <div class="so-sug">
@@ -3130,28 +3155,42 @@
         </div>
       </div>` : '';
 
+    const toolbarHtml = `
+      <div class="so-toolbar">
+        <div class="so-search-wrap">
+          <i class="ti ti-search"></i>
+          <input class="so-search" id="soSearchInput" placeholder="Search ingredients\u2026" value="${escapeHtml(soSearch)}" oninput="soOnSearch(this.value)" />
+        </div>
+        <button class="so-bulk-btn" onclick="soSelectAllVisible()"><i class="ti ti-checks"></i> Select all</button>
+        <button class="so-bulk-btn" onclick="soClearAllVisible()"><i class="ti ti-square-off"></i> Clear</button>
+      </div>`;
+
     const tabsHtml = `<div class="so-tabs">${cats.map(c =>
       `<button class="so-tab ${c === soCategory ? 'active' : ''}" onclick="soSetCat('${escapeHtml(c)}')">${escapeHtml(c)}</button>`
     ).join('')}</div>`;
 
-    const gridHtml = `<div class="so-grid">${list.map(i => {
+    const gridInner = list.length ? list.map(i => {
       const qty = soCart[i.id] != null ? soCart[i.id] : 0;
-      return `<div class="so-card">
+      const selected = Number(qty) > 0;
+      return `<div class="so-card ${selected ? 'selected' : 'deselected'}" data-name="${escapeHtml((i.name || '').toLowerCase())}" onclick="soToggleSelect('${i.id}')">
+        <div class="so-check">${selected ? '<i class="ti ti-check"></i>' : ''}</div>
         <span class="so-card-tag ${soCatClass(i.category)}">${escapeHtml(i.category || 'Item')}</span>
         <div class="so-card-name">${escapeHtml(i.name)}</div>
         <div class="so-card-sug">Suggested qty: ${soFmtQty(Number(i.suggested_qty) || 0, i.unit)}</div>
-        <div class="so-stepper">
+        <div class="so-stepper" onclick="event.stopPropagation()">
           <button class="so-step-btn" onclick="soAdjust('${i.id}',-1)">\u2212</button>
           <div class="so-qty-wrap">
-            <input class="so-qty-input" id="soQty_${i.id}" type="number" min="0" value="${qty}" onchange="soSetQty('${i.id}', this.value)" />
+            <input class="so-qty-input" id="soQty_${i.id}" type="number" min="0" value="${qty}" onclick="event.stopPropagation()" onchange="soSetQty('${i.id}', this.value)" />
             <div class="so-qty-unit">${escapeHtml(i.unit || 'g')}</div>
           </div>
           <button class="so-step-btn plus" onclick="soAdjust('${i.id}',1)">+</button>
         </div>
       </div>`;
-    }).join('')}</div>`;
+    }).join('') : '<div class="so-empty-filter">No ingredients match your search.</div>';
 
-    step1.innerHTML = suggHtml + tabsHtml + gridHtml;
+    const gridHtml = `<div class="so-grid">${gridInner}</div>`;
+
+    step1.innerHTML = suggHtml + toolbarHtml + tabsHtml + gridHtml;
     soUpdateCount();
   }
 
@@ -3164,26 +3203,60 @@
     let q = (soCart[id] != null ? Number(soCart[id]) : 0) + dir * step;
     if (q < 0) q = 0;
     soCart[id] = q;
-    const inp = document.getElementById('soQty_' + id);
-    if (inp) inp.value = q;
-    soUpdateCount();
+    if (q > 0) soLastQty[id] = q;
+    soRenderStep1();
   }
 
   function soSetQty(id, val) {
     let q = parseFloat(val);
     if (isNaN(q) || q < 0) q = 0;
     soCart[id] = q;
-    soUpdateCount();
+    if (q > 0) soLastQty[id] = q;
+    soRenderStep1();
+  }
+
+  function soDefaultQty(ing) {
+    if (Number(soLastQty[ing.id]) > 0) return Number(soLastQty[ing.id]);
+    if (Number(ing.suggested_qty) > 0) return Number(ing.suggested_qty);
+    return soStepSize(ing);
+  }
+
+  function soToggleSelect(id) {
+    const ing = soIngredients.find(x => String(x.id) === String(id));
+    if (!ing) return;
+    const cur = Number(soCart[id]) || 0;
+    if (cur > 0) { soLastQty[id] = cur; soCart[id] = 0; }
+    else { soCart[id] = soDefaultQty(ing); }
+    soRenderStep1();
+  }
+
+  function soOnSearch(val) {
+    soSearch = val;
+    soRenderStep1();
+    const inp = document.getElementById('soSearchInput');
+    if (inp) { inp.focus(); try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e) {} }
+  }
+
+  function soSelectAllVisible() {
+    soFilteredIngredients().forEach(i => { if (!(Number(soCart[i.id]) > 0)) soCart[i.id] = soDefaultQty(i); });
+    soRenderStep1();
+  }
+
+  function soClearAllVisible() {
+    soFilteredIngredients().forEach(i => { const cur = Number(soCart[i.id]) || 0; if (cur > 0) { soLastQty[i.id] = cur; soCart[i.id] = 0; } });
+    soRenderStep1();
   }
 
   function soSuggClick(id) {
     const ing = soIngredients.find(x => String(x.id) === String(id));
     if (!ing) return;
-    soCart[id] = Number(ing.suggested_qty) || 0;
-    if (soCategory !== 'All' && ing.category !== soCategory) { soCategory = 'All'; soRenderStep1(); }
+    soCart[id] = Number(ing.suggested_qty) > 0 ? Number(ing.suggested_qty) : soDefaultQty(ing);
+    soLastQty[id] = soCart[id];
+    if (soCategory !== 'All' && ing.category !== soCategory) soCategory = 'All';
+    soSearch = '';
+    soRenderStep1();
     const inp = document.getElementById('soQty_' + id);
-    if (inp) { inp.value = soCart[id]; inp.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-    soUpdateCount();
+    if (inp) inp.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   function soUpdateCount() {
