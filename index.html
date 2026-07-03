@@ -1314,6 +1314,104 @@
     .supp-cancel { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:13px; font-weight:600; font-family:var(--font); }
     .supp-cancel:hover { color:var(--text-primary); }
     @media (max-width:560px) { .supp-row2 { grid-template-columns:1fr; } }
+    /* ── SMART ORDERING SYSTEM ── */
+    .so-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:500; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+    .so-overlay.show { opacity:1; pointer-events:all; }
+    .so-modal { position:relative; background:var(--bg-primary); width:760px; max-width:96vw; height:90vh; border-radius:16px; display:flex; flex-direction:column; overflow:hidden; border:0.5px solid var(--border); }
+    .so-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:0.5px solid var(--border); flex-shrink:0; }
+    .so-header-title { display:flex; align-items:center; gap:10px; font-size:16px; font-weight:700; color:var(--text-primary); }
+    .so-header-title i { font-size:20px; color:var(--blue); }
+    .so-close { background:none; border:none; cursor:pointer; color:var(--text-tertiary); font-size:20px; display:flex; }
+    .so-close:hover { color:var(--text-primary); }
+    .so-subhead { display:flex; align-items:center; gap:10px; padding:14px 20px; flex-shrink:0; }
+    .so-back { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:18px; display:flex; padding:2px; }
+    .so-back:hover { color:var(--text-primary); }
+    .so-subhead-title { font-size:15px; font-weight:700; color:var(--text-primary); }
+    .so-body { flex:1; overflow-y:auto; padding:0 20px 16px; }
+    /* suggestions banner */
+    .so-sug { background:rgba(37,99,235,0.06); border:0.5px solid rgba(37,99,235,0.25); border-radius:var(--radius-lg); padding:14px 16px; margin-bottom:16px; }
+    .so-sug-head { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .so-sug-icon { width:26px; height:26px; border-radius:8px; background:var(--blue); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; }
+    .so-sug-title { font-size:12px; font-weight:800; letter-spacing:0.04em; color:var(--blue); text-transform:uppercase; }
+    .so-sug-sub { font-size:11px; font-weight:600; color:var(--text-tertiary); background:var(--bg-tertiary); padding:2px 8px; border-radius:10px; }
+    .so-sug-chips { display:flex; gap:10px; flex-wrap:wrap; }
+    .so-sug-chip { display:flex; align-items:center; gap:8px; background:var(--bg-primary); border:0.5px solid var(--border); border-radius:10px; padding:8px 12px; cursor:pointer; transition:border-color 0.15s; }
+    .so-sug-chip:hover { border-color:var(--blue); }
+    .so-sug-emoji { font-size:16px; }
+    .so-sug-name { font-size:13px; font-weight:700; color:var(--text-primary); }
+    .so-sug-qty { font-size:11px; font-weight:600; color:var(--blue); }
+    /* category tabs */
+    .so-tabs { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; }
+    .so-tab { display:flex; align-items:center; gap:6px; padding:7px 16px; border-radius:20px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--text-secondary); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); white-space:nowrap; }
+    .so-tab.active { background:var(--blue); border-color:var(--blue); color:#fff; }
+    /* product grid */
+    .so-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:14px; }
+    .so-card { border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; background:var(--bg-primary); }
+    .so-card-tag { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:12px; margin-bottom:10px; }
+    .so-tag-coffee { background:#fef3c7; color:#b45309; }
+    .so-tag-baking { background:#ffedd5; color:#c2410c; }
+    .so-tag-general { background:var(--bg-tertiary); color:var(--text-secondary); }
+    .so-tag-default { background:var(--bg-tertiary); color:var(--text-secondary); }
+    .so-card-name { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:3px; }
+    .so-card-sug { font-size:12px; color:var(--text-tertiary); margin-bottom:12px; }
+    .so-stepper { display:flex; align-items:center; gap:8px; }
+    .so-step-btn { width:36px; height:36px; border-radius:50%; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--blue); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:var(--font); }
+    .so-step-btn:hover { background:rgba(37,99,235,0.08); }
+    .so-step-btn.plus { border:none; background:rgba(37,99,235,0.1); }
+    .so-qty-wrap { flex:1; text-align:center; }
+    .so-qty-input { width:100%; text-align:center; font-size:16px; font-weight:700; color:var(--text-primary); border:0.5px solid var(--border); border-radius:10px; padding:7px 4px; background:var(--bg-secondary); font-family:var(--font); outline:none; }
+    .so-qty-input:focus { border-color:var(--border-hover); }
+    .so-qty-unit { font-size:11px; color:var(--text-tertiary); margin-top:3px; }
+    /* footer */
+    .so-footer { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:0.5px solid var(--border); flex-shrink:0; gap:12px; }
+    .so-foot-count { font-size:13px; color:var(--text-secondary); }
+    .so-foot-count b { color:var(--text-primary); }
+    .so-foot-btns { display:flex; gap:10px; }
+    .so-btn-cancel { padding:10px 20px; border-radius:22px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); }
+    .so-btn-cancel:hover { border-color:var(--border-hover); }
+    .so-btn-primary { padding:10px 22px; border-radius:22px; border:none; background:#111; color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); display:flex; align-items:center; gap:7px; }
+    [data-theme="dark"] .so-btn-primary { background:#fff; color:#111; }
+    .so-btn-primary:disabled { opacity:0.4; cursor:not-allowed; }
+    .so-btn-place { width:100%; padding:15px; border-radius:14px; border:none; background:var(--green); color:#fff; font-size:15px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:9px; }
+    .so-btn-place:hover { opacity:0.94; }
+    .so-btn-place:disabled { opacity:0.4; cursor:not-allowed; }
+    /* order details list */
+    .so-item-row { display:flex; align-items:center; gap:14px; padding:14px 16px; border:0.5px solid var(--border); border-radius:var(--radius-lg); margin-bottom:12px; }
+    .so-item-emoji { width:44px; height:44px; border-radius:50%; background:var(--bg-tertiary); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .so-item-main { flex:1; min-width:0; }
+    .so-item-name { font-size:15px; font-weight:700; color:var(--text-primary); }
+    .so-item-meta { font-size:13px; color:var(--text-secondary); margin-top:3px; }
+    .so-item-meta b { color:var(--green); }
+    .so-item-actions { display:flex; gap:8px; }
+    .so-item-btn { width:34px; height:34px; border-radius:50%; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:var(--font); }
+    .so-item-btn:hover { color:var(--text-primary); border-color:var(--border-hover); }
+    .so-item-btn.del:hover { color:var(--red); border-color:var(--red); }
+    .so-empty { text-align:center; padding:50px 20px; color:var(--text-tertiary); font-size:14px; }
+    .so-empty i { font-size:34px; display:block; margin-bottom:12px; }
+    /* routing bottom sheet */
+    .so-route-sheet { position:absolute; left:0; right:0; bottom:0; max-height:78%; background:#ecfdf5; border-top-left-radius:18px; border-top-right-radius:18px; box-shadow:0 -8px 30px rgba(0,0,0,0.18); transform:translateY(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; z-index:5; }
+    [data-theme="dark"] .so-route-sheet { background:#0f2e20; }
+    .so-route-sheet.show { transform:translateY(0); }
+    .so-route-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; flex-shrink:0; }
+    .so-route-title { font-size:13px; font-weight:700; color:var(--green); }
+    .so-route-close { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:13px; font-weight:600; font-family:var(--font); }
+    .so-route-close:hover { color:var(--text-primary); }
+    .so-route-body { overflow-y:auto; padding:0 16px 18px; display:flex; flex-direction:column; gap:14px; }
+    .so-supp-card { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; }
+    .so-supp-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px; }
+    .so-supp-name { font-size:15px; font-weight:700; color:var(--text-primary); }
+    .so-supp-count { font-size:12px; color:var(--text-tertiary); }
+    .so-supp-line { display:flex; align-items:center; justify-content:space-between; font-size:13px; padding:3px 0; }
+    .so-supp-line-name { color:var(--text-secondary); }
+    .so-supp-line-qty { color:var(--green); font-weight:700; }
+    .so-ai-btn { width:100%; margin-top:12px; padding:10px; border-radius:10px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--blue); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:7px; }
+    .so-ai-btn:hover { border-color:var(--blue); }
+    .so-ai-out { margin-top:10px; font-size:12.5px; line-height:1.5; color:var(--text-secondary); background:rgba(37,99,235,0.06); border-radius:10px; padding:10px 12px; }
+    .so-send-btn { width:100%; margin-top:10px; padding:12px; border-radius:10px; border:none; background:var(--green); color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; }
+    .so-send-btn:hover { opacity:0.94; }
+    .so-send-btn.sent { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
+    .so-send-btn.disabled { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
+    @media (max-width:560px) { .so-grid { grid-template-columns:1fr 1fr; } .so-modal { height:94vh; max-width:100vw; border-radius:0; } }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1387,6 +1485,7 @@
       </button>
       <button class="action-btn" onclick="openReports()"><i class="ti ti-chart-bar"></i><span>Reports</span></button>
       <button class="action-btn" onclick="openMembers()"><i class="ti ti-users"></i><span>Members</span></button>
+      <button class="action-btn" onclick="openSmartOrder()"><i class="ti ti-truck-delivery"></i><span>Orders</span></button>
       <button class="action-btn" onclick="openOrdersModal()"><i class="ti ti-shopping-cart"></i><span>Transactions</span></button>
     </div>
   </div>
@@ -2624,6 +2723,359 @@
     localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
     renderSuppliersTab();
     showToast('Supplier removed');
+  }
+
+  // ── Smart Ordering System ──
+  let soIngredients = [];
+  let soCart = {};        // ingredientId -> qty
+  let soCategory = 'All';
+  let soOrderLines = [];  // [{ing, qty}]
+  let soRouting = [];     // [{supplier|null, items:[{ing,qty}], sent}]
+  let soOrderNumber = null;
+  let soOrderRowId = null;
+  let soStepNum = 1;
+  const SO_STEP_G = 100;
+
+  function soEmoji(ing) {
+    if (ing.emoji) return ing.emoji;
+    const c = (ing.category || '').toLowerCase();
+    if (c.includes('coff')) return '\u2615';
+    if (c.includes('bak')) return '\uD83E\uDD56';
+    if (c.includes('dairy')) return '\uD83E\uDD5B';
+    if (c.includes('tea')) return '\uD83C\uDF75';
+    if (c.includes('produce')) return '\uD83E\uDD6C';
+    return '\uD83D\uDCE6';
+  }
+  function soFmtQty(qty, unit) { return (Math.round(Number(qty) * 100) / 100) + (unit || 'g'); }
+  function soFmtPackSize(ing) {
+    const ps = Number(ing.pack_size) || 0, u = ing.unit || 'g';
+    if (u === 'g' && ps >= 1000) return (ps / 1000) + 'kg';
+    if (u === 'ml' && ps >= 1000) return (ps / 1000) + 'l';
+    return ps + (u || '');
+  }
+  function soPack(qty, ing) {
+    const ps = Number(ing.pack_size) || 0;
+    if (!ps) return soFmtQty(qty, ing.unit);
+    const count = Math.max(1, Math.ceil(Number(qty) / ps));
+    let label = ing.pack_label || 'pack';
+    if (count !== 1 && !/s$/i.test(label)) label += 's';
+    return count + ' \u00D7 ' + soFmtPackSize(ing) + ' ' + label;
+  }
+  function soStepSize(ing) { const u = ing.unit || 'g'; return (u === 'g' || u === 'ml') ? SO_STEP_G : 1; }
+  function soCatClass(cat) {
+    const c = (cat || '').toLowerCase();
+    if (c.includes('coff')) return 'so-tag-coffee';
+    if (c.includes('bak')) return 'so-tag-baking';
+    if (c.includes('gen')) return 'so-tag-general';
+    return 'so-tag-default';
+  }
+
+  async function loadSoIngredients() {
+    if (!db) { soIngredients = []; return; }
+    const { data, error } = await db.from('ingredients').select('*').order('name', { ascending: true });
+    if (error) { console.error('loadIngredients error:', JSON.stringify(error)); soIngredients = []; return; }
+    soIngredients = data || [];
+  }
+
+  async function openSmartOrder() {
+    document.getElementById('soOverlay').classList.add('show');
+    soCart = {}; soOrderLines = []; soRouting = []; soOrderNumber = null; soOrderRowId = null; soCategory = 'All';
+    soCloseRoute();
+    document.getElementById('soStep1').innerHTML = '<div class="so-empty">Loading items\u2026</div>';
+    document.getElementById('soStep2').innerHTML = '';
+    soShowStep(1);
+    if (suppliers.length === 0) { try { await loadSuppliers(); } catch (e) {} }
+    await loadSoIngredients();
+    soIngredients.forEach(i => { const q = Number(i.suggested_qty) || 0; if (q > 0) soCart[i.id] = q; });
+    soRenderStep1();
+  }
+
+  function closeSmartOrder() {
+    document.getElementById('soOverlay').classList.remove('show');
+    soCloseRoute();
+  }
+
+  function soShowStep(n) {
+    soStepNum = n;
+    document.getElementById('soStep1').style.display = n === 1 ? 'block' : 'none';
+    document.getElementById('soStep2').style.display = n === 2 ? 'block' : 'none';
+    document.getElementById('soFooter1').style.display = n === 1 ? 'flex' : 'none';
+    document.getElementById('soFooter2').style.display = n === 2 ? 'flex' : 'none';
+    document.getElementById('soSubTitle').textContent = n === 1
+      ? (soOrderNumber ? ('Order Number: ' + soOrderNumber) : 'Order Number: (new)')
+      : 'Order Details (Added Items)';
+  }
+
+  function soBack() {
+    if (soStepNum === 2) { soCloseRoute(); soShowStep(1); soRenderStep1(); }
+    else { closeSmartOrder(); }
+  }
+
+  function soRenderStep1() {
+    const step1 = document.getElementById('soStep1');
+    if (!soIngredients.length) {
+      step1.innerHTML = '<div class="so-empty"><i class="ti ti-package-off"></i>No ingredients yet.<br>Add rows to the <b>ingredients</b> table in Supabase to start ordering.</div>';
+      soUpdateCount();
+      return;
+    }
+    const cats = ['All'];
+    soIngredients.forEach(i => { if (i.category && !cats.includes(i.category)) cats.push(i.category); });
+    const sugg = soIngredients.filter(i => Number(i.suggested_qty) > 0)
+      .sort((a, b) => Number(b.suggested_qty) - Number(a.suggested_qty)).slice(0, 3);
+    const list = soCategory === 'All' ? soIngredients : soIngredients.filter(i => i.category === soCategory);
+
+    const suggHtml = sugg.length ? `
+      <div class="so-sug">
+        <div class="so-sug-head">
+          <span class="so-sug-icon"><i class="ti ti-sparkles"></i></span>
+          <span class="so-sug-title">Smart Reorder Suggestions</span>
+          <span class="so-sug-sub">Based on sales velocity</span>
+        </div>
+        <div class="so-sug-chips">
+          ${sugg.map(i => `<div class="so-sug-chip" onclick="soSuggClick('${i.id}')">
+            <span class="so-sug-emoji">${soEmoji(i)}</span>
+            <div><div class="so-sug-name">${escapeHtml(i.name)}</div>
+            <div class="so-sug-qty">+ ${soFmtQty(Number(i.suggested_qty), i.unit)}</div></div>
+          </div>`).join('')}
+        </div>
+      </div>` : '';
+
+    const tabsHtml = `<div class="so-tabs">${cats.map(c =>
+      `<button class="so-tab ${c === soCategory ? 'active' : ''}" onclick="soSetCat('${escapeHtml(c)}')">${escapeHtml(c)}</button>`
+    ).join('')}</div>`;
+
+    const gridHtml = `<div class="so-grid">${list.map(i => {
+      const qty = soCart[i.id] != null ? soCart[i.id] : 0;
+      return `<div class="so-card">
+        <span class="so-card-tag ${soCatClass(i.category)}">${escapeHtml(i.category || 'Item')}</span>
+        <div class="so-card-name">${escapeHtml(i.name)}</div>
+        <div class="so-card-sug">Suggested qty: ${soFmtQty(Number(i.suggested_qty) || 0, i.unit)}</div>
+        <div class="so-stepper">
+          <button class="so-step-btn" onclick="soAdjust('${i.id}',-1)">\u2212</button>
+          <div class="so-qty-wrap">
+            <input class="so-qty-input" id="soQty_${i.id}" type="number" min="0" value="${qty}" onchange="soSetQty('${i.id}', this.value)" />
+            <div class="so-qty-unit">${escapeHtml(i.unit || 'g')}</div>
+          </div>
+          <button class="so-step-btn plus" onclick="soAdjust('${i.id}',1)">+</button>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+
+    step1.innerHTML = suggHtml + tabsHtml + gridHtml;
+    soUpdateCount();
+  }
+
+  function soSetCat(c) { soCategory = c; soRenderStep1(); }
+
+  function soAdjust(id, dir) {
+    const ing = soIngredients.find(x => String(x.id) === String(id));
+    if (!ing) return;
+    const step = soStepSize(ing);
+    let q = (soCart[id] != null ? Number(soCart[id]) : 0) + dir * step;
+    if (q < 0) q = 0;
+    soCart[id] = q;
+    const inp = document.getElementById('soQty_' + id);
+    if (inp) inp.value = q;
+    soUpdateCount();
+  }
+
+  function soSetQty(id, val) {
+    let q = parseFloat(val);
+    if (isNaN(q) || q < 0) q = 0;
+    soCart[id] = q;
+    soUpdateCount();
+  }
+
+  function soSuggClick(id) {
+    const ing = soIngredients.find(x => String(x.id) === String(id));
+    if (!ing) return;
+    soCart[id] = Number(ing.suggested_qty) || 0;
+    if (soCategory !== 'All' && ing.category !== soCategory) { soCategory = 'All'; soRenderStep1(); }
+    const inp = document.getElementById('soQty_' + id);
+    if (inp) { inp.value = soCart[id]; inp.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    soUpdateCount();
+  }
+
+  function soUpdateCount() {
+    const n = Object.values(soCart).filter(q => Number(q) > 0).length;
+    const el = document.getElementById('soSelCount'); if (el) el.textContent = n;
+    const btn = document.getElementById('soAddItemBtn'); if (btn) btn.disabled = n === 0;
+  }
+
+  function soGoToDetails() {
+    soOrderLines = soIngredients.filter(i => Number(soCart[i.id]) > 0).map(i => ({ ing: i, qty: Number(soCart[i.id]) }));
+    if (!soOrderLines.length) { showToast('Select at least one item'); return; }
+    soShowStep(2);
+    soRenderStep2();
+  }
+
+  function soRenderStep2() {
+    const step2 = document.getElementById('soStep2');
+    if (!soOrderLines.length) {
+      step2.innerHTML = '<div class="so-empty"><i class="ti ti-clipboard-off"></i>No items added.</div>';
+      document.getElementById('soPlaceBtn').disabled = true;
+      return;
+    }
+    document.getElementById('soPlaceBtn').disabled = false;
+    step2.innerHTML = soOrderLines.map((l, idx) => `
+      <div class="so-item-row">
+        <div class="so-item-emoji">${soEmoji(l.ing)}</div>
+        <div class="so-item-main">
+          <div class="so-item-name">${escapeHtml(l.ing.name)}</div>
+          <div class="so-item-meta">${soFmtQty(l.qty, l.ing.unit)} \u00B7 <b>${soPack(l.qty, l.ing)}</b></div>
+        </div>
+        <div class="so-item-actions">
+          <button class="so-item-btn" onclick="soEditLine(${idx})"><i class="ti ti-pencil"></i></button>
+          <button class="so-item-btn del" onclick="soDeleteLine(${idx})"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>`).join('');
+  }
+
+  function soEditLine(idx) {
+    const l = soOrderLines[idx];
+    if (!l) return;
+    const val = prompt('Quantity for ' + l.ing.name + ' (' + (l.ing.unit || 'g') + '):', l.qty);
+    if (val === null) return;
+    let q = parseFloat(val);
+    if (isNaN(q) || q < 0) { showToast('Invalid quantity'); return; }
+    if (q === 0) { soDeleteLine(idx); return; }
+    l.qty = q; soCart[l.ing.id] = q;
+    soRenderStep2();
+  }
+
+  function soDeleteLine(idx) {
+    const l = soOrderLines[idx];
+    if (l) soCart[l.ing.id] = 0;
+    soOrderLines.splice(idx, 1);
+    if (!soOrderLines.length) { soShowStep(1); soRenderStep1(); showToast('Order empty \u2014 back to items'); return; }
+    soRenderStep2();
+  }
+
+  async function soPlaceOrder() {
+    if (!soOrderLines.length) return;
+    const btn = document.getElementById('soPlaceBtn');
+    btn.disabled = true;
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    soOrderNumber = 'PO-' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '-' + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+
+    const groups = {};
+    soOrderLines.forEach(l => {
+      const sid = l.ing.supplier_id != null ? String(l.ing.supplier_id) : '__none__';
+      if (!groups[sid]) {
+        groups[sid] = {
+          supplier: l.ing.supplier_id != null ? (suppliers.find(s => String(s.id) === sid) || null) : null,
+          items: [], sent: false
+        };
+      }
+      groups[sid].items.push(l);
+    });
+    soRouting = Object.values(groups);
+
+    const itemsJson = soOrderLines.map(l => ({ ingredient_id: l.ing.id, name: l.ing.name, qty: l.qty, unit: l.ing.unit || 'g', pack: soPack(l.qty, l.ing), supplier_id: l.ing.supplier_id || null }));
+    const routingJson = soBuildRoutingJson();
+    let outletId = null;
+    if (typeof currentOutletId === 'number') outletId = currentOutletId;
+    else if (/^\d+$/.test(String(currentOutletId))) outletId = parseInt(currentOutletId, 10);
+
+    if (db) {
+      const { data, error } = await db.from('orders').insert({
+        order_number: soOrderNumber, status: 'placed', outlet_id: outletId,
+        item_count: soOrderLines.length, items: itemsJson, routing: routingJson
+      }).select().single();
+      if (error) { console.error('save order error:', JSON.stringify(error)); showToast('Could not save order (check orders table)'); }
+      else { soOrderRowId = data.id; showToast('Order ' + soOrderNumber + ' placed \u2713'); }
+    } else {
+      showToast('Order ' + soOrderNumber + ' (offline)');
+    }
+    btn.disabled = false;
+    soRenderRouting();
+    document.getElementById('soRouteSheet').classList.add('show');
+  }
+
+  function soBuildRoutingJson() {
+    return soRouting.map(g => ({
+      supplier_id: g.supplier ? g.supplier.id : null,
+      supplier_name: g.supplier ? g.supplier.name : 'Unassigned',
+      items: g.items.map(l => ({ name: l.ing.name, qty: l.qty, unit: l.ing.unit || 'g', pack: soPack(l.qty, l.ing) })),
+      sent: !!g.sent
+    }));
+  }
+
+  function soRenderRouting() {
+    const nSupp = soRouting.filter(g => g.supplier).length;
+    document.getElementById('soRouteTitle').textContent = 'Auto-routed to ' + nSupp + ' supplier' + (nSupp === 1 ? '' : 's');
+    const body = document.getElementById('soRouteBody');
+    body.innerHTML = soRouting.map((g, idx) => {
+      const name = g.supplier ? g.supplier.name : 'Unassigned';
+      const lines = g.items.map(l =>
+        `<div class="so-supp-line"><span class="so-supp-line-name">${escapeHtml(l.ing.name)}</span><span class="so-supp-line-qty">${soPack(l.qty, l.ing)}</span></div>`
+      ).join('');
+      let sendBtn;
+      if (!g.supplier) sendBtn = `<button class="so-send-btn disabled"><i class="ti ti-alert-triangle"></i> No supplier assigned</button>`;
+      else if (g.sent) sendBtn = `<button class="so-send-btn sent"><i class="ti ti-check"></i> Sent to ${escapeHtml(name)}</button>`;
+      else sendBtn = `<button class="so-send-btn" onclick="soSendSupplier(${idx})"><i class="ti ti-brand-whatsapp"></i> Send to ${escapeHtml(name)}</button>`;
+      return `<div class="so-supp-card">
+        <div class="so-supp-head"><span class="so-supp-name">${escapeHtml(name)}</span><span class="so-supp-count">${g.items.length} item${g.items.length === 1 ? '' : 's'}</span></div>
+        ${lines}
+        <button class="so-ai-btn" onclick="soAiForecast(${idx})"><i class="ti ti-sparkles"></i> AI Forecast</button>
+        <div class="so-ai-out" id="soAiOut_${idx}" style="display:none;"></div>
+        ${sendBtn}
+      </div>`;
+    }).join('');
+  }
+
+  function soSendSupplier(idx) {
+    const g = soRouting[idx];
+    if (!g || !g.supplier) return;
+    const phone = String(g.supplier.phone || '').replace(/[^\d]/g, '');
+    if (!phone) { showToast('Supplier has no phone number'); return; }
+    const contact = g.supplier.contact_person || g.supplier.name;
+    let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
+    g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty, l.ing.unit) + ' (' + soPack(l.qty, l.ing) + ')\n'; });
+    msg += '\nOrder ref: ' + soOrderNumber + '\nThank you';
+    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+    g.sent = true;
+    soPersistSent();
+    soRenderRouting();
+  }
+
+  async function soPersistSent() {
+    if (!db || !soOrderRowId) return;
+    const routingJson = soBuildRoutingJson();
+    const withSupplier = soRouting.filter(g => g.supplier);
+    const allSent = withSupplier.length > 0 && withSupplier.every(g => g.sent);
+    const { error } = await db.from('orders').update({ routing: routingJson, status: allSent ? 'sent' : 'placed' }).eq('id', soOrderRowId);
+    if (error) console.error('update order error:', JSON.stringify(error));
+  }
+
+  async function soAiForecast(idx) {
+    const g = soRouting[idx];
+    if (!g) return;
+    const out = document.getElementById('soAiOut_' + idx);
+    out.style.display = 'block';
+    out.textContent = 'Analysing\u2026';
+    try {
+      const items = g.items.map(l => l.ing.name + ' ' + soFmtQty(l.qty, l.ing.unit)).join(', ');
+      const prompt = 'You are a cafe inventory assistant. A cafe is about to order these items from supplier "' + (g.supplier ? g.supplier.name : 'a supplier') + '": ' + items + '. In 2 short sentences give a practical reorder recommendation: whether the quantities look reasonable and one tip on timing or buffer stock. Plain text only, no markdown.';
+      const res = await fetch(AI_FORECAST_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      if (data && data.error) throw new Error(data.error);
+      const text = ((data && data.content) || '').replace(/```/g, '').trim();
+      out.textContent = text || 'No forecast available.';
+    } catch (err) {
+      out.textContent = 'Forecast unavailable right now.';
+      console.error('AI forecast error:', err);
+    }
+  }
+
+  function soCloseRoute() {
+    const s = document.getElementById('soRouteSheet');
+    if (s) s.classList.remove('show');
   }
 
   // ── Offline Sync Queue ──
@@ -8999,6 +9451,49 @@ function exportBoMonthToExcel() {
     <div class="wastage-modal-footer" id="wastageFooter">
       <button class="wastage-cancel-btn" id="wastageLeftBtn" onclick="closeLogWastage()">Cancel</button>
       <button class="wastage-next-btn" id="wastageRightBtn" onclick="wastageNext()" disabled>Next — Choose Reason</button>
+    </div>
+  </div>
+</div>
+
+<!-- Smart Ordering System Modal -->
+<div class="so-overlay" id="soOverlay">
+  <div class="so-modal">
+    <div class="so-header">
+      <div class="so-header-title"><i class="ti ti-shopping-cart"></i> Smart Ordering System</div>
+      <button class="so-close" onclick="closeSmartOrder()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="so-subhead">
+      <button class="so-back" id="soBackBtn" onclick="soBack()"><i class="ti ti-arrow-left"></i></button>
+      <span class="so-subhead-title" id="soSubTitle">Order Number: (new)</span>
+    </div>
+
+    <div class="so-body" id="soBody">
+      <!-- STEP 1: select items -->
+      <div id="soStep1"></div>
+      <!-- STEP 2: order details -->
+      <div id="soStep2" style="display:none;"></div>
+    </div>
+
+    <!-- Footer step 1 -->
+    <div class="so-footer" id="soFooter1">
+      <div class="so-foot-count"><b id="soSelCount">0</b> items selected</div>
+      <div class="so-foot-btns">
+        <button class="so-btn-cancel" onclick="closeSmartOrder()">Cancel</button>
+        <button class="so-btn-primary" id="soAddItemBtn" onclick="soGoToDetails()"><i class="ti ti-plus"></i> Add Item</button>
+      </div>
+    </div>
+    <!-- Footer step 2 -->
+    <div class="so-footer" id="soFooter2" style="display:none;">
+      <button class="so-btn-place" id="soPlaceBtn" onclick="soPlaceOrder()"><i class="ti ti-brand-whatsapp"></i> Place Order — Send to Suppliers</button>
+    </div>
+
+    <!-- STEP 3: routing bottom sheet -->
+    <div class="so-route-sheet" id="soRouteSheet">
+      <div class="so-route-head">
+        <span class="so-route-title" id="soRouteTitle">Auto-routed to 0 suppliers</span>
+        <button class="so-route-close" onclick="soCloseRoute()">Close</button>
+      </div>
+      <div class="so-route-body" id="soRouteBody"></div>
     </div>
   </div>
 </div>
