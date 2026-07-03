@@ -1289,6 +1289,12 @@
     .supp-label i { font-size:13px; color:var(--text-tertiary); }
     .supp-input, .supp-select, .supp-textarea { width:100%; padding:9px 12px; border-radius:var(--radius-md); border:0.5px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); font-size:13px; font-family:var(--font); outline:none; }
     .supp-input:focus, .supp-select:focus, .supp-textarea:focus { border-color:var(--border-hover); }
+    /* Make native time/date picker icons follow the theme (dark icons were invisible on dark bg) */
+    .supp-input[type="time"], .supp-input[type="date"] { color-scheme: light; }
+    [data-theme="dark"] .supp-input[type="time"], [data-theme="dark"] .supp-input[type="date"] { color-scheme: dark; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) .supp-input[type="time"], :root:not([data-theme]) .supp-input[type="date"] { color-scheme: dark; }
+    }
     .supp-textarea { resize:vertical; line-height:1.5; min-height:70px; }
     .supp-help { font-size:11px; color:var(--text-tertiary); margin-top:5px; }
     .supp-section-div { border-top:0.5px solid var(--border); margin:20px 0 16px; padding-top:16px; }
