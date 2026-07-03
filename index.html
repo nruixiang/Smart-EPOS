@@ -1841,6 +1841,7 @@
       <button class="admin-tab active" id="adminTabSettings" onclick="switchAdminTab('settings')"><i class="ti ti-settings"></i>Settings</button>
       <button class="admin-tab" id="adminTabOutlets" onclick="switchAdminTab('outlets')"><i class="ti ti-building-store"></i>Outlets</button>
       <button class="admin-tab" id="adminTabSuppliers" onclick="switchAdminTab('suppliers')"><i class="ti ti-truck-delivery"></i>Suppliers</button>
+      <button class="admin-tab" id="adminTabIngredients" onclick="switchAdminTab('ingredients')"><i class="ti ti-leaf"></i>Ingredients</button>
     </div>
     <div class="admin-body" id="adminBody">
       <!-- Settings tab (default) -->
@@ -1894,6 +1895,7 @@
       </div>
       <div id="adminOutletsContent" style="display:none;"></div>
       <div id="adminSuppliersContent" style="display:none;"></div>
+      <div id="adminIngredientsContent" style="display:none;"></div>
     </div>
   </div>
 </div>
@@ -2765,6 +2767,247 @@
     showToast('Supplier removed');
   }
 
+  // ── Ingredients management (Admin) ──
+  let editingIngredientId = null;
+  const INGREDIENTS_LOCAL_KEY = 'smartepos_ingredients';
+  const ING_CATEGORIES = ['Coffee','Milk & Dairy','Tea','Syrups & Flavourings','Spices','Produce','Baking','General','Other'];
+  const ING_UNITS = ['g','ml','pcs'];
+
+  function ingSupplierName(id) {
+    if (id == null) return '';
+    const s = suppliers.find(x => String(x.id) === String(id));
+    return s ? s.name : '';
+  }
+
+  async function renderIngredientsTab() {
+    const el = document.getElementById('adminIngredientsContent');
+    if (!el) return;
+    if (!el.dataset.loaded) {
+      el.innerHTML = '<div class="supp-empty">Loading ingredients\u2026</div>';
+      if (suppliers.length === 0) { try { await loadSuppliers(); } catch (e) {} }
+      await loadSoIngredients();
+      el.dataset.loaded = '1';
+    }
+    ingRender();
+  }
+
+  function ingRender() {
+    const el = document.getElementById('adminIngredientsContent');
+    if (!el) return;
+
+    const listItems = soIngredients.length
+      ? soIngredients.map(i => {
+          const supName = ingSupplierName(i.supplier_id);
+          const packBits = [];
+          if (i.pack_size) packBits.push(soFmtPackSize(i) + (i.pack_label ? ' ' + escapeHtml(i.pack_label) : ''));
+          if (Number(i.suggested_qty) > 0) packBits.push('reorder ' + soFmtQty(Number(i.suggested_qty), i.unit));
+          return `
+          <div class="supp-card">
+            <div class="supp-avatar">${i.emoji ? i.emoji : soEmoji(i)}</div>
+            <div class="supp-main">
+              <div class="supp-name-row">
+                <span class="supp-name">${escapeHtml(i.name)}</span>
+                ${i.category ? `<span class="supp-tag">${escapeHtml(i.category)}</span>` : ''}
+              </div>
+              <div class="supp-contact">
+                ${packBits.length ? `<span><i class="ti ti-package"></i>${packBits.join(' \u00B7 ')}</span>` : ''}
+                ${supName
+                  ? `<span><i class="ti ti-truck-delivery"></i>${escapeHtml(supName)}</span>`
+                  : `<span style="color:var(--text-tertiary);"><i class="ti ti-alert-circle"></i>No supplier assigned</span>`}
+              </div>
+            </div>
+            <div class="supp-actions">
+              <button class="supp-icon-btn" onclick="editIngredient('${i.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
+              <button class="supp-icon-btn del" onclick="deleteIngredient('${i.id}')" title="Delete"><i class="ti ti-trash"></i></button>
+            </div>
+          </div>`;
+        }).join('')
+      : `<div class="supp-empty"><i class="ti ti-leaf"></i>No ingredients yet.<br>Add your first ingredient to start ordering.</div>`;
+
+    el.innerHTML = `
+      <div id="ingPanelMain" style="display:flex;flex-direction:column;gap:0;">
+        <div class="supp-dir-head">Ingredients</div>
+        <div class="supp-dir-sub">${soIngredients.length} ingredient${soIngredients.length === 1 ? '' : 's'} \u00B7 assign each to a supplier for auto-routing</div>
+        <div>${listItems}</div>
+        <div style="margin-top:12px;">
+          <button class="outlet-add-btn" onclick="showIngredientForm()">
+            <i class="ti ti-plus" style="font-size:14px;"></i> Add New Ingredient
+          </button>
+        </div>
+      </div>
+
+      <div id="ingPanelForm" style="display:none;">
+        <div class="supp-form-card">
+          <div class="supp-form-head">
+            <span class="supp-form-title" id="ingFormTitle">New Ingredient</span>
+            <button class="supp-form-x" onclick="showIngredientMain()"><i class="ti ti-x"></i></button>
+          </div>
+
+          <div class="supp-row2">
+            <div class="supp-field" style="flex:2;">
+              <div class="supp-label">Ingredient Name <span class="req">*</span></div>
+              <input class="supp-input" id="ingName" placeholder="e.g. Coffee Beans" />
+            </div>
+            <div class="supp-field" style="max-width:110px;">
+              <div class="supp-label">Emoji</div>
+              <input class="supp-input" id="ingEmoji" maxlength="4" placeholder="\u2615" style="text-align:center;" />
+            </div>
+          </div>
+
+          <div class="supp-row2">
+            <div class="supp-field">
+              <div class="supp-label">Category</div>
+              <select class="supp-select" id="ingCategory"></select>
+            </div>
+            <div class="supp-field">
+              <div class="supp-label">Supplier</div>
+              <select class="supp-select" id="ingSupplier"></select>
+            </div>
+          </div>
+
+          <div class="supp-row2">
+            <div class="supp-field">
+              <div class="supp-label">Unit</div>
+              <select class="supp-select" id="ingUnit">${ING_UNITS.map(u => `<option value="${u}">${u}</option>`).join('')}</select>
+            </div>
+            <div class="supp-field">
+              <div class="supp-label">Suggested reorder qty</div>
+              <input class="supp-input" id="ingSuggested" type="number" min="0" placeholder="e.g. 2000" />
+            </div>
+          </div>
+
+          <div class="supp-row2">
+            <div class="supp-field">
+              <div class="supp-label">Pack size <span style="color:var(--text-tertiary);font-weight:400;">(per pack, in base unit)</span></div>
+              <input class="supp-input" id="ingPackSize" type="number" min="0" placeholder="e.g. 1000" />
+            </div>
+            <div class="supp-field">
+              <div class="supp-label">Pack label</div>
+              <input class="supp-input" id="ingPackLabel" placeholder="e.g. bag, carton, bottle" />
+            </div>
+          </div>
+
+          <div class="supp-footer">
+            <button class="supp-save" onclick="saveIngredientFromForm()"><i class="ti ti-check" style="font-size:14px;"></i> <span id="ingSaveLabel">Save Ingredient</span></button>
+            <button class="supp-cancel" onclick="showIngredientMain()">Cancel</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function ingFillSelects(current) {
+    const cat = document.getElementById('ingCategory');
+    if (cat) {
+      const cats = ING_CATEGORIES.slice();
+      if (current && current.category && !cats.includes(current.category)) cats.unshift(current.category);
+      cat.innerHTML = '<option value="">Select category\u2026</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      cat.value = current && current.category ? current.category : '';
+    }
+    const sup = document.getElementById('ingSupplier');
+    if (sup) {
+      sup.innerHTML = '<option value="">\u2014 No supplier \u2014</option>' + suppliers.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+      sup.value = current && current.supplier_id != null ? String(current.supplier_id) : '';
+    }
+  }
+
+  function showIngredientMain() {
+    const main = document.getElementById('ingPanelMain');
+    const form = document.getElementById('ingPanelForm');
+    if (main) main.style.display = 'flex';
+    if (form) form.style.display = 'none';
+  }
+
+  function showIngredientForm() {
+    editingIngredientId = null;
+    const main = document.getElementById('ingPanelMain');
+    const form = document.getElementById('ingPanelForm');
+    if (main) main.style.display = 'none';
+    if (form) form.style.display = 'block';
+    ['ingName','ingEmoji','ingSuggested','ingPackSize','ingPackLabel'].forEach(id => { const inp = document.getElementById(id); if (inp) inp.value = ''; });
+    const u = document.getElementById('ingUnit'); if (u) u.value = 'g';
+    ingFillSelects(null);
+    document.getElementById('ingFormTitle').textContent = 'New Ingredient';
+    document.getElementById('ingSaveLabel').textContent = 'Save Ingredient';
+    const n = document.getElementById('ingName'); if (n) n.focus();
+  }
+
+  function editIngredient(id) {
+    const i = soIngredients.find(x => String(x.id) === String(id));
+    if (!i) return;
+    editingIngredientId = i.id;
+    const main = document.getElementById('ingPanelMain');
+    const form = document.getElementById('ingPanelForm');
+    if (main) main.style.display = 'none';
+    if (form) form.style.display = 'block';
+    document.getElementById('ingName').value = i.name || '';
+    document.getElementById('ingEmoji').value = i.emoji || '';
+    document.getElementById('ingUnit').value = i.unit || 'g';
+    document.getElementById('ingSuggested').value = (i.suggested_qty == null ? '' : i.suggested_qty);
+    document.getElementById('ingPackSize').value = (i.pack_size == null ? '' : i.pack_size);
+    document.getElementById('ingPackLabel').value = i.pack_label || '';
+    ingFillSelects(i);
+    document.getElementById('ingFormTitle').textContent = 'Edit Ingredient';
+    document.getElementById('ingSaveLabel').textContent = 'Save Changes';
+  }
+
+  async function saveIngredientFromForm() {
+    const packRaw = (document.getElementById('ingPackSize').value || '').trim();
+    const sugRaw = (document.getElementById('ingSuggested').value || '').trim();
+    const supRaw = document.getElementById('ingSupplier').value;
+    const row = {
+      name: (document.getElementById('ingName').value || '').trim(),
+      category: document.getElementById('ingCategory').value || '',
+      emoji: (document.getElementById('ingEmoji').value || '').trim(),
+      unit: document.getElementById('ingUnit').value || 'g',
+      pack_size: packRaw === '' ? null : parseFloat(packRaw),
+      pack_label: (document.getElementById('ingPackLabel').value || '').trim(),
+      suggested_qty: sugRaw === '' ? 0 : parseFloat(sugRaw),
+      supplier_id: supRaw === '' ? null : parseInt(supRaw, 10),
+    };
+    if (!row.name) { showToast('Please enter an ingredient name'); return; }
+
+    if (!db) {
+      if (editingIngredientId) {
+        soIngredients = soIngredients.map(x => String(x.id) === String(editingIngredientId) ? { ...x, ...row } : x);
+      } else {
+        soIngredients.push({ id: 'local_' + Date.now(), ...row });
+      }
+      localStorage.setItem(INGREDIENTS_LOCAL_KEY, JSON.stringify(soIngredients));
+      showIngredientMain(); ingRender();
+      showToast('Saved locally (offline) \u2713');
+      return;
+    }
+
+    if (editingIngredientId) {
+      const { error } = await db.from('ingredients').update(row).eq('id', editingIngredientId);
+      if (error) { showToast('Failed to update ingredient'); console.error(error); return; }
+      showToast('Ingredient updated \u2713');
+    } else {
+      const { error } = await db.from('ingredients').insert(row);
+      if (error) { showToast('Failed to add ingredient'); console.error(error); return; }
+      showToast('Ingredient added \u2713');
+    }
+    editingIngredientId = null;
+    await loadSoIngredients();
+    showIngredientMain(); ingRender();
+  }
+
+  async function deleteIngredient(id) {
+    const i = soIngredients.find(x => String(x.id) === String(id));
+    if (!i) return;
+    if (!confirm('Delete ingredient "' + i.name + '"?')) return;
+    if (!db) {
+      soIngredients = soIngredients.filter(x => String(x.id) !== String(id));
+      localStorage.setItem(INGREDIENTS_LOCAL_KEY, JSON.stringify(soIngredients));
+      ingRender(); showToast('Ingredient removed');
+      return;
+    }
+    const { error } = await db.from('ingredients').delete().eq('id', id);
+    if (error) { showToast('Failed to delete ingredient'); console.error(error); return; }
+    soIngredients = soIngredients.filter(x => String(x.id) !== String(id));
+    ingRender(); showToast('Ingredient removed');
+  }
+
   // ── Smart Ordering System ──
   let soIngredients = [];
   let soCart = {};        // ingredientId -> qty
@@ -2791,6 +3034,7 @@
     const ps = Number(ing.pack_size) || 0, u = ing.unit || 'g';
     if (u === 'g' && ps >= 1000) return (ps / 1000) + 'kg';
     if (u === 'ml' && ps >= 1000) return (ps / 1000) + 'l';
+    if (u === 'pcs') return String(ps);
     return ps + (u || '');
   }
   function soPack(qty, ing) {
@@ -2811,7 +3055,11 @@
   }
 
   async function loadSoIngredients() {
-    if (!db) { soIngredients = []; return; }
+    if (!db) {
+      try { soIngredients = JSON.parse(localStorage.getItem(INGREDIENTS_LOCAL_KEY) || '[]'); }
+      catch (e) { soIngredients = []; }
+      return;
+    }
     const { data, error } = await db.from('ingredients').select('*').order('name', { ascending: true });
     if (error) { console.error('loadIngredients error:', JSON.stringify(error)); soIngredients = []; return; }
     soIngredients = data || [];
@@ -6231,13 +6479,16 @@
     document.getElementById('adminTabSettings').classList.toggle('active', tab === 'settings');
     document.getElementById('adminTabOutlets').classList.toggle('active', tab === 'outlets');
     document.getElementById('adminTabSuppliers').classList.toggle('active', tab === 'suppliers');
+    document.getElementById('adminTabIngredients').classList.toggle('active', tab === 'ingredients');
     document.getElementById('adminSettingsContent').style.display = tab === 'settings' ? 'flex' : 'none';
     document.getElementById('adminMenuContent').style.display = tab === 'menu' ? 'block' : 'none';
     document.getElementById('adminOutletsContent').style.display = tab === 'outlets' ? 'block' : 'none';
     document.getElementById('adminSuppliersContent').style.display = tab === 'suppliers' ? 'block' : 'none';
+    document.getElementById('adminIngredientsContent').style.display = tab === 'ingredients' ? 'block' : 'none';
     if (tab === 'settings') { document.getElementById('adminSettingsContent').style.flexDirection = 'column'; document.getElementById('adminSettingsContent').style.gap = '0'; }
     if (tab === 'outlets') renderOutletsTab();
     if (tab === 'suppliers') renderSuppliersTab();
+    if (tab === 'ingredients') renderIngredientsTab();
   }
 
   // ── Supervisor PIN Modal ──
