@@ -2735,11 +2735,11 @@
 
     if (editingSupplierId) {
       const { error } = await db.from('suppliers').update(row).eq('id', editingSupplierId);
-      if (error) { showToast('Failed to update supplier'); console.error(error); return; }
+      if (error) { showToast('Save failed: ' + (error.message || 'unknown error')); console.error('supplier update error:', error); return; }
       showToast('Supplier updated ✓');
     } else {
       const { error } = await db.from('suppliers').insert(row);
-      if (error) { showToast('Failed to add supplier'); console.error(error); return; }
+      if (error) { showToast('Save failed: ' + (error.message || 'unknown error')); console.error('supplier insert error:', error); return; }
       showToast('Supplier added ✓');
     }
     editingSupplierId = null;
@@ -2980,11 +2980,11 @@
 
     if (editingIngredientId) {
       const { error } = await db.from('ingredients').update(row).eq('id', editingIngredientId);
-      if (error) { showToast('Failed to update ingredient'); console.error(error); return; }
+      if (error) { showToast('Save failed: ' + (error.message || 'unknown error')); console.error('ingredient update error:', error); return; }
       showToast('Ingredient updated \u2713');
     } else {
       const { error } = await db.from('ingredients').insert(row);
-      if (error) { showToast('Failed to add ingredient'); console.error(error); return; }
+      if (error) { showToast('Save failed: ' + (error.message || 'unknown error')); console.error('ingredient insert error:', error); return; }
       showToast('Ingredient added \u2713');
     }
     editingIngredientId = null;
