@@ -2737,8 +2737,8 @@
   function editSupplier(id) {
     const s = suppliers.find(x => String(x.id) === String(id));
     if (!s) return;
-    editingSupplierId = s.id;
     showSupplierForm();
+    editingSupplierId = s.id;
     document.getElementById('suppName').value = s.name || '';
     document.getElementById('suppContact').value = s.contact_person || '';
     document.getElementById('suppCategory').value = s.category || '';
