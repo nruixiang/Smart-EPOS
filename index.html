@@ -1313,6 +1313,14 @@
     .supp-save:hover { opacity:0.9; }
     .supp-cancel { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:13px; font-weight:600; font-family:var(--font); }
     .supp-cancel:hover { color:var(--text-primary); }
+    .supp-ing-list { display:flex; flex-direction:column; gap:2px; max-height:240px; overflow-y:auto; border:0.5px solid var(--border); border-radius:10px; padding:6px; }
+    .supp-ing-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; cursor:pointer; font-size:13px; color:var(--text-primary); }
+    .supp-ing-item:hover { background:var(--bg-secondary); }
+    .supp-ing-item input { width:16px; height:16px; cursor:pointer; accent-color:var(--green); flex-shrink:0; }
+    .supp-ing-item .supp-ing-emoji { font-size:15px; }
+    .supp-ing-item .supp-ing-cat { margin-left:auto; font-size:11px; color:var(--text-tertiary); }
+    .supp-ing-item .supp-ing-taken { margin-left:auto; font-size:10.5px; color:var(--text-tertiary); font-style:italic; }
+    .supp-ing-empty { padding:16px; text-align:center; color:var(--text-tertiary); font-size:12.5px; }
     @media (max-width:560px) { .supp-row2 { grid-template-columns:1fr; } }
     /* ── SMART ORDERING SYSTEM ── */
     .so-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:500; opacity:0; pointer-events:none; transition:opacity 0.2s; }
@@ -2679,6 +2687,12 @@
             </div>
           </div>
 
+          <div class="supp-section-div">
+            <div class="supp-section-head"><i class="ti ti-leaf"></i> Ingredients Supplied</div>
+            <div class="supp-help" style="margin-bottom:10px;">Tick what this supplier provides — only ticked ingredients appear in the order screen.</div>
+            <div class="supp-ing-list" id="suppIngList"></div>
+          </div>
+
           <div class="supp-footer">
             <button class="supp-save" onclick="saveSupplierFromForm()"><i class="ti ti-check" style="font-size:14px;"></i> <span id="suppSaveLabel">Save</span></button>
             <button class="supp-cancel" onclick="showSupplierMain()">Cancel</button>
@@ -2713,6 +2727,56 @@
     renderNonOpChips();
   }
 
+  async function renderSuppIngChecklist(supplierId) {
+    const box = document.getElementById('suppIngList');
+    if (!box) return;
+    if (soIngredients.length === 0) {
+      box.innerHTML = '<div class="supp-ing-empty">Loading ingredients\u2026</div>';
+      await loadSoIngredients();
+    }
+    const box2 = document.getElementById('suppIngList');
+    if (!box2) return;
+    if (soIngredients.length === 0) {
+      box2.innerHTML = '<div class="supp-ing-empty">No ingredients yet. Add them in the Ingredients tab first.</div>';
+      return;
+    }
+    box2.innerHTML = soIngredients.map(i => {
+      const owner = i.supplier_id;
+      const mine = owner != null && String(owner) === String(supplierId);
+      const takenByOther = owner != null && String(owner) !== String(supplierId);
+      const otherName = takenByOther ? ((suppliers.find(s => String(s.id) === String(owner)) || {}).name || 'another') : '';
+      return `<label class="supp-ing-item">
+        <input type="checkbox" value="${i.id}" ${mine ? 'checked' : ''} />
+        <span class="supp-ing-emoji">${i.emoji ? i.emoji : soEmoji(i)}</span>
+        <span>${escapeHtml(i.name)}</span>
+        ${takenByOther ? `<span class="supp-ing-taken">from ${escapeHtml(otherName)}</span>` : (i.category ? `<span class="supp-ing-cat">${escapeHtml(i.category)}</span>` : '')}
+      </label>`;
+    }).join('');
+  }
+
+  async function applySupplierIngredients(supplierId, checkedIds) {
+    const checkedSet = new Set(checkedIds.map(String));
+    const toThis = [], toNull = [];
+    soIngredients.forEach(i => {
+      const mine = i.supplier_id != null && String(i.supplier_id) === String(supplierId);
+      const checked = checkedSet.has(String(i.id));
+      if (checked && !mine) toThis.push(i.id);
+      else if (!checked && mine) toNull.push(i.id);
+    });
+    if (db) {
+      if (toThis.length) { const { error } = await db.from('ingredients').update({ supplier_id: supplierId }).in('id', toThis); if (error) console.error('assign ingredients error:', error); }
+      if (toNull.length) { const { error } = await db.from('ingredients').update({ supplier_id: null }).in('id', toNull); if (error) console.error('unassign ingredients error:', error); }
+      await loadSoIngredients();
+    } else {
+      soIngredients = soIngredients.map(i => {
+        if (toThis.some(x => String(x) === String(i.id))) return { ...i, supplier_id: supplierId };
+        if (toNull.some(x => String(x) === String(i.id))) return { ...i, supplier_id: null };
+        return i;
+      });
+      localStorage.setItem(INGREDIENTS_LOCAL_KEY, JSON.stringify(soIngredients));
+    }
+  }
+
   function showSupplierMain() {
     const main = document.getElementById('supplierPanelMain');
     const form = document.getElementById('supplierPanelForm');
@@ -2732,6 +2796,7 @@
     renderNonOpChips();
     const title = document.getElementById('supplierFormTitle'); if (title) title.textContent = 'New Supplier';
     const lbl = document.getElementById('suppSaveLabel'); if (lbl) lbl.textContent = 'Save';
+    renderSuppIngChecklist(null);
     const nameInput = document.getElementById('suppName'); if (nameInput) nameInput.focus();
   }
 
@@ -2755,6 +2820,7 @@
     renderNonOpChips();
     const title = document.getElementById('supplierFormTitle'); if (title) title.textContent = 'Edit Supplier';
     const lbl = document.getElementById('suppSaveLabel'); if (lbl) lbl.textContent = 'Save Changes';
+    renderSuppIngChecklist(editingSupplierId);
   }
 
   async function saveSupplierFromForm() {
@@ -2776,28 +2842,40 @@
     };
     if (!row.name) { showToast('Please enter a supplier name'); return; }
 
+    const checkedIds = Array.from(document.querySelectorAll('#suppIngList input[type="checkbox"]:checked'))
+      .map(c => (/^\d+$/.test(c.value) ? parseInt(c.value, 10) : c.value));
+
     if (!db) {
+      let supplierId;
       if (editingSupplierId) {
+        supplierId = editingSupplierId;
         suppliers = suppliers.map(s => String(s.id) === String(editingSupplierId) ? { ...s, ...row } : s);
       } else {
-        suppliers.push({ id: 'local_' + Date.now(), ...row });
+        supplierId = 'local_' + Date.now();
+        suppliers.push({ id: supplierId, ...row });
       }
       localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
+      await applySupplierIngredients(supplierId, checkedIds);
+      editingSupplierId = null;
       showSupplierMain();
       renderSuppliersTab();
       showToast('Saved locally (offline) ✓');
       return;
     }
 
+    let supplierId;
     if (editingSupplierId) {
       const { error } = await db.from('suppliers').update(row).eq('id', editingSupplierId);
       if (error) { showToast('Save failed: ' + (error.message || 'unknown error')); console.error('supplier update error:', error); return; }
+      supplierId = editingSupplierId;
       showToast('Supplier updated ✓');
     } else {
-      const { error } = await db.from('suppliers').insert(row);
+      const { data, error } = await db.from('suppliers').insert(row).select().single();
       if (error) { showToast('Save failed: ' + (error.message || 'unknown error')); console.error('supplier insert error:', error); return; }
+      supplierId = data.id;
       showToast('Supplier added ✓');
     }
+    await applySupplierIngredients(supplierId, checkedIds);
     editingSupplierId = null;
     await loadSuppliers();
     showSupplierMain();
@@ -3158,8 +3236,13 @@
     else { closeSmartOrder(); }
   }
 
+  function soSuppliedIngredients() {
+    return soIngredients.filter(i => i.supplier_id != null);
+  }
+
   function soFilteredIngredients() {
-    let list = soCategory === 'All' ? soIngredients : soIngredients.filter(i => i.category === soCategory);
+    let list = soSuppliedIngredients();
+    if (soCategory !== 'All') list = list.filter(i => i.category === soCategory);
     const q = (soSearch || '').trim().toLowerCase();
     if (q) list = list.filter(i => (i.name || '').toLowerCase().includes(q));
     return list;
@@ -3167,14 +3250,15 @@
 
   function soRenderStep1() {
     const step1 = document.getElementById('soStep1');
-    if (!soIngredients.length) {
-      step1.innerHTML = '<div class="so-empty"><i class="ti ti-package-off"></i>No ingredients yet.<br>Add rows to the <b>ingredients</b> table in Supabase to start ordering.</div>';
+    const supplied = soSuppliedIngredients();
+    if (!supplied.length) {
+      step1.innerHTML = '<div class="so-empty"><i class="ti ti-package-off"></i>No orderable ingredients yet.<br>Open a supplier and tick the ingredients it supplies — they\u2019ll show up here.</div>';
       soUpdateCount();
       return;
     }
     const cats = ['All'];
-    soIngredients.forEach(i => { if (i.category && !cats.includes(i.category)) cats.push(i.category); });
-    const sugg = soIngredients.filter(i => Number(i.suggested_qty) > 0)
+    supplied.forEach(i => { if (i.category && !cats.includes(i.category)) cats.push(i.category); });
+    const sugg = supplied.filter(i => Number(i.suggested_qty) > 0)
       .sort((a, b) => Number(b.suggested_qty) - Number(a.suggested_qty)).slice(0, 3);
     const list = soFilteredIngredients();
 
