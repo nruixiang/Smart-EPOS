@@ -2523,6 +2523,15 @@
     return digits ? ('https://wa.me/' + digits) : '';
   }
 
+  function suppWaChat(id) {
+    const s = suppliers.find(x => String(x.id) === String(id));
+    if (!s) return;
+    const phone = String(s.phone || '').replace(/[^\d]/g, '');
+    const contact = s.contact_person || s.name;
+    const msg = 'Hi ' + contact + ', I would like to place an order.\n\n';
+    openWaChat({ name: s.name, phone: phone, message: msg });
+  }
+
   function renderSuppliersTab(hostId) {
     if (hostId) supplierHost = hostId;
     // keep only the active host populated so form/panel IDs stay unique
@@ -2563,7 +2572,7 @@
             ${metaBits.length ? `<div class="supp-meta">${metaBits.join('')}</div>` : ''}
           </div>
           <div class="supp-actions">
-            <a class="supp-wa-btn ${wa ? '' : 'disabled'}" ${wa ? `href="${wa}" target="_blank" rel="noopener"` : ''} title="Send order via WhatsApp"><i class="ti ti-brand-whatsapp"></i></a>
+            <a class="supp-wa-btn ${wa ? '' : 'disabled'}" ${wa ? `onclick="suppWaChat('${s.id}')"` : ''} title="Message on WhatsApp"><i class="ti ti-brand-whatsapp"></i></a>
             <button class="supp-icon-btn" onclick="editSupplier('${s.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
             <button class="supp-icon-btn del" onclick="deleteSupplier('${s.id}')" title="Delete"><i class="ti ti-trash"></i></button>
           </div>
