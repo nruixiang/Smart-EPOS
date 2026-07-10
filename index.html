@@ -1427,6 +1427,35 @@
     .so-card.selected .so-check { background:var(--blue); border-color:var(--blue); }
     .so-card .so-card-name { padding-right:26px; }
     .so-empty-filter { grid-column:1 / -1; text-align:center; color:var(--text-tertiary); font-size:13px; padding:34px 20px; }
+    /* ── In-page WhatsApp chat panel ── */
+    .wa-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:600; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+    .wa-overlay.show { opacity:1; pointer-events:all; }
+    .wa-card { width:400px; max-width:94vw; height:600px; max-height:90vh; background:var(--bg-primary); border-radius:16px; overflow:hidden; display:flex; flex-direction:column; }
+    .wa-header { background:#075E54; color:#fff; display:flex; align-items:center; gap:12px; padding:12px 16px; flex-shrink:0; }
+    [data-theme="dark"] .wa-header { background:#1f2c34; }
+    .wa-back { background:none; border:none; color:#fff; cursor:pointer; font-size:20px; display:flex; padding:0; }
+    .wa-avatar { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.22); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; flex-shrink:0; }
+    .wa-h-main { flex:1; min-width:0; }
+    .wa-h-name { font-size:15px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .wa-h-sub { font-size:12px; opacity:0.8; }
+    .wa-body { flex:1; overflow-y:auto; padding:18px 14px; background:#ECE5DD; display:flex; flex-direction:column; gap:12px; }
+    [data-theme="dark"] .wa-body { background:#0b141a; }
+    .wa-note { align-self:center; background:#FCF4CB; color:#54656f; font-size:11px; padding:5px 12px; border-radius:8px; text-align:center; }
+    [data-theme="dark"] .wa-note { background:#182229; color:#8696a0; }
+    .wa-bubble { align-self:flex-end; width:88%; background:#DCF8C6; border-radius:12px 12px 3px 12px; padding:9px 11px; box-shadow:0 1px 1px rgba(0,0,0,0.08); }
+    [data-theme="dark"] .wa-bubble { background:#005c4b; }
+    .wa-bubble textarea { width:100%; border:none; background:transparent; resize:none; font-family:var(--font); font-size:13.5px; line-height:1.5; color:#111b21; outline:none; overflow:hidden; }
+    [data-theme="dark"] .wa-bubble textarea { color:#e9edef; }
+    .wa-bubble-meta { text-align:right; font-size:10.5px; color:#667781; margin-top:1px; display:flex; gap:4px; justify-content:flex-end; align-items:center; }
+    [data-theme="dark"] .wa-bubble-meta { color:#8696a0; }
+    .wa-hint { align-self:flex-end; font-size:10.5px; color:#54656f; margin-top:-6px; }
+    [data-theme="dark"] .wa-hint { color:#8696a0; }
+    .wa-footer { display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--bg-secondary); flex-shrink:0; }
+    .wa-copy { flex:1; padding:12px; border-radius:24px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:7px; }
+    .wa-copy:hover { border-color:var(--border-hover); }
+    .wa-send { width:52px; height:52px; border-radius:50%; border:none; background:#25D366; color:#fff; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .wa-send:hover { filter:brightness(0.94); }
+    .wa-send.disabled { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
     /* ── BACK OFFICE: ORDERS PANE ── */
     .bo-ord-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
     .bo-ord-filters { display:flex; gap:6px; background:var(--bg-secondary); padding:4px; border-radius:10px; }
@@ -3391,19 +3420,71 @@
     }).join('');
   }
 
+  // ── In-page WhatsApp chat panel ──
+  let waChatCtx = null;
+
+  function openWaChat(opts) {
+    opts = opts || {};
+    waChatCtx = opts;
+    const name = opts.name || 'Supplier';
+    const phone = String(opts.phone || '').replace(/[^\d]/g, '');
+    document.getElementById('waChatName').textContent = name;
+    document.getElementById('waChatSub').textContent = phone ? ('+' + phone) : 'No phone number';
+    document.getElementById('waChatAvatar').textContent = (name.trim().charAt(0) || '?').toUpperCase();
+    document.getElementById('waChatText').value = opts.message || '';
+    document.getElementById('waChatTime').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const sendBtn = document.getElementById('waChatSend');
+    sendBtn.classList.toggle('disabled', !phone);
+    sendBtn.title = phone ? 'Send via WhatsApp' : 'No phone number on file';
+    document.getElementById('waChatOverlay').dataset.phone = phone;
+    document.getElementById('waChatOverlay').classList.add('show');
+    setTimeout(waChatAutosize, 0);
+  }
+
+  function waChatAutosize() {
+    const ta = document.getElementById('waChatText');
+    if (!ta) return;
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 300) + 'px';
+  }
+
+  function closeWaChat() {
+    document.getElementById('waChatOverlay').classList.remove('show');
+    waChatCtx = null;
+  }
+
+  function waChatCopy() {
+    const t = document.getElementById('waChatText').value;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(() => showToast('Message copied ✓')).catch(() => showToast('Copy failed'));
+    } else {
+      const ta = document.getElementById('waChatText');
+      ta.select();
+      try { document.execCommand('copy'); showToast('Message copied ✓'); } catch (e) { showToast('Copy failed'); }
+    }
+  }
+
+  function waChatSend() {
+    const phone = document.getElementById('waChatOverlay').dataset.phone;
+    if (!phone) { showToast('No phone number — use Copy instead'); return; }
+    const text = document.getElementById('waChatText').value;
+    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(text), '_blank');
+    if (waChatCtx && typeof waChatCtx.onSend === 'function') waChatCtx.onSend();
+    closeWaChat();
+  }
+
   function soSendSupplier(idx) {
     const g = soRouting[idx];
     if (!g || !g.supplier) return;
     const phone = String(g.supplier.phone || '').replace(/[^\d]/g, '');
-    if (!phone) { showToast('Supplier has no phone number'); return; }
     const contact = g.supplier.contact_person || g.supplier.name;
     let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
     g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty, l.ing.unit) + ' (' + soPack(l.qty, l.ing) + ')\n'; });
     msg += '\nOrder ref: ' + soOrderNumber + '\nThank you';
-    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
-    g.sent = true;
-    soPersistSent();
-    soRenderRouting();
+    openWaChat({
+      name: g.supplier.name, phone: phone, message: msg,
+      onSend: () => { g.sent = true; soPersistSent(); soRenderRouting(); }
+    });
   }
 
   async function soPersistSent() {
@@ -3571,22 +3652,25 @@
     if (!r) return;
     const supObj = r.supplier_id != null ? suppliers.find(s => String(s.id) === String(r.supplier_id)) : null;
     const phone = supObj ? String(supObj.phone || '').replace(/[^\d]/g, '') : '';
-    if (!phone) { showToast('No phone number for this supplier'); return; }
     const contact = (supObj && supObj.contact_person) || r.supplier_name;
     let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
     (r.items || []).forEach(it => { msg += '\u2022 ' + it.name + ': ' + (it.qty + (it.unit || '')) + (it.pack ? ' (' + it.pack + ')' : '') + '\n'; });
     msg += '\nOrder ref: ' + (o.order_number || ('#' + o.id)) + '\nThank you';
-    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
-    r.sent = true;
-    const withSupp = routing.filter(x => x.supplier_id != null);
-    const allSent = withSupp.length > 0 && withSupp.every(x => x.sent);
-    if (allSent) o.status = 'sent';
-    if (db) {
-      const { error } = await db.from('orders').update({ routing: routing, status: o.status }).eq('id', o.id);
-      if (error) console.error('update order error:', JSON.stringify(error));
-    }
-    boRenderStats();
-    boRenderOrdersList();
+    openWaChat({
+      name: r.supplier_name, phone: phone, message: msg,
+      onSend: async () => {
+        r.sent = true;
+        const withSupp = routing.filter(x => x.supplier_id != null);
+        const allSent = withSupp.length > 0 && withSupp.every(x => x.sent);
+        if (allSent) o.status = 'sent';
+        if (db) {
+          const { error } = await db.from('orders').update({ routing: routing, status: o.status }).eq('id', o.id);
+          if (error) console.error('update order error:', JSON.stringify(error));
+        }
+        boRenderStats();
+        boRenderOrdersList();
+      }
+    });
   }
 
   async function boDeleteOrder(id) {
@@ -9980,6 +10064,33 @@ function exportBoMonthToExcel() {
     <div class="wastage-modal-footer" id="wastageFooter">
       <button class="wastage-cancel-btn" id="wastageLeftBtn" onclick="closeLogWastage()">Cancel</button>
       <button class="wastage-next-btn" id="wastageRightBtn" onclick="wastageNext()" disabled>Next — Choose Reason</button>
+    </div>
+  </div>
+</div>
+
+<!-- In-page WhatsApp chat panel -->
+<div class="wa-overlay" id="waChatOverlay" onclick="if(event.target===this) closeWaChat()">
+  <div class="wa-card">
+    <div class="wa-header">
+      <button class="wa-back" onclick="closeWaChat()"><i class="ti ti-arrow-left"></i></button>
+      <div class="wa-avatar" id="waChatAvatar">?</div>
+      <div class="wa-h-main">
+        <div class="wa-h-name" id="waChatName">Supplier</div>
+        <div class="wa-h-sub" id="waChatSub">+65</div>
+      </div>
+      <i class="ti ti-brand-whatsapp" style="font-size:20px;"></i>
+    </div>
+    <div class="wa-body">
+      <div class="wa-note">Review or edit your order, then send</div>
+      <div class="wa-bubble">
+        <textarea id="waChatText" rows="8" oninput="waChatAutosize()"></textarea>
+        <div class="wa-bubble-meta"><span id="waChatTime"></span> <i class="ti ti-checks"></i></div>
+      </div>
+      <div class="wa-hint">tap the message to edit</div>
+    </div>
+    <div class="wa-footer">
+      <button class="wa-copy" onclick="waChatCopy()"><i class="ti ti-copy"></i> Copy message</button>
+      <button class="wa-send" id="waChatSend" onclick="waChatSend()" title="Send via WhatsApp"><i class="ti ti-send"></i></button>
     </div>
   </div>
 </div>
