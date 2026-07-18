@@ -1313,14 +1313,13 @@
     .supp-save:hover { opacity:0.9; }
     .supp-cancel { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:13px; font-weight:600; font-family:var(--font); }
     .supp-cancel:hover { color:var(--text-primary); }
-    .supp-ing-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; min-height:0; }
-    .supp-ing-tag { display:flex; align-items:center; gap:5px; background:var(--bg-secondary); border:0.5px solid var(--border); border-radius:20px; padding:4px 10px 4px 10px; font-size:12.5px; color:var(--text-primary); }
-    .supp-ing-tag button { background:none; border:none; cursor:pointer; color:var(--text-tertiary); display:flex; align-items:center; padding:0; margin-left:2px; }
-    .supp-ing-tag button:hover { color:var(--red); }
-    .supp-ing-suggestions { position:absolute; top:100%; left:0; right:0; background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-md); box-shadow:0 4px 16px rgba(0,0,0,0.10); z-index:200; max-height:180px; overflow-y:auto; margin-top:3px; }
-    .supp-ing-suggestion { display:flex; align-items:center; gap:8px; padding:9px 12px; font-size:13px; color:var(--text-primary); cursor:pointer; }
-    .supp-ing-suggestion:hover { background:var(--bg-secondary); }
-    .supp-ing-suggestion .sig-new { font-size:11px; color:var(--green); font-weight:600; margin-left:auto; }
+    .supp-ing-list { display:flex; flex-direction:column; gap:2px; max-height:240px; overflow-y:auto; border:0.5px solid var(--border); border-radius:10px; padding:6px; }
+    .supp-ing-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; cursor:pointer; font-size:13px; color:var(--text-primary); }
+    .supp-ing-item:hover { background:var(--bg-secondary); }
+    .supp-ing-item input { width:16px; height:16px; cursor:pointer; accent-color:var(--green); flex-shrink:0; }
+    .supp-ing-item .supp-ing-emoji { font-size:15px; }
+    .supp-ing-item .supp-ing-cat { margin-left:auto; font-size:11px; color:var(--text-tertiary); }
+    .supp-ing-item .supp-ing-taken { margin-left:auto; font-size:10.5px; color:var(--text-tertiary); font-style:italic; }
     .supp-ing-empty { padding:16px; text-align:center; color:var(--text-tertiary); font-size:12.5px; }
     @media (max-width:560px) { .supp-row2 { grid-template-columns:1fr; } }
     /* ── SMART ORDERING SYSTEM ── */
@@ -2698,14 +2697,8 @@
 
           <div class="supp-section-div">
             <div class="supp-section-head"><i class="ti ti-leaf"></i> Ingredients Supplied</div>
-            <div class="supp-help" style="margin-bottom:10px;">Type an ingredient name and press Enter or select a suggestion. Ingredients are saved to the shared database.</div>
-            <div class="supp-ing-tags" id="suppIngTags"></div>
-            <div style="position:relative;">
-              <input class="supp-input" id="suppIngInput" placeholder="e.g. Coffee Beans" autocomplete="off"
-                oninput="onSuppIngInput(this.value)"
-                onkeydown="onSuppIngKeydown(event)" />
-              <div class="supp-ing-suggestions" id="suppIngSuggestions" style="display:none;"></div>
-            </div>
+            <div class="supp-help" style="margin-bottom:10px;">Tick what this supplier provides — only ticked ingredients appear in the order screen.</div>
+            <div class="supp-ing-list" id="suppIngList"></div>
           </div>
 
           <div class="supp-footer">
@@ -2742,125 +2735,55 @@
     renderNonOpChips();
   }
 
-  // ── Supplier ingredient tag input ──
-  let suppIngTags = []; // [{id|null, name}] — id is null for newly typed ingredients not yet in DB
-
-  function initSuppIngTags(supplierId) {
-    suppIngTags = supplierId
-      ? soIngredients.filter(i => i.supplier_id != null && String(i.supplier_id) === String(supplierId))
-          .map(i => ({ id: i.id, name: i.name }))
-      : [];
-    renderSuppIngTags();
-    const inp = document.getElementById('suppIngInput');
-    if (inp) inp.value = '';
-    hideSuppIngSuggestions();
-  }
-
-  function renderSuppIngTags() {
-    const box = document.getElementById('suppIngTags');
+  async function renderSuppIngChecklist(supplierId) {
+    const box = document.getElementById('suppIngList');
     if (!box) return;
-    box.innerHTML = suppIngTags.map((t, idx) => `
-      <div class="supp-ing-tag">
-        <span>${escapeHtml(t.name)}</span>
-        <button type="button" onclick="removeSuppIngTag(${idx})"><i class="ti ti-x" style="font-size:11px;"></i></button>
-      </div>`).join('');
-  }
-
-  function removeSuppIngTag(idx) {
-    suppIngTags.splice(idx, 1);
-    renderSuppIngTags();
-  }
-
-  function onSuppIngInput(val) {
-    const q = val.trim().toLowerCase();
-    const box = document.getElementById('suppIngSuggestions');
-    if (!box) return;
-    if (!q) { hideSuppIngSuggestions(); return; }
-    const already = new Set(suppIngTags.map(t => t.name.toLowerCase()));
-    const matches = soIngredients.filter(i => i.name.toLowerCase().includes(q) && !already.has(i.name.toLowerCase()));
-    const exactMatch = soIngredients.some(i => i.name.toLowerCase() === q);
-    const rows = matches.slice(0, 8).map(i =>
-      `<div class="supp-ing-suggestion" onclick="addSuppIngTag('${escapeHtml(i.name)}', '${i.id}')">
+    if (soIngredients.length === 0) {
+      box.innerHTML = '<div class="supp-ing-empty">Loading ingredients\u2026</div>';
+      await loadSoIngredients();
+    }
+    const box2 = document.getElementById('suppIngList');
+    if (!box2) return;
+    if (soIngredients.length === 0) {
+      box2.innerHTML = '<div class="supp-ing-empty">No ingredients yet. Add them in the Ingredients tab first.</div>';
+      return;
+    }
+    box2.innerHTML = soIngredients.map(i => {
+      const owner = i.supplier_id;
+      const mine = owner != null && String(owner) === String(supplierId);
+      const takenByOther = owner != null && String(owner) !== String(supplierId);
+      const otherName = takenByOther ? ((suppliers.find(s => String(s.id) === String(owner)) || {}).name || 'another') : '';
+      return `<label class="supp-ing-item">
+        <input type="checkbox" value="${i.id}" ${mine ? 'checked' : ''} />
+        <span class="supp-ing-emoji">${i.emoji ? i.emoji : soEmoji()}</span>
         <span>${escapeHtml(i.name)}</span>
-        ${i.category ? `<span style="font-size:11px;color:var(--text-tertiary);">${escapeHtml(i.category)}</span>` : ''}
-       </div>`
-    );
-    if (!exactMatch && val.trim()) {
-      rows.push(`<div class="supp-ing-suggestion" onclick="addSuppIngTag('${escapeHtml(val.trim())}', null)">
-        <span>${escapeHtml(val.trim())}</span>
-        <span class="sig-new">+ Add new</span>
-      </div>`);
-    }
-    if (rows.length === 0) { hideSuppIngSuggestions(); return; }
-    box.innerHTML = rows.join('');
-    box.style.display = 'block';
+        ${takenByOther ? `<span class="supp-ing-taken">from ${escapeHtml(otherName)}</span>` : (i.category ? `<span class="supp-ing-cat">${escapeHtml(i.category)}</span>` : '')}
+      </label>`;
+    }).join('');
   }
 
-  function onSuppIngKeydown(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const val = (document.getElementById('suppIngInput') || {}).value || '';
-      if (!val.trim()) return;
-      const q = val.trim().toLowerCase();
-      const match = soIngredients.find(i => i.name.toLowerCase() === q);
-      addSuppIngTag(val.trim(), match ? match.id : null);
-    } else if (e.key === 'Escape') {
-      hideSuppIngSuggestions();
+  async function applySupplierIngredients(supplierId, checkedIds) {
+    const checkedSet = new Set(checkedIds.map(String));
+    const toThis = [], toNull = [];
+    soIngredients.forEach(i => {
+      const mine = i.supplier_id != null && String(i.supplier_id) === String(supplierId);
+      const checked = checkedSet.has(String(i.id));
+      if (checked && !mine) toThis.push(i.id);
+      else if (!checked && mine) toNull.push(i.id);
+    });
+    if (db) {
+      if (toThis.length) { const { error } = await db.from('ingredients').update({ supplier_id: supplierId }).in('id', toThis); if (error) console.error('assign ingredients error:', error); }
+      if (toNull.length) { const { error } = await db.from('ingredients').update({ supplier_id: null }).in('id', toNull); if (error) console.error('unassign ingredients error:', error); }
+      await loadSoIngredients();
+    } else {
+      soIngredients = soIngredients.map(i => {
+        if (toThis.some(x => String(x) === String(i.id))) return { ...i, supplier_id: supplierId };
+        if (toNull.some(x => String(x) === String(i.id))) return { ...i, supplier_id: null };
+        return i;
+      });
+      localStorage.setItem(INGREDIENTS_LOCAL_KEY, JSON.stringify(soIngredients));
     }
   }
-
-  function addSuppIngTag(name, id) {
-    const already = suppIngTags.some(t => t.name.toLowerCase() === name.toLowerCase());
-    if (!already) suppIngTags.push({ id: id || null, name });
-    renderSuppIngTags();
-    const inp = document.getElementById('suppIngInput');
-    if (inp) inp.value = '';
-    hideSuppIngSuggestions();
-  }
-
-  function hideSuppIngSuggestions() {
-    const box = document.getElementById('suppIngSuggestions');
-    if (box) box.style.display = 'none';
-  }
-
-  document.addEventListener('click', e => {
-    if (!e.target.closest('#suppIngInput') && !e.target.closest('#suppIngSuggestions')) {
-      hideSuppIngSuggestions();
-    }
-  });
-
-  async function saveSuppIngredients(supplierId) {
-    const taggedIds = new Set();
-    for (const tag of suppIngTags) {
-      if (tag.id) {
-        const existing = soIngredients.find(i => String(i.id) === String(tag.id));
-        if (existing && String(existing.supplier_id) !== String(supplierId)) {
-          if (db) await db.from('ingredients').update({ supplier_id: supplierId }).eq('id', tag.id);
-          else { const x = soIngredients.find(i => String(i.id) === String(tag.id)); if (x) x.supplier_id = supplierId; }
-        }
-        taggedIds.add(String(tag.id));
-      } else {
-        const newRow = { name: tag.name, supplier_id: supplierId, unit: 'g', category: '', emoji: '', pack_size: null, pack_label: '', suggested_qty: 0 };
-        if (db) {
-          const { data, error } = await db.from('ingredients').insert(newRow).select().single();
-          if (!error && data) { soIngredients.push(data); taggedIds.add(String(data.id)); }
-          else console.error('ingredient insert error:', error);
-        } else {
-          const localId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-          soIngredients.push({ id: localId, ...newRow });
-          taggedIds.add(localId);
-        }
-      }
-    }
-    const toUnlink = soIngredients.filter(i => i.supplier_id != null && String(i.supplier_id) === String(supplierId) && !taggedIds.has(String(i.id)));
-    for (const i of toUnlink) {
-      if (db) await db.from('ingredients').update({ supplier_id: null }).eq('id', i.id);
-      i.supplier_id = null;
-    }
-    if (!db) localStorage.setItem(INGREDIENTS_LOCAL_KEY, JSON.stringify(soIngredients));
-    await loadSoIngredients();
-  }
-
 
   function showSupplierMain() {
     const main = document.getElementById('supplierPanelMain');
@@ -2881,7 +2804,7 @@
     renderNonOpChips();
     const title = document.getElementById('supplierFormTitle'); if (title) title.textContent = 'New Supplier';
     const lbl = document.getElementById('suppSaveLabel'); if (lbl) lbl.textContent = 'Save';
-    initSuppIngTags(null);
+    renderSuppIngChecklist(null);
     const nameInput = document.getElementById('suppName'); if (nameInput) nameInput.focus();
   }
 
@@ -2905,7 +2828,7 @@
     renderNonOpChips();
     const title = document.getElementById('supplierFormTitle'); if (title) title.textContent = 'Edit Supplier';
     const lbl = document.getElementById('suppSaveLabel'); if (lbl) lbl.textContent = 'Save Changes';
-    initSuppIngTags(editingSupplierId);
+    renderSuppIngChecklist(editingSupplierId);
   }
 
   async function saveSupplierFromForm() {
@@ -2927,6 +2850,9 @@
     };
     if (!row.name) { showToast('Please enter a supplier name'); return; }
 
+    const checkedIds = Array.from(document.querySelectorAll('#suppIngList input[type="checkbox"]:checked'))
+      .map(c => (/^\d+$/.test(c.value) ? parseInt(c.value, 10) : c.value));
+
     if (!db) {
       let supplierId;
       if (editingSupplierId) {
@@ -2937,7 +2863,7 @@
         suppliers.push({ id: supplierId, ...row });
       }
       localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
-      await saveSuppIngredients(supplierId);
+      await applySupplierIngredients(supplierId, checkedIds);
       editingSupplierId = null;
       showSupplierMain();
       renderSuppliersTab();
@@ -2957,7 +2883,7 @@
       supplierId = data.id;
       showToast('Supplier added ✓');
     }
-    await saveSuppIngredients(supplierId);
+    await applySupplierIngredients(supplierId, checkedIds);
     editingSupplierId = null;
     await loadSuppliers();
     showSupplierMain();
@@ -2986,8 +2912,6 @@
   // ── Ingredients management (Admin) ──
   let editingIngredientId = null;
   const INGREDIENTS_LOCAL_KEY = 'smartepos_ingredients';
-  const ING_CATEGORIES = ['Coffee','Milk & Dairy','Tea','Syrups & Flavourings','Spices','Produce','Baking','General','Other'];
-  const ING_UNITS = ['g','ml','pcs'];
 
   function ingSupplierName(id) {
     if (id == null) return '';
@@ -3014,19 +2938,14 @@
     const listItems = soIngredients.length
       ? soIngredients.map(i => {
           const supName = ingSupplierName(i.supplier_id);
-          const packBits = [];
-          if (i.pack_size) packBits.push(soFmtPackSize(i) + (i.pack_label ? ' ' + escapeHtml(i.pack_label) : ''));
-          if (Number(i.suggested_qty) > 0) packBits.push('reorder ' + soFmtQty(Number(i.suggested_qty), i.unit));
           return `
           <div class="supp-card">
-            <div class="supp-avatar">${i.emoji ? i.emoji : soEmoji(i)}</div>
+            <div class="supp-avatar"><i class="ti ti-leaf" style="font-size:18px;"></i></div>
             <div class="supp-main">
               <div class="supp-name-row">
                 <span class="supp-name">${escapeHtml(i.name)}</span>
-                ${i.category ? `<span class="supp-tag">${escapeHtml(i.category)}</span>` : ''}
               </div>
               <div class="supp-contact">
-                ${packBits.length ? `<span><i class="ti ti-package"></i>${packBits.join(' \u00B7 ')}</span>` : ''}
                 ${supName
                   ? `<span><i class="ti ti-truck-delivery"></i>${escapeHtml(supName)}</span>`
                   : `<span style="color:var(--text-tertiary);"><i class="ti ti-alert-circle"></i>No supplier assigned</span>`}
@@ -3059,48 +2978,14 @@
             <button class="supp-form-x" onclick="showIngredientMain()"><i class="ti ti-x"></i></button>
           </div>
 
-          <div class="supp-row2">
-            <div class="supp-field" style="flex:2;">
-              <div class="supp-label">Ingredient Name <span class="req">*</span></div>
-              <input class="supp-input" id="ingName" placeholder="e.g. Coffee Beans" />
-            </div>
-            <div class="supp-field" style="max-width:110px;">
-              <div class="supp-label">Emoji</div>
-              <input class="supp-input" id="ingEmoji" maxlength="4" placeholder="\u2615" style="text-align:center;" />
-            </div>
+          <div class="supp-field">
+            <div class="supp-label">Ingredient Name <span class="req">*</span></div>
+            <input class="supp-input" id="ingName" placeholder="e.g. Coffee Beans" />
           </div>
 
-          <div class="supp-row2">
-            <div class="supp-field">
-              <div class="supp-label">Category</div>
-              <select class="supp-select" id="ingCategory"></select>
-            </div>
-            <div class="supp-field">
-              <div class="supp-label">Supplier</div>
-              <select class="supp-select" id="ingSupplier"></select>
-            </div>
-          </div>
-
-          <div class="supp-row2">
-            <div class="supp-field">
-              <div class="supp-label">Unit</div>
-              <select class="supp-select" id="ingUnit">${ING_UNITS.map(u => `<option value="${u}">${u}</option>`).join('')}</select>
-            </div>
-            <div class="supp-field">
-              <div class="supp-label">Suggested reorder qty</div>
-              <input class="supp-input" id="ingSuggested" type="number" min="0" placeholder="e.g. 2000" />
-            </div>
-          </div>
-
-          <div class="supp-row2">
-            <div class="supp-field">
-              <div class="supp-label">Pack size <span style="color:var(--text-tertiary);font-weight:400;">(per pack, in base unit)</span></div>
-              <input class="supp-input" id="ingPackSize" type="number" min="0" placeholder="e.g. 1000" />
-            </div>
-            <div class="supp-field">
-              <div class="supp-label">Pack label</div>
-              <input class="supp-input" id="ingPackLabel" placeholder="e.g. bag, carton, bottle" />
-            </div>
+          <div class="supp-field">
+            <div class="supp-label">Supplier</div>
+            <select class="supp-select" id="ingSupplier"></select>
           </div>
 
           <div class="supp-footer">
@@ -3109,21 +2994,6 @@
           </div>
         </div>
       </div>`;
-  }
-
-  function ingFillSelects(current) {
-    const cat = document.getElementById('ingCategory');
-    if (cat) {
-      const cats = ING_CATEGORIES.slice();
-      if (current && current.category && !cats.includes(current.category)) cats.unshift(current.category);
-      cat.innerHTML = '<option value="">Select category\u2026</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-      cat.value = current && current.category ? current.category : '';
-    }
-    const sup = document.getElementById('ingSupplier');
-    if (sup) {
-      sup.innerHTML = '<option value="">\u2014 No supplier \u2014</option>' + suppliers.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
-      sup.value = current && current.supplier_id != null ? String(current.supplier_id) : '';
-    }
   }
 
   function showIngredientMain() {
@@ -3139,12 +3009,18 @@
     const form = document.getElementById('ingPanelForm');
     if (main) main.style.display = 'none';
     if (form) form.style.display = 'block';
-    ['ingName','ingEmoji','ingSuggested','ingPackSize','ingPackLabel'].forEach(id => { const inp = document.getElementById(id); if (inp) inp.value = ''; });
-    const u = document.getElementById('ingUnit'); if (u) u.value = 'g';
-    ingFillSelects(null);
+    const n2 = document.getElementById('ingName'); if (n2) n2.value = '';
+    ingFillSupplierSelect(null);
     document.getElementById('ingFormTitle').textContent = 'New Ingredient';
     document.getElementById('ingSaveLabel').textContent = 'Save Ingredient';
     const n = document.getElementById('ingName'); if (n) n.focus();
+  }
+
+  function ingFillSupplierSelect(current) {
+    const sup = document.getElementById('ingSupplier');
+    if (!sup) return;
+    sup.innerHTML = '<option value="">\u2014 No supplier \u2014</option>' + suppliers.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+    sup.value = current && current.supplier_id != null ? String(current.supplier_id) : '';
   }
 
   function editIngredient(id) {
@@ -3156,28 +3032,15 @@
     if (main) main.style.display = 'none';
     if (form) form.style.display = 'block';
     document.getElementById('ingName').value = i.name || '';
-    document.getElementById('ingEmoji').value = i.emoji || '';
-    document.getElementById('ingUnit').value = i.unit || 'g';
-    document.getElementById('ingSuggested').value = (i.suggested_qty == null ? '' : i.suggested_qty);
-    document.getElementById('ingPackSize').value = (i.pack_size == null ? '' : i.pack_size);
-    document.getElementById('ingPackLabel').value = i.pack_label || '';
-    ingFillSelects(i);
+    ingFillSupplierSelect(i);
     document.getElementById('ingFormTitle').textContent = 'Edit Ingredient';
     document.getElementById('ingSaveLabel').textContent = 'Save Changes';
   }
 
   async function saveIngredientFromForm() {
-    const packRaw = (document.getElementById('ingPackSize').value || '').trim();
-    const sugRaw = (document.getElementById('ingSuggested').value || '').trim();
     const supRaw = document.getElementById('ingSupplier').value;
     const row = {
       name: (document.getElementById('ingName').value || '').trim(),
-      category: document.getElementById('ingCategory').value || '',
-      emoji: (document.getElementById('ingEmoji').value || '').trim(),
-      unit: document.getElementById('ingUnit').value || 'g',
-      pack_size: packRaw === '' ? null : parseFloat(packRaw),
-      pack_label: (document.getElementById('ingPackLabel').value || '').trim(),
-      suggested_qty: sugRaw === '' ? 0 : parseFloat(sugRaw),
       supplier_id: supRaw === '' ? null : parseInt(supRaw, 10),
     };
     if (!row.name) { showToast('Please enter an ingredient name'); return; }
@@ -3235,35 +3098,16 @@
   let soOrderNumber = null;
   let soOrderRowId = null;
   let soStepNum = 1;
-  const SO_STEP_G = 100;
+  const SO_STEP_G = 1;
 
-  function soEmoji(ing) {
-    if (ing.emoji) return ing.emoji;
-    const c = (ing.category || '').toLowerCase();
-    if (c.includes('coff')) return '\u2615';
-    if (c.includes('bak')) return '\uD83E\uDD56';
-    if (c.includes('dairy')) return '\uD83E\uDD5B';
-    if (c.includes('tea')) return '\uD83C\uDF75';
-    if (c.includes('produce')) return '\uD83E\uDD6C';
-    return '\uD83D\uDCE6';
+  function soEmoji() { return '\uD83D\uDCE6'; }
+  function soFmtQty(qty) { return String(Math.round(Number(qty) * 100) / 100); }
+  function soPack(qty) { return String(Math.round(Number(qty) * 100) / 100); }
+  function soStepSize() { return 1; }
+  function soDefaultQty(ing) {
+    if (Number(soLastQty[ing.id]) > 0) return Number(soLastQty[ing.id]);
+    return 1;
   }
-  function soFmtQty(qty, unit) { return (Math.round(Number(qty) * 100) / 100) + (unit || 'g'); }
-  function soFmtPackSize(ing) {
-    const ps = Number(ing.pack_size) || 0, u = ing.unit || 'g';
-    if (u === 'g' && ps >= 1000) return (ps / 1000) + 'kg';
-    if (u === 'ml' && ps >= 1000) return (ps / 1000) + 'l';
-    if (u === 'pcs') return String(ps);
-    return ps + (u || '');
-  }
-  function soPack(qty, ing) {
-    const ps = Number(ing.pack_size) || 0;
-    if (!ps) return soFmtQty(qty, ing.unit);
-    const count = Math.max(1, Math.ceil(Number(qty) / ps));
-    let label = ing.pack_label || 'pack';
-    if (count !== 1 && !/s$/i.test(label)) label += 's';
-    return count + ' \u00D7 ' + soFmtPackSize(ing) + ' ' + label;
-  }
-  function soStepSize(ing) { const u = ing.unit || 'g'; return (u === 'g' || u === 'ml') ? SO_STEP_G : 1; }
   function soCatClass(cat) {
     const c = (cat || '').toLowerCase();
     if (c.includes('coff')) return 'so-tag-coffee';
@@ -3293,7 +3137,6 @@
     soShowStep(1);
     if (suppliers.length === 0) { try { await loadSuppliers(); } catch (e) {} }
     await loadSoIngredients();
-    soIngredients.forEach(i => { const q = Number(i.suggested_qty) || 0; if (q > 0) soLastQty[i.id] = q; });
     soRenderStep1();
   }
 
@@ -3340,8 +3183,8 @@
     }
     const cats = ['All'];
     supplied.forEach(i => { if (i.category && !cats.includes(i.category)) cats.push(i.category); });
-    const sugg = supplied.filter(i => Number(i.suggested_qty) > 0)
-      .sort((a, b) => Number(b.suggested_qty) - Number(a.suggested_qty)).slice(0, 3);
+    const sugg = supplied.filter(i => false)
+.slice(0, 3);
     const list = soFilteredIngredients();
 
     const suggHtml = sugg.length ? `
@@ -3353,9 +3196,8 @@
         </div>
         <div class="so-sug-chips">
           ${sugg.map(i => `<div class="so-sug-chip" onclick="soSuggClick('${i.id}')">
-            <span class="so-sug-emoji">${soEmoji(i)}</span>
-            <div><div class="so-sug-name">${escapeHtml(i.name)}</div>
-            <div class="so-sug-qty">+ ${soFmtQty(Number(i.suggested_qty), i.unit)}</div></div>
+            <span class="so-sug-emoji">${soEmoji()}</span>
+            <div><div class="so-sug-name">${escapeHtml(i.name)}</div></div>
           </div>`).join('')}
         </div>
       </div>` : '';
@@ -3381,7 +3223,6 @@
         <div class="so-check">${selected ? '<i class="ti ti-check"></i>' : ''}</div>
         <span class="so-card-tag ${soCatClass(i.category)}">${escapeHtml(i.category || 'Item')}</span>
         <div class="so-card-name">${escapeHtml(i.name)}</div>
-        <div class="so-card-sug">Suggested qty: ${soFmtQty(Number(i.suggested_qty) || 0, i.unit)}</div>
         <div class="so-stepper" onclick="event.stopPropagation()">
           <button class="so-step-btn" onclick="soAdjust('${i.id}',-1)">\u2212</button>
           <div class="so-qty-wrap">
@@ -3404,7 +3245,7 @@
   function soAdjust(id, dir) {
     const ing = soIngredients.find(x => String(x.id) === String(id));
     if (!ing) return;
-    const step = soStepSize(ing);
+    const step = soStepSize();
     let q = (soCart[id] != null ? Number(soCart[id]) : 0) + dir * step;
     if (q < 0) q = 0;
     soCart[id] = q;
@@ -3422,8 +3263,7 @@
 
   function soDefaultQty(ing) {
     if (Number(soLastQty[ing.id]) > 0) return Number(soLastQty[ing.id]);
-    if (Number(ing.suggested_qty) > 0) return Number(ing.suggested_qty);
-    return soStepSize(ing);
+    return soStepSize();
   }
 
   function soToggleSelect(id) {
@@ -3455,9 +3295,9 @@
   function soSuggClick(id) {
     const ing = soIngredients.find(x => String(x.id) === String(id));
     if (!ing) return;
-    soCart[id] = Number(ing.suggested_qty) > 0 ? Number(ing.suggested_qty) : soDefaultQty(ing);
+    soCart[id] = soDefaultQty(ing);
     soLastQty[id] = soCart[id];
-    if (soCategory !== 'All' && ing.category !== soCategory) soCategory = 'All';
+    
     soSearch = '';
     soRenderStep1();
     const inp = document.getElementById('soQty_' + id);
@@ -3487,10 +3327,10 @@
     document.getElementById('soPlaceBtn').disabled = false;
     step2.innerHTML = soOrderLines.map((l, idx) => `
       <div class="so-item-row">
-        <div class="so-item-emoji">${soEmoji(l.ing)}</div>
+        <div class="so-item-emoji">${soEmoji()}</div>
         <div class="so-item-main">
           <div class="so-item-name">${escapeHtml(l.ing.name)}</div>
-          <div class="so-item-meta">${soFmtQty(l.qty, l.ing.unit)} \u00B7 <b>${soPack(l.qty, l.ing)}</b></div>
+          <div class="so-item-meta">${soFmtQty(l.qty)} \u00B7 <b>${soPack(l.qty)}</b></div>
         </div>
         <div class="so-item-actions">
           <button class="so-item-btn" onclick="soEditLine(${idx})"><i class="ti ti-pencil"></i></button>
@@ -3502,7 +3342,7 @@
   function soEditLine(idx) {
     const l = soOrderLines[idx];
     if (!l) return;
-    const val = prompt('Quantity for ' + l.ing.name + ' (' + (l.ing.unit || 'g') + '):', l.qty);
+    const val = prompt('Quantity for ' + l.ing.name + ' (' + ('') + '):', l.qty);
     if (val === null) return;
     let q = parseFloat(val);
     if (isNaN(q) || q < 0) { showToast('Invalid quantity'); return; }
@@ -3540,7 +3380,7 @@
     });
     soRouting = Object.values(groups);
 
-    const itemsJson = soOrderLines.map(l => ({ ingredient_id: l.ing.id, name: l.ing.name, qty: l.qty, unit: l.ing.unit || 'g', pack: soPack(l.qty, l.ing), supplier_id: l.ing.supplier_id || null }));
+    const itemsJson = soOrderLines.map(l => ({ ingredient_id: l.ing.id, name: l.ing.name, qty: l.qty, unit: '', pack: soPack(l.qty), supplier_id: l.ing.supplier_id || null }));
     const routingJson = soBuildRoutingJson();
     let outletId = null;
     if (typeof currentOutletId === 'number') outletId = currentOutletId;
@@ -3568,7 +3408,7 @@
     return soRouting.map(g => ({
       supplier_id: g.supplier ? g.supplier.id : null,
       supplier_name: g.supplier ? g.supplier.name : 'Unassigned',
-      items: g.items.map(l => ({ name: l.ing.name, qty: l.qty, unit: l.ing.unit || 'g', pack: soPack(l.qty, l.ing) })),
+      items: g.items.map(l => ({ name: l.ing.name, qty: l.qty, unit: '', pack: soPack(l.qty) })),
       sent: !!g.sent
     }));
   }
@@ -3580,7 +3420,7 @@
     body.innerHTML = soRouting.map((g, idx) => {
       const name = g.supplier ? g.supplier.name : 'Unassigned';
       const lines = g.items.map(l =>
-        `<div class="so-supp-line"><span class="so-supp-line-name">${escapeHtml(l.ing.name)}</span><span class="so-supp-line-qty">${soPack(l.qty, l.ing)}</span></div>`
+        `<div class="so-supp-line"><span class="so-supp-line-name">${escapeHtml(l.ing.name)}</span><span class="so-supp-line-qty">${soPack(l.qty)}</span></div>`
       ).join('');
       let sendBtn;
       if (!g.supplier) sendBtn = `<button class="so-send-btn disabled"><i class="ti ti-alert-triangle"></i> No supplier assigned</button>`;
@@ -3662,7 +3502,7 @@
     const phone = String(g.supplier.phone || '').replace(/[^\d]/g, '');
     const contact = g.supplier.contact_person || g.supplier.name;
     let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
-    g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty, l.ing.unit) + ' (' + soPack(l.qty, l.ing) + ')\n'; });
+    g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty) + ' (' + soPack(l.qty) + ')\n'; });
     msg += '\nOrder ref: ' + soOrderNumber + '\nThank you';
     openWaChat({
       name: g.supplier.name, phone: phone, message: msg,
@@ -3686,7 +3526,7 @@
     out.style.display = 'block';
     out.textContent = 'Analysing\u2026';
     try {
-      const items = g.items.map(l => l.ing.name + ' ' + soFmtQty(l.qty, l.ing.unit)).join(', ');
+      const items = g.items.map(l => l.ing.name + ' ' + soFmtQty(l.qty)).join(', ');
       const prompt = 'You are a cafe inventory assistant. A cafe is about to order these items from supplier "' + (g.supplier ? g.supplier.name : 'a supplier') + '": ' + items + '. In 2 short sentences give a practical reorder recommendation: whether the quantities look reasonable and one tip on timing or buffer stock. Plain text only, no markdown.';
       const res = await fetch(AI_FORECAST_URL, {
         method: 'POST',
