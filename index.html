@@ -1313,13 +1313,14 @@
     .supp-save:hover { opacity:0.9; }
     .supp-cancel { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:13px; font-weight:600; font-family:var(--font); }
     .supp-cancel:hover { color:var(--text-primary); }
-    .supp-ing-list { display:flex; flex-direction:column; gap:2px; max-height:240px; overflow-y:auto; border:0.5px solid var(--border); border-radius:10px; padding:6px; }
-    .supp-ing-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; cursor:pointer; font-size:13px; color:var(--text-primary); }
-    .supp-ing-item:hover { background:var(--bg-secondary); }
-    .supp-ing-item input { width:16px; height:16px; cursor:pointer; accent-color:var(--green); flex-shrink:0; }
-    .supp-ing-item .supp-ing-emoji { font-size:15px; }
-    .supp-ing-item .supp-ing-cat { margin-left:auto; font-size:11px; color:var(--text-tertiary); }
-    .supp-ing-item .supp-ing-taken { margin-left:auto; font-size:10.5px; color:var(--text-tertiary); font-style:italic; }
+    .supp-ing-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; min-height:0; }
+    .supp-ing-tag { display:flex; align-items:center; gap:5px; background:var(--bg-secondary); border:0.5px solid var(--border); border-radius:20px; padding:4px 10px 4px 10px; font-size:12.5px; color:var(--text-primary); }
+    .supp-ing-tag button { background:none; border:none; cursor:pointer; color:var(--text-tertiary); display:flex; align-items:center; padding:0; margin-left:2px; }
+    .supp-ing-tag button:hover { color:var(--red); }
+    .supp-ing-suggestions { position:absolute; top:100%; left:0; right:0; background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-md); box-shadow:0 4px 16px rgba(0,0,0,0.10); z-index:200; max-height:180px; overflow-y:auto; margin-top:3px; }
+    .supp-ing-suggestion { display:flex; align-items:center; gap:8px; padding:9px 12px; font-size:13px; color:var(--text-primary); cursor:pointer; }
+    .supp-ing-suggestion:hover { background:var(--bg-secondary); }
+    .supp-ing-suggestion .sig-new { font-size:11px; color:var(--green); font-weight:600; margin-left:auto; }
     .supp-ing-empty { padding:16px; text-align:center; color:var(--text-tertiary); font-size:12.5px; }
     @media (max-width:560px) { .supp-row2 { grid-template-columns:1fr; } }
     /* ── SMART ORDERING SYSTEM ── */
@@ -1900,6 +1901,8 @@
     <div class="admin-tabs">
       <button class="admin-tab active" id="adminTabSettings" onclick="switchAdminTab('settings')"><i class="ti ti-settings"></i>Settings</button>
       <button class="admin-tab" id="adminTabOutlets" onclick="switchAdminTab('outlets')"><i class="ti ti-building-store"></i>Outlets</button>
+      <button class="admin-tab" id="adminTabSuppliers" onclick="switchAdminTab('suppliers')"><i class="ti ti-truck-delivery"></i>Suppliers</button>
+      <button class="admin-tab" id="adminTabIngredients" onclick="switchAdminTab('ingredients')"><i class="ti ti-leaf"></i>Ingredients</button>
     </div>
     <div class="admin-body" id="adminBody">
       <!-- Settings tab (default) -->
@@ -1949,6 +1952,8 @@
         </button>
       </div>
       <div id="adminOutletsContent" style="display:none;"></div>
+      <div id="adminSuppliersContent" style="display:none;"></div>
+      <div id="adminIngredientsContent" style="display:none;"></div>
     </div>
   </div>
 </div>
@@ -2693,8 +2698,14 @@
 
           <div class="supp-section-div">
             <div class="supp-section-head"><i class="ti ti-leaf"></i> Ingredients Supplied</div>
-            <div class="supp-help" style="margin-bottom:10px;">Tick what this supplier provides — only ticked ingredients appear in the order screen.</div>
-            <div class="supp-ing-list" id="suppIngList"></div>
+            <div class="supp-help" style="margin-bottom:10px;">Type an ingredient name and press Enter or select a suggestion. Ingredients are saved to the shared database.</div>
+            <div class="supp-ing-tags" id="suppIngTags"></div>
+            <div style="position:relative;">
+              <input class="supp-input" id="suppIngInput" placeholder="e.g. Coffee Beans" autocomplete="off"
+                oninput="onSuppIngInput(this.value)"
+                onkeydown="onSuppIngKeydown(event)" />
+              <div class="supp-ing-suggestions" id="suppIngSuggestions" style="display:none;"></div>
+            </div>
           </div>
 
           <div class="supp-footer">
@@ -2731,55 +2742,125 @@
     renderNonOpChips();
   }
 
-  async function renderSuppIngChecklist(supplierId) {
-    const box = document.getElementById('suppIngList');
-    if (!box) return;
-    if (soIngredients.length === 0) {
-      box.innerHTML = '<div class="supp-ing-empty">Loading ingredients\u2026</div>';
-      await loadSoIngredients();
-    }
-    const box2 = document.getElementById('suppIngList');
-    if (!box2) return;
-    if (soIngredients.length === 0) {
-      box2.innerHTML = '<div class="supp-ing-empty">No ingredients yet. Add them in the Ingredients tab first.</div>';
-      return;
-    }
-    box2.innerHTML = soIngredients.map(i => {
-      const owner = i.supplier_id;
-      const mine = owner != null && String(owner) === String(supplierId);
-      const takenByOther = owner != null && String(owner) !== String(supplierId);
-      const otherName = takenByOther ? ((suppliers.find(s => String(s.id) === String(owner)) || {}).name || 'another') : '';
-      return `<label class="supp-ing-item">
-        <input type="checkbox" value="${i.id}" ${mine ? 'checked' : ''} />
-        <span class="supp-ing-emoji">${i.emoji ? i.emoji : soEmoji(i)}</span>
-        <span>${escapeHtml(i.name)}</span>
-        ${takenByOther ? `<span class="supp-ing-taken">from ${escapeHtml(otherName)}</span>` : (i.category ? `<span class="supp-ing-cat">${escapeHtml(i.category)}</span>` : '')}
-      </label>`;
-    }).join('');
+  // ── Supplier ingredient tag input ──
+  let suppIngTags = []; // [{id|null, name}] — id is null for newly typed ingredients not yet in DB
+
+  function initSuppIngTags(supplierId) {
+    suppIngTags = supplierId
+      ? soIngredients.filter(i => i.supplier_id != null && String(i.supplier_id) === String(supplierId))
+          .map(i => ({ id: i.id, name: i.name }))
+      : [];
+    renderSuppIngTags();
+    const inp = document.getElementById('suppIngInput');
+    if (inp) inp.value = '';
+    hideSuppIngSuggestions();
   }
 
-  async function applySupplierIngredients(supplierId, checkedIds) {
-    const checkedSet = new Set(checkedIds.map(String));
-    const toThis = [], toNull = [];
-    soIngredients.forEach(i => {
-      const mine = i.supplier_id != null && String(i.supplier_id) === String(supplierId);
-      const checked = checkedSet.has(String(i.id));
-      if (checked && !mine) toThis.push(i.id);
-      else if (!checked && mine) toNull.push(i.id);
-    });
-    if (db) {
-      if (toThis.length) { const { error } = await db.from('ingredients').update({ supplier_id: supplierId }).in('id', toThis); if (error) console.error('assign ingredients error:', error); }
-      if (toNull.length) { const { error } = await db.from('ingredients').update({ supplier_id: null }).in('id', toNull); if (error) console.error('unassign ingredients error:', error); }
-      await loadSoIngredients();
-    } else {
-      soIngredients = soIngredients.map(i => {
-        if (toThis.some(x => String(x) === String(i.id))) return { ...i, supplier_id: supplierId };
-        if (toNull.some(x => String(x) === String(i.id))) return { ...i, supplier_id: null };
-        return i;
-      });
-      localStorage.setItem(INGREDIENTS_LOCAL_KEY, JSON.stringify(soIngredients));
+  function renderSuppIngTags() {
+    const box = document.getElementById('suppIngTags');
+    if (!box) return;
+    box.innerHTML = suppIngTags.map((t, idx) => `
+      <div class="supp-ing-tag">
+        <span>${escapeHtml(t.name)}</span>
+        <button type="button" onclick="removeSuppIngTag(${idx})"><i class="ti ti-x" style="font-size:11px;"></i></button>
+      </div>`).join('');
+  }
+
+  function removeSuppIngTag(idx) {
+    suppIngTags.splice(idx, 1);
+    renderSuppIngTags();
+  }
+
+  function onSuppIngInput(val) {
+    const q = val.trim().toLowerCase();
+    const box = document.getElementById('suppIngSuggestions');
+    if (!box) return;
+    if (!q) { hideSuppIngSuggestions(); return; }
+    const already = new Set(suppIngTags.map(t => t.name.toLowerCase()));
+    const matches = soIngredients.filter(i => i.name.toLowerCase().includes(q) && !already.has(i.name.toLowerCase()));
+    const exactMatch = soIngredients.some(i => i.name.toLowerCase() === q);
+    const rows = matches.slice(0, 8).map(i =>
+      `<div class="supp-ing-suggestion" onclick="addSuppIngTag('${escapeHtml(i.name)}', '${i.id}')">
+        <span>${escapeHtml(i.name)}</span>
+        ${i.category ? `<span style="font-size:11px;color:var(--text-tertiary);">${escapeHtml(i.category)}</span>` : ''}
+       </div>`
+    );
+    if (!exactMatch && val.trim()) {
+      rows.push(`<div class="supp-ing-suggestion" onclick="addSuppIngTag('${escapeHtml(val.trim())}', null)">
+        <span>${escapeHtml(val.trim())}</span>
+        <span class="sig-new">+ Add new</span>
+      </div>`);
+    }
+    if (rows.length === 0) { hideSuppIngSuggestions(); return; }
+    box.innerHTML = rows.join('');
+    box.style.display = 'block';
+  }
+
+  function onSuppIngKeydown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = (document.getElementById('suppIngInput') || {}).value || '';
+      if (!val.trim()) return;
+      const q = val.trim().toLowerCase();
+      const match = soIngredients.find(i => i.name.toLowerCase() === q);
+      addSuppIngTag(val.trim(), match ? match.id : null);
+    } else if (e.key === 'Escape') {
+      hideSuppIngSuggestions();
     }
   }
+
+  function addSuppIngTag(name, id) {
+    const already = suppIngTags.some(t => t.name.toLowerCase() === name.toLowerCase());
+    if (!already) suppIngTags.push({ id: id || null, name });
+    renderSuppIngTags();
+    const inp = document.getElementById('suppIngInput');
+    if (inp) inp.value = '';
+    hideSuppIngSuggestions();
+  }
+
+  function hideSuppIngSuggestions() {
+    const box = document.getElementById('suppIngSuggestions');
+    if (box) box.style.display = 'none';
+  }
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#suppIngInput') && !e.target.closest('#suppIngSuggestions')) {
+      hideSuppIngSuggestions();
+    }
+  });
+
+  async function saveSuppIngredients(supplierId) {
+    const taggedIds = new Set();
+    for (const tag of suppIngTags) {
+      if (tag.id) {
+        const existing = soIngredients.find(i => String(i.id) === String(tag.id));
+        if (existing && String(existing.supplier_id) !== String(supplierId)) {
+          if (db) await db.from('ingredients').update({ supplier_id: supplierId }).eq('id', tag.id);
+          else { const x = soIngredients.find(i => String(i.id) === String(tag.id)); if (x) x.supplier_id = supplierId; }
+        }
+        taggedIds.add(String(tag.id));
+      } else {
+        const newRow = { name: tag.name, supplier_id: supplierId, unit: 'g', category: '', emoji: '', pack_size: null, pack_label: '', suggested_qty: 0 };
+        if (db) {
+          const { data, error } = await db.from('ingredients').insert(newRow).select().single();
+          if (!error && data) { soIngredients.push(data); taggedIds.add(String(data.id)); }
+          else console.error('ingredient insert error:', error);
+        } else {
+          const localId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+          soIngredients.push({ id: localId, ...newRow });
+          taggedIds.add(localId);
+        }
+      }
+    }
+    const toUnlink = soIngredients.filter(i => i.supplier_id != null && String(i.supplier_id) === String(supplierId) && !taggedIds.has(String(i.id)));
+    for (const i of toUnlink) {
+      if (db) await db.from('ingredients').update({ supplier_id: null }).eq('id', i.id);
+      i.supplier_id = null;
+    }
+    if (!db) localStorage.setItem(INGREDIENTS_LOCAL_KEY, JSON.stringify(soIngredients));
+    await loadSoIngredients();
+  }
+
 
   function showSupplierMain() {
     const main = document.getElementById('supplierPanelMain');
@@ -2800,7 +2881,7 @@
     renderNonOpChips();
     const title = document.getElementById('supplierFormTitle'); if (title) title.textContent = 'New Supplier';
     const lbl = document.getElementById('suppSaveLabel'); if (lbl) lbl.textContent = 'Save';
-    renderSuppIngChecklist(null);
+    initSuppIngTags(null);
     const nameInput = document.getElementById('suppName'); if (nameInput) nameInput.focus();
   }
 
@@ -2824,7 +2905,7 @@
     renderNonOpChips();
     const title = document.getElementById('supplierFormTitle'); if (title) title.textContent = 'Edit Supplier';
     const lbl = document.getElementById('suppSaveLabel'); if (lbl) lbl.textContent = 'Save Changes';
-    renderSuppIngChecklist(editingSupplierId);
+    initSuppIngTags(editingSupplierId);
   }
 
   async function saveSupplierFromForm() {
@@ -2846,9 +2927,6 @@
     };
     if (!row.name) { showToast('Please enter a supplier name'); return; }
 
-    const checkedIds = Array.from(document.querySelectorAll('#suppIngList input[type="checkbox"]:checked'))
-      .map(c => (/^\d+$/.test(c.value) ? parseInt(c.value, 10) : c.value));
-
     if (!db) {
       let supplierId;
       if (editingSupplierId) {
@@ -2859,7 +2937,7 @@
         suppliers.push({ id: supplierId, ...row });
       }
       localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
-      await applySupplierIngredients(supplierId, checkedIds);
+      await saveSuppIngredients(supplierId);
       editingSupplierId = null;
       showSupplierMain();
       renderSuppliersTab();
@@ -2879,7 +2957,7 @@
       supplierId = data.id;
       showToast('Supplier added ✓');
     }
-    await applySupplierIngredients(supplierId, checkedIds);
+    await saveSuppIngredients(supplierId);
     editingSupplierId = null;
     await loadSuppliers();
     showSupplierMain();
@@ -6741,10 +6819,16 @@
   function switchAdminTab(tab) {
     document.getElementById('adminTabSettings').classList.toggle('active', tab === 'settings');
     document.getElementById('adminTabOutlets').classList.toggle('active', tab === 'outlets');
+    document.getElementById('adminTabSuppliers').classList.toggle('active', tab === 'suppliers');
+    document.getElementById('adminTabIngredients').classList.toggle('active', tab === 'ingredients');
     document.getElementById('adminSettingsContent').style.display = tab === 'settings' ? 'flex' : 'none';
     document.getElementById('adminOutletsContent').style.display = tab === 'outlets' ? 'block' : 'none';
+    document.getElementById('adminSuppliersContent').style.display = tab === 'suppliers' ? 'block' : 'none';
+    document.getElementById('adminIngredientsContent').style.display = tab === 'ingredients' ? 'block' : 'none';
     if (tab === 'settings') { document.getElementById('adminSettingsContent').style.flexDirection = 'column'; document.getElementById('adminSettingsContent').style.gap = '0'; }
     if (tab === 'outlets') renderOutletsTab();
+    if (tab === 'suppliers') renderSuppliersTab('adminSuppliersContent');
+    if (tab === 'ingredients') renderIngredientsTab();
   }
 
   // ── Supervisor PIN Modal ──
@@ -7411,9 +7495,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function switchPayTab(tab) {
-    const labels = { overview: 'Overview', eod: 'End of Day', month: 'Month to Date', addproduct: 'Products', discounts: 'Discounts', members: 'Members', suppliers: 'Suppliers', orders: 'Orders', business: 'Business Information' };
+    const labels = { overview: 'Overview', eod: 'End of Day', month: 'Month to Date', addproduct: 'Products', discounts: 'Discounts', members: 'Members', transactions: 'Transactions', suppliers: 'Suppliers', orders: 'Orders', reports: 'Reports', business: 'Business Information' };
     const isOverviewGroup = ['overview', 'eod', 'month'].includes(tab);
-    ['overview','eod','month','addproduct','discounts','members','suppliers','orders','business'].forEach(t => {
+    ['overview','eod','month','addproduct','discounts','members','transactions','suppliers','orders','reports','business'].forEach(t => {
       const navItem = document.getElementById('payNavItem_' + t);
       if (navItem) navItem.classList.toggle('active', t === tab);
       const pane = document.getElementById('payPane_' + t);
@@ -10304,11 +10388,17 @@ function exportBoMonthToExcel() {
       <button class="pay-dash-nav-item" id="payNavItem_members" onclick="switchPayTab('members')">
         <i class="ti ti-users"></i> Members
       </button>
+      <button class="pay-dash-nav-item" id="payNavItem_transactions" onclick="switchPayTab('transactions')">
+        <i class="ti ti-arrows-exchange"></i> Transactions
+      </button>
       <button class="pay-dash-nav-item" id="payNavItem_suppliers" onclick="switchPayTab('suppliers')">
         <i class="ti ti-building-warehouse"></i> Suppliers
       </button>
       <button class="pay-dash-nav-item" id="payNavItem_orders" onclick="switchPayTab('orders')">
         <i class="ti ti-truck-delivery"></i> Orders
+      </button>
+      <button class="pay-dash-nav-item" id="payNavItem_reports" onclick="switchPayTab('reports')">
+        <i class="ti ti-chart-bar"></i> Reports
       </button>
     </div>
     <div class="pay-dash-sidebar-footer">
