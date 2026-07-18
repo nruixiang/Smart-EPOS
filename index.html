@@ -1900,8 +1900,6 @@
     <div class="admin-tabs">
       <button class="admin-tab active" id="adminTabSettings" onclick="switchAdminTab('settings')"><i class="ti ti-settings"></i>Settings</button>
       <button class="admin-tab" id="adminTabOutlets" onclick="switchAdminTab('outlets')"><i class="ti ti-building-store"></i>Outlets</button>
-      <button class="admin-tab" id="adminTabSuppliers" onclick="switchAdminTab('suppliers')"><i class="ti ti-truck-delivery"></i>Suppliers</button>
-      <button class="admin-tab" id="adminTabIngredients" onclick="switchAdminTab('ingredients')"><i class="ti ti-leaf"></i>Ingredients</button>
     </div>
     <div class="admin-body" id="adminBody">
       <!-- Settings tab (default) -->
@@ -1951,8 +1949,6 @@
         </button>
       </div>
       <div id="adminOutletsContent" style="display:none;"></div>
-      <div id="adminSuppliersContent" style="display:none;"></div>
-      <div id="adminIngredientsContent" style="display:none;"></div>
     </div>
   </div>
 </div>
@@ -6745,16 +6741,10 @@
   function switchAdminTab(tab) {
     document.getElementById('adminTabSettings').classList.toggle('active', tab === 'settings');
     document.getElementById('adminTabOutlets').classList.toggle('active', tab === 'outlets');
-    document.getElementById('adminTabSuppliers').classList.toggle('active', tab === 'suppliers');
-    document.getElementById('adminTabIngredients').classList.toggle('active', tab === 'ingredients');
     document.getElementById('adminSettingsContent').style.display = tab === 'settings' ? 'flex' : 'none';
     document.getElementById('adminOutletsContent').style.display = tab === 'outlets' ? 'block' : 'none';
-    document.getElementById('adminSuppliersContent').style.display = tab === 'suppliers' ? 'block' : 'none';
-    document.getElementById('adminIngredientsContent').style.display = tab === 'ingredients' ? 'block' : 'none';
     if (tab === 'settings') { document.getElementById('adminSettingsContent').style.flexDirection = 'column'; document.getElementById('adminSettingsContent').style.gap = '0'; }
     if (tab === 'outlets') renderOutletsTab();
-    if (tab === 'suppliers') renderSuppliersTab('adminSuppliersContent');
-    if (tab === 'ingredients') renderIngredientsTab();
   }
 
   // ── Supervisor PIN Modal ──
@@ -7421,9 +7411,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function switchPayTab(tab) {
-    const labels = { overview: 'Overview', eod: 'End of Day', month: 'Month to Date', addproduct: 'Products', discounts: 'Discounts', members: 'Members', transactions: 'Transactions', suppliers: 'Suppliers', orders: 'Orders', reports: 'Reports', business: 'Business Information' };
+    const labels = { overview: 'Overview', eod: 'End of Day', month: 'Month to Date', addproduct: 'Products', discounts: 'Discounts', members: 'Members', suppliers: 'Suppliers', orders: 'Orders', business: 'Business Information' };
     const isOverviewGroup = ['overview', 'eod', 'month'].includes(tab);
-    ['overview','eod','month','addproduct','discounts','members','transactions','suppliers','orders','reports','business'].forEach(t => {
+    ['overview','eod','month','addproduct','discounts','members','suppliers','orders','business'].forEach(t => {
       const navItem = document.getElementById('payNavItem_' + t);
       if (navItem) navItem.classList.toggle('active', t === tab);
       const pane = document.getElementById('payPane_' + t);
@@ -10314,17 +10304,11 @@ function exportBoMonthToExcel() {
       <button class="pay-dash-nav-item" id="payNavItem_members" onclick="switchPayTab('members')">
         <i class="ti ti-users"></i> Members
       </button>
-      <button class="pay-dash-nav-item" id="payNavItem_transactions" onclick="switchPayTab('transactions')">
-        <i class="ti ti-arrows-exchange"></i> Transactions
-      </button>
       <button class="pay-dash-nav-item" id="payNavItem_suppliers" onclick="switchPayTab('suppliers')">
         <i class="ti ti-building-warehouse"></i> Suppliers
       </button>
       <button class="pay-dash-nav-item" id="payNavItem_orders" onclick="switchPayTab('orders')">
         <i class="ti ti-truck-delivery"></i> Orders
-      </button>
-      <button class="pay-dash-nav-item" id="payNavItem_reports" onclick="switchPayTab('reports')">
-        <i class="ti ti-chart-bar"></i> Reports
       </button>
     </div>
     <div class="pay-dash-sidebar-footer">
