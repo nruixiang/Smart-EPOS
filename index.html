@@ -3882,11 +3882,8 @@
     }
   }
 
-  window.addEventListener('online', trySyncQueue);
-  setInterval(trySyncQueue, 30000); // backup poll, in case the 'online' event doesn't fire (e.g. flaky wifi)
-  // Initial sync indicator state + attempt on page load
-  updateSyncIndicator(getSyncQueue().length);
-  trySyncQueue();
+  window.addEventListener('online', () => { if (typeof db !== 'undefined') trySyncQueue(); });
+  // Initial sync attempt and poll are started after db is initialised — see below
 
   // ── Local mirror for EOD-relevant data ──
   // Keeps a local copy of sales/wastage/cash-float so the EOD report stays accurate
@@ -3961,6 +3958,11 @@
   } catch (e) {
     console.error('Supabase init failed — running in offline/local mode:', e);
   }
+
+  // Start sync queue now that db is declared
+  updateSyncIndicator(getSyncQueue().length);
+  setInterval(trySyncQueue, 30000);
+  trySyncQueue();
 
   // ── WhatsApp OTP Verification ──
   const OTP_SEND_URL = SUPABASE_URL + '/functions/v1/send-otp';
