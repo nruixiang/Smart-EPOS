@@ -3586,8 +3586,8 @@
     document.getElementById('waChatText').value = opts.message || '';
     document.getElementById('waChatTime').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const sendBtn = document.getElementById('waChatSend');
-    sendBtn.classList.remove('disabled');
-    sendBtn.title = 'Send message';
+    sendBtn.classList.toggle('disabled', !phone);
+    sendBtn.title = phone ? 'Send via WhatsApp' : 'No phone number on file';
     document.getElementById('waChatOverlay').dataset.phone = phone;
     document.getElementById('waChatOverlay').classList.add('show');
     setTimeout(waChatAutosize, 0);
@@ -3617,10 +3617,12 @@
   }
 
   function waChatSend() {
+    const phone = document.getElementById('waChatOverlay').dataset.phone;
+    if (!phone) { showToast('No phone number — use Copy instead'); return; }
+    const text = document.getElementById('waChatText').value;
+    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(text), '_blank');
     if (waChatCtx && typeof waChatCtx.onSend === 'function') waChatCtx.onSend();
-    const name = document.getElementById('waChatName').textContent;
     closeWaChat();
-    showMessageSentPopup(name ? ('Sent to ' + name) : '');
   }
 
   let waSentTimer = null;
