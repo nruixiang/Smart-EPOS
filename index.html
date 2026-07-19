@@ -1267,6 +1267,11 @@
     .supp-contact span { display:flex; align-items:center; gap:6px; }
     .supp-contact i { font-size:13px; color:var(--text-tertiary); width:14px; text-align:center; }
     .supp-meta { font-size:11.5px; color:var(--text-tertiary); margin-top:6px; display:flex; gap:12px; flex-wrap:wrap; }
+    .supp-supplies-label { font-size:11px; font-weight:700; color:var(--text-secondary); margin-top:10px; display:flex; align-items:center; gap:5px; text-transform:uppercase; letter-spacing:0.03em; }
+    .supp-supplies-label i { font-size:13px; color:var(--green); }
+    .supp-supplies { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
+    .supp-supply-chip { font-size:11.5px; background:var(--bg-tertiary); color:var(--text-secondary); padding:3px 9px; border-radius:11px; display:inline-flex; align-items:center; gap:4px; }
+    .supp-supplies-empty { font-size:11.5px; color:var(--text-tertiary); margin-top:6px; font-style:italic; }
     .supp-actions { display:flex; gap:6px; flex-shrink:0; }
     .supp-icon-btn { width:30px; height:30px; border-radius:8px; border:0.5px solid var(--border); background:var(--bg-secondary); color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:var(--font); }
     .supp-icon-btn:hover { color:var(--text-primary); border-color:var(--border-hover); }
@@ -2564,9 +2569,12 @@
     const el = document.getElementById(supplierHost);
     if (!el) return;
 
-    if (suppliers.length === 0 && !el.dataset.loaded) {
+    if (!el.dataset.loaded && (suppliers.length === 0 || soIngredients.length === 0)) {
       el.innerHTML = '<div class="supp-empty">Loading suppliers…</div>';
-      loadSuppliers().then(() => { el.dataset.loaded = '1'; renderSuppliersTab(); });
+      Promise.all([
+        suppliers.length === 0 ? loadSuppliers() : Promise.resolve(),
+        soIngredients.length === 0 ? loadSoIngredients() : Promise.resolve()
+      ]).then(() => { el.dataset.loaded = '1'; renderSuppliersTab(); });
       return;
     }
     el.dataset.loaded = '1';
@@ -2578,6 +2586,7 @@
           const metaBits = [];
           if (s.lead_time_days != null && s.lead_time_days !== '') metaBits.push('<span><i class="ti ti-clock-hour-4"></i> ' + escapeHtml(s.lead_time_days) + 'd lead</span>');
           if (s.delivery_from || s.delivery_by) metaBits.push('<span><i class="ti ti-truck"></i> ' + escapeHtml(s.delivery_from || '?') + '–' + escapeHtml(s.delivery_by || '?') + '</span>');
+          const supplied = soIngredients.filter(i => i.supplier_id != null && String(i.supplier_id) === String(s.id));
           return `
         <div class="supp-card">
           <div class="supp-avatar">${escapeHtml((s.name || '?').trim().charAt(0).toUpperCase())}</div>
@@ -2593,6 +2602,10 @@
               ${s.packaging_notes ? `<span><i class="ti ti-package"></i>${escapeHtml(s.packaging_notes)}</span>` : ''}
             </div>
             ${metaBits.length ? `<div class="supp-meta">${metaBits.join('')}</div>` : ''}
+            <div class="supp-supplies-label"><i class="ti ti-leaf"></i> Supplies ${supplied.length}</div>
+            ${supplied.length
+              ? `<div class="supp-supplies">${supplied.map(i => `<span class="supp-supply-chip">${i.emoji ? i.emoji + ' ' : ''}${escapeHtml(i.name)}</span>`).join('')}</div>`
+              : '<div class="supp-supplies-empty">No ingredients assigned — edit to add some</div>'}
           </div>
           <div class="supp-actions">
             <a class="supp-wa-btn ${wa ? '' : 'disabled'}" ${wa ? `onclick="suppWaChat('${s.id}')"` : ''} title="Message on WhatsApp"><i class="ti ti-brand-whatsapp"></i></a>
@@ -3014,18 +3027,24 @@
   async function deleteSupplier(id) {
     const s = suppliers.find(x => String(x.id) === String(id));
     if (!s) return;
-    if (!confirm('Delete supplier "' + s.name + '"?')) return;
+    if (!confirm('Delete supplier "' + s.name + '"?\nIts ingredients will be unassigned (kept in your catalog).')) return;
     if (!db) {
       suppliers = suppliers.filter(x => String(x.id) !== String(id));
       localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
+      soIngredients = soIngredients.map(i => String(i.supplier_id) === String(id) ? { ...i, supplier_id: null } : i);
+      localStorage.setItem(INGREDIENTS_LOCAL_KEY, JSON.stringify(soIngredients));
       renderSuppliersTab();
       showToast('Supplier removed');
       return;
     }
+    // clear this supplier from its ingredients first (keeps the order list clean and avoids FK errors)
+    const { error: unErr } = await db.from('ingredients').update({ supplier_id: null }).eq('supplier_id', id);
+    if (unErr) { showToast('Delete failed: ' + (unErr.message || 'unknown error')); console.error('unassign-on-delete error:', unErr); return; }
     const { error } = await db.from('suppliers').delete().eq('id', id);
-    if (error) { showToast('Failed to delete supplier'); console.error(error); return; }
+    if (error) { showToast('Delete failed: ' + (error.message || 'unknown error')); console.error('supplier delete error:', error); return; }
     suppliers = suppliers.filter(x => String(x.id) !== String(id));
     localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
+    await loadSoIngredients();
     renderSuppliersTab();
     showToast('Supplier removed');
   }
