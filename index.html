@@ -3038,7 +3038,7 @@
   async function deleteSupplier(id) {
     const s = suppliers.find(x => String(x.id) === String(id));
     if (!s) return;
-    if (!await uiConfirm('Delete supplier "' + s.name + '"?\nIts ingredients will be unassigned (kept in your catalog).', { title: 'Delete supplier', confirmText: 'Delete', danger: true })) return;
+    if (!await uiConfirm('Delete supplier "' + s.name + '"?', { title: 'Delete supplier', confirmText: 'Delete', danger: true })) return;
     if (!db) {
       suppliers = suppliers.filter(x => String(x.id) !== String(id));
       localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
