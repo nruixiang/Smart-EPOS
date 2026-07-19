@@ -2217,18 +2217,24 @@
   function initSetup() {
     const saved = localStorage.getItem(BUSINESS_NAME_KEY);
     const savedType = localStorage.getItem(BUSINESS_TYPE_KEY);
-    if (saved && savedType) {
+    const savedPhone = localStorage.getItem(BUSINESS_PHONE_KEY);
+    // Only skip setup if user has previously completed it (has all 3 fields stored)
+    if (saved && savedType && savedPhone) {
       applyBusinessName(saved);
       BUSINESS_TYPE = savedType;
-      hideSetupScreen();
+      // Setup already done — keep overlay hidden (it starts hidden by default)
     } else {
-      localStorage.setItem(BUSINESS_NAME_KEY, 'Smart EPOS');
-      localStorage.setItem(BUSINESS_TYPE_KEY, 'fnb');
-      localStorage.setItem(BUSINESS_PHONE_KEY, '+6591234567');
-      BUSINESS_TYPE = 'fnb';
-      applyBusinessName('Smart EPOS');
-      hideSetupScreen();
+      // First time — clear any partials and show setup
+      localStorage.removeItem(BUSINESS_NAME_KEY);
+      localStorage.removeItem(BUSINESS_TYPE_KEY);
+      localStorage.removeItem(BUSINESS_PHONE_KEY);
+      showSetupScreen();
     }
+  }
+
+  function showSetupScreen() {
+    const el = document.getElementById('setupOverlay');
+    el.classList.remove('hidden', 'fade-out');
   }
 
   function openSetupScreen() {
@@ -2236,12 +2242,9 @@
     const input = document.getElementById('setupBusinessName');
     const typeSelect = document.getElementById('setupBusinessType');
     const phoneInput = document.getElementById('setupPhone');
-    const saved = localStorage.getItem(BUSINESS_NAME_KEY) || '';
-    const savedType = localStorage.getItem(BUSINESS_TYPE_KEY) || '';
-    const savedPhone = localStorage.getItem(BUSINESS_PHONE_KEY) || '';
-    input.value = saved;
-    typeSelect.value = savedType;
-    phoneInput.value = savedPhone;
+    input.value = localStorage.getItem(BUSINESS_NAME_KEY) || '';
+    typeSelect.value = localStorage.getItem(BUSINESS_TYPE_KEY) || '';
+    phoneInput.value = localStorage.getItem(BUSINESS_PHONE_KEY) || '';
     updateSetupBtn();
     el.classList.remove('hidden', 'fade-out');
     setTimeout(() => input.focus(), 100);
@@ -2250,7 +2253,7 @@
   function hideSetupScreen() {
     const el = document.getElementById('setupOverlay');
     el.classList.add('fade-out');
-    setTimeout(() => el.classList.add('hidden'), 420);
+    setTimeout(() => { el.classList.add('hidden'); el.classList.remove('fade-out'); }, 420);
   }
 
   async function tryFinishSetup() {
@@ -10509,7 +10512,7 @@ function exportBoMonthToExcel() {
 </div>
 
 <!-- Setup Screen -->
-<div class="setup-overlay" id="setupOverlay">
+<div class="setup-overlay hidden" id="setupOverlay">
   <div class="setup-card">
     <div class="setup-logo"><i class="ti ti-device-desktop"></i></div>
     <div class="setup-heading">Welcome to Smart EPOS</div>
