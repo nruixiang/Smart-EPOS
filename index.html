@@ -1560,7 +1560,7 @@
       <i class="ti ti-circle-plus"></i>
       <span class="lsb-tip">Add product</span>
     </button>
-    <button class="lsb-btn" onclick="openPayments()" style="margin-top:4px;">
+    <button class="lsb-btn" id="lsbBackOffice" onclick="openPayments()" style="margin-top:4px;display:none;">
       <i class="ti ti-building-store"></i>
       <span class="lsb-tip">Back Office</span>
     </button>
@@ -6878,6 +6878,8 @@
       adminPill.style.cursor = 'default';
     }
     document.getElementById('staffPill').onclick = logout;
+    const boBtn = document.getElementById('lsbBackOffice');
+    if (boBtn) boBtn.style.display = (staffId === '0000') ? '' : 'none';
     updateThemeToggleVisibility();
     renderProducts();
   }
@@ -6902,6 +6904,8 @@
     document.getElementById('adminPill').classList.remove('header-pill-btn');
     document.getElementById('adminPill').style.cursor = 'default';
     document.getElementById('staffPill').onclick = openClockIn;
+    const boBtnOut = document.getElementById('lsbBackOffice');
+    if (boBtnOut) boBtnOut.style.display = 'none';
     renderProducts();
     showToast('Logged out');
   }
@@ -7459,6 +7463,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   let payOutletFilter = 'All';
 
   function openPayments() {
+    if (currentStaffId !== '0000') { showToast('Back Office is admin-only'); return; }
     payOutletFilter = 'All';
     switchPayTab('overview');
     document.getElementById('payDashOverlay').classList.add('show');
