@@ -2831,21 +2831,33 @@
   });
 
   async function saveSuppIngredients(supplierId) {
+    const sid = /^\d+$/.test(String(supplierId)) ? parseInt(supplierId, 10) : supplierId;
     const taggedIds = new Set();
+
     for (const tag of suppIngTags) {
       if (tag.id) {
-        const existing = soIngredients.find(i => String(i.id) === String(tag.id));
-        if (existing && String(existing.supplier_id) !== String(supplierId)) {
-          if (db) await db.from('ingredients').update({ supplier_id: supplierId }).eq('id', tag.id);
-          else { const x = soIngredients.find(i => String(i.id) === String(tag.id)); if (x) x.supplier_id = supplierId; }
+        // Existing ingredient — ensure supplier_id is linked to this supplier
+        const intId = /^\d+$/.test(String(tag.id)) ? parseInt(tag.id, 10) : tag.id;
+        if (db) {
+          const { error } = await db.from('ingredients').update({ supplier_id: sid }).eq('id', intId);
+          if (error) console.error('ingredient link error:', error);
+        } else {
+          const x = soIngredients.find(i => String(i.id) === String(tag.id));
+          if (x) x.supplier_id = sid;
         }
         taggedIds.add(String(tag.id));
       } else {
-        const newRow = { name: tag.name, supplier_id: supplierId };
+        // New ingredient — insert into DB
+        const newRow = { name: tag.name, supplier_id: sid, unit: 'g' };
         if (db) {
           const { data, error } = await db.from('ingredients').insert(newRow).select().single();
-          if (!error && data) { soIngredients.push(data); taggedIds.add(String(data.id)); }
-          else console.error('ingredient insert error:', error);
+          if (error) {
+            console.error('ingredient insert error:', JSON.stringify(error));
+            showToast('Could not save ingredient: ' + tag.name);
+          } else if (data) {
+            soIngredients.push(data);
+            taggedIds.add(String(data.id));
+          }
         } else {
           const localId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2);
           soIngredients.push({ id: localId, ...newRow });
@@ -2853,13 +2865,16 @@
         }
       }
     }
+
+    // Unlink any previously-assigned ingredients no longer in the tag list
     const toUnlink = soIngredients.filter(i =>
-      i.supplier_id != null && String(i.supplier_id) === String(supplierId) && !taggedIds.has(String(i.id))
+      i.supplier_id != null && String(i.supplier_id) === String(sid) && !taggedIds.has(String(i.id))
     );
     for (const i of toUnlink) {
       if (db) await db.from('ingredients').update({ supplier_id: null }).eq('id', i.id);
       i.supplier_id = null;
     }
+
     if (!db) localStorage.setItem(INGREDIENTS_LOCAL_KEY, JSON.stringify(soIngredients));
     await loadSoIngredients();
   }
