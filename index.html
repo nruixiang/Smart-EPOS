@@ -1555,8 +1555,8 @@
 <div class="main">
 
   <!-- LEFT SIDEBAR -->
-  <div class="left-sidebar">
-    <button class="lsb-btn" id="lsbBackOffice" onclick="openPayments()" style="display:none;">
+  <div class="left-sidebar" id="leftSidebar" style="display:none;">
+    <button class="lsb-btn" id="lsbBackOffice" onclick="openPayments()">
       <i class="ti ti-building-store"></i>
       <span class="lsb-tip">Back Office</span>
     </button>
@@ -6874,8 +6874,8 @@
       adminPill.style.cursor = 'default';
     }
     document.getElementById('staffPill').onclick = logout;
-    const boBtn = document.getElementById('lsbBackOffice');
-    if (boBtn) boBtn.style.display = (staffId === '0000') ? '' : 'none';
+    const leftBar = document.getElementById('leftSidebar');
+    if (leftBar) leftBar.style.display = (staffId === '0000') ? '' : 'none';
     updateThemeToggleVisibility();
     renderProducts();
   }
@@ -6900,8 +6900,8 @@
     document.getElementById('adminPill').classList.remove('header-pill-btn');
     document.getElementById('adminPill').style.cursor = 'default';
     document.getElementById('staffPill').onclick = openClockIn;
-    const boBtnOut = document.getElementById('lsbBackOffice');
-    if (boBtnOut) boBtnOut.style.display = 'none';
+    const leftBarOut = document.getElementById('leftSidebar');
+    if (leftBarOut) leftBarOut.style.display = 'none';
     renderProducts();
     showToast('Logged out');
   }
