@@ -1460,6 +1460,24 @@
     .sent-pop-check { width:62px; height:62px; border-radius:50%; background:var(--green); color:#fff; display:flex; align-items:center; justify-content:center; font-size:34px; }
     .sent-pop-title { font-size:18px; font-weight:700; color:var(--text-primary); }
     .sent-pop-sub { font-size:13px; color:var(--text-secondary); margin-top:-6px; }
+    /* In-app confirmation popup */
+    .confirm-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:12000; opacity:0; pointer-events:none; transition:opacity 0.15s; }
+    .confirm-overlay.show { opacity:1; pointer-events:auto; }
+    .confirm-box { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:16px; padding:24px 24px 20px; width:370px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,0.3); transform:scale(0.94); transition:transform 0.15s; text-align:center; }
+    .confirm-overlay.show .confirm-box { transform:scale(1); }
+    .confirm-icon { width:50px; height:50px; border-radius:50%; background:var(--bg-tertiary); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 14px; }
+    .confirm-icon.danger { background:#fef2f2; color:#dc2626; }
+    [data-theme="dark"] .confirm-icon.danger { background:rgba(220,38,38,0.14); }
+    .confirm-title { font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
+    .confirm-msg { font-size:13.5px; color:var(--text-secondary); line-height:1.5; white-space:pre-line; margin-bottom:20px; }
+    .confirm-actions { display:flex; gap:10px; }
+    .confirm-cancel, .confirm-ok { flex:1; padding:11px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; font-family:var(--font); }
+    .confirm-cancel { background:var(--bg-primary); color:var(--text-primary); border:0.5px solid var(--border); }
+    .confirm-cancel:hover { border-color:var(--border-hover); }
+    .confirm-ok { background:#111; color:#fff; border:none; }
+    [data-theme="dark"] .confirm-ok { background:#f2f2f7; color:#1c1c1e; }
+    .confirm-ok.danger { background:#dc2626; color:#fff; }
+    .confirm-ok:hover { opacity:0.9; }
     .wa-header { background:#075E54; color:#fff; display:flex; align-items:center; gap:12px; padding:12px 16px; flex-shrink:0; }
     [data-theme="dark"] .wa-header { background:#1f2c34; }
     .wa-back { background:none; border:none; color:#fff; cursor:pointer; font-size:20px; display:flex; padding:0; }
@@ -3020,7 +3038,7 @@
   async function deleteSupplier(id) {
     const s = suppliers.find(x => String(x.id) === String(id));
     if (!s) return;
-    if (!confirm('Delete supplier "' + s.name + '"?\nIts ingredients will be unassigned (kept in your catalog).')) return;
+    if (!await uiConfirm('Delete supplier "' + s.name + '"?\nIts ingredients will be unassigned (kept in your catalog).', { title: 'Delete supplier', confirmText: 'Delete', danger: true })) return;
     if (!db) {
       suppliers = suppliers.filter(x => String(x.id) !== String(id));
       localStorage.setItem(SUPPLIERS_LOCAL_KEY, JSON.stringify(suppliers));
@@ -3207,7 +3225,7 @@
   async function deleteIngredient(id) {
     const i = soIngredients.find(x => String(x.id) === String(id));
     if (!i) return;
-    if (!confirm('Delete ingredient "' + i.name + '"?')) return;
+    if (!await uiConfirm('Delete ingredient "' + i.name + '"?', { title: 'Delete ingredient', confirmText: 'Delete', danger: true })) return;
     if (!db) {
       soIngredients = soIngredients.filter(x => String(x.id) !== String(id));
       localStorage.setItem(INGREDIENTS_LOCAL_KEY, JSON.stringify(soIngredients));
@@ -3834,7 +3852,7 @@
   async function boDeleteOrder(id) {
     const o = boOrders.find(x => String(x.id) === String(id));
     if (!o) return;
-    if (!confirm('Delete order ' + (o.order_number || ('#' + o.id)) + '?')) return;
+    if (!await uiConfirm('Delete order ' + (o.order_number || ('#' + o.id)) + '?', { title: 'Delete order', confirmText: 'Delete', danger: true })) return;
     if (db) {
       const { error } = await db.from('orders').delete().eq('id', id);
       if (error) { showToast('Failed to delete order'); console.error(error); return; }
@@ -5289,13 +5307,13 @@
     }).join('');
   }
 
-  function recallOrder(id) {
+  async function recallOrder(id) {
     const idx = heldOrders.findIndex(h => h.id === id);
     if (idx === -1) return;
     const held = heldOrders[idx];
     // If current order has items, warn before replacing
     if (Object.keys(order).length > 0) {
-      if (!confirm('Replace current order with held order #' + id + '?')) return;
+      if (!await uiConfirm('Replace current order with held order #' + id + '?', { title: 'Replace order?', confirmText: 'Replace' })) return;
     }
     order = {};
     held.items.forEach(i => { order[i.key || i.name] = {...i}; });
@@ -5386,6 +5404,35 @@
     t.textContent = msg; t.classList.add('show');
     setTimeout(()=>t.classList.remove('show'), 2500);
   }
+
+  // In-app confirmation dialog (Promise<boolean>) — replaces native confirm()
+  let _confirmResolve = null;
+  function uiConfirm(message, opts) {
+    opts = opts || {};
+    return new Promise(resolve => {
+      _confirmResolve = resolve;
+      document.getElementById('confirmTitle').textContent = opts.title || 'Please confirm';
+      document.getElementById('confirmMsg').textContent = message || '';
+      const okBtn = document.getElementById('confirmOkBtn');
+      const cancelBtn = document.getElementById('confirmCancelBtn');
+      okBtn.textContent = opts.confirmText || 'Confirm';
+      cancelBtn.textContent = opts.cancelText || 'Cancel';
+      okBtn.classList.toggle('danger', !!opts.danger);
+      document.getElementById('confirmIcon').classList.toggle('danger', !!opts.danger);
+      document.getElementById('confirmOverlay').classList.add('show');
+      setTimeout(() => okBtn.focus(), 0);
+    });
+  }
+  function _confirmClose(val) {
+    document.getElementById('confirmOverlay').classList.remove('show');
+    const r = _confirmResolve; _confirmResolve = null;
+    if (r) r(val);
+  }
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('confirmOverlay').classList.contains('show')) return;
+    if (e.key === 'Escape') { e.preventDefault(); _confirmClose(false); }
+    else if (e.key === 'Enter') { e.preventDefault(); _confirmClose(true); }
+  });
 
   // Generic background-click-to-close handler for overlay/modal elements.
   // Usage: onclick="closeIfBg(event, 'someOverlayId', closeSomeModal)"
@@ -6021,10 +6068,10 @@
     openProfile(m.id);
   }
 
-  function deleteCustomer() {
+  async function deleteCustomer() {
     const m = members.find(x => x.id === viewingMemberId);
     if (!m) return;
-    if (!confirm('Delete customer "' + m.name + '"? This cannot be undone.')) return;
+    if (!await uiConfirm('Delete customer "' + m.name + '"? This cannot be undone.', { title: 'Delete customer', confirmText: 'Delete', danger: true })) return;
     members = members.filter(x => x.id !== m.id);
     deleteMemberRemote(m.id);
     if (attachedCustomer && attachedCustomer.id === m.id) { attachedCustomer = null; updateCustomerRowDisplay(); }
@@ -6150,7 +6197,7 @@
   async function deleteMemberFromList(id) {
     const m = members.find(x => x.id === id);
     if (!m) return;
-    if (!confirm('Delete member "' + m.name + '"? This cannot be undone.')) return;
+    if (!await uiConfirm('Delete member "' + m.name + '"? This cannot be undone.', { title: 'Delete member', confirmText: 'Delete', danger: true })) return;
     members = members.filter(x => x.id !== id);
     await deleteMemberRemote(id);
     if (attachedCustomer && attachedCustomer.id === id) { attachedCustomer = null; updateCustomerRowDisplay(); }
@@ -6470,7 +6517,7 @@
   async function deleteDiscountAndRefresh(id) {
     const d = DISCOUNTS.find(x => String(x.id) === String(id));
     if (!d) return;
-    if (!confirm('Delete "' + d.label + '"? This cannot be undone.')) return;
+    if (!await uiConfirm('Delete "' + d.label + '"? This cannot be undone.', { title: 'Delete discount', confirmText: 'Delete', danger: true })) return;
     const ok = await deleteDiscountFromDb(id);
     if (!ok) return;
     DISCOUNTS = DISCOUNTS.filter(x => String(x.id) !== String(id));
@@ -6883,12 +6930,12 @@
     renderProducts();
   }
 
-  function logout() {
+  async function logout() {
     if (!currentStaffId) { openClockIn(); return; } // not logged in — clicking the pill should open login instead
     if (Object.keys(order).length > 0) {
-      if (!confirm('There is an order in progress. Log out anyway? The current order will be cleared.')) return;
+      if (!await uiConfirm('There is an order in progress. Log out anyway? The current order will be cleared.', { title: 'Log out?', confirmText: 'Log out', danger: true })) return;
     } else {
-      if (!confirm('Log out of ' + (currentStaffName || currentStaffId) + '?')) return;
+      if (!await uiConfirm('Log out of ' + (currentStaffName || currentStaffId) + '?', { title: 'Log out?', confirmText: 'Log out' })) return;
     }
     clearCachedStaffLogin(currentStaffId);
     localStorage.removeItem('epos_staff_id');
@@ -7420,7 +7467,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   // ── Delete Product ──
   async function deleteProduct(name) {
-    if (!confirm('Delete "' + name + '" from the menu?')) return;
+    if (!await uiConfirm('Delete "' + name + '" from the menu?', { title: 'Delete product', confirmText: 'Delete', danger: true })) return;
     let found = null;
     for (const cat of Object.values(PRODUCTS)) {
       const idx = cat.All.findIndex(x => x.name === name);
@@ -10255,6 +10302,19 @@ function exportBoMonthToExcel() {
     <div class="wa-footer">
       <button class="wa-copy" onclick="waChatCopy()"><i class="ti ti-copy"></i> Copy message</button>
       <button class="wa-send" id="waChatSend" onclick="waChatSend()" title="Send via WhatsApp"><i class="ti ti-send"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- In-app confirmation popup -->
+<div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)_confirmClose(false)">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon"><i class="ti ti-alert-triangle"></i></div>
+    <div class="confirm-title" id="confirmTitle">Please confirm</div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" id="confirmCancelBtn" onclick="_confirmClose(false)">Cancel</button>
+      <button class="confirm-ok" id="confirmOkBtn" onclick="_confirmClose(true)">Confirm</button>
     </div>
   </div>
 </div>
