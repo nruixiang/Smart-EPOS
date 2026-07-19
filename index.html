@@ -1313,10 +1313,15 @@
     .supp-save:hover { opacity:0.9; }
     .supp-cancel { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:13px; font-weight:600; font-family:var(--font); }
     .supp-cancel:hover { color:var(--text-primary); }
-    .supp-ing-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
-    .supp-ing-tag { display:flex; align-items:center; gap:5px; background:var(--bg-secondary); border:0.5px solid var(--border); border-radius:20px; padding:4px 10px; font-size:12.5px; color:var(--text-primary); }
+    .supp-ing-tags { display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
+    .supp-ing-tag-row { display:flex; flex-direction:column; gap:5px; }
+    .supp-ing-tag { display:flex; align-items:center; gap:5px; background:var(--bg-secondary); border:0.5px solid var(--border); border-radius:20px; padding:4px 10px; font-size:12.5px; color:var(--text-primary); width:fit-content; }
     .supp-ing-tag button { background:none; border:none; cursor:pointer; color:var(--text-tertiary); display:flex; align-items:center; padding:0; margin-left:2px; }
     .supp-ing-tag button:hover { color:var(--red); }
+    .supp-ing-units { display:flex; gap:4px; padding-left:4px; }
+    .supp-unit-pill { padding:2px 9px; border-radius:20px; border:0.5px solid var(--border); background:transparent; color:var(--text-secondary); font-size:11px; font-weight:500; cursor:pointer; font-family:var(--font); transition:all 0.12s; }
+    .supp-unit-pill:hover { border-color:var(--green); color:var(--green); }
+    .supp-unit-pill.active { background:var(--green); border-color:var(--green); color:#fff; font-weight:600; }
     .supp-ing-suggestions { position:absolute; top:100%; left:0; right:0; background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-md); box-shadow:0 4px 16px rgba(0,0,0,0.10); z-index:200; max-height:180px; overflow-y:auto; margin-top:3px; }
     .supp-ing-suggestion { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; font-size:13px; color:var(--text-primary); cursor:pointer; }
     .supp-ing-suggestion:hover { background:var(--bg-secondary); }
@@ -2749,7 +2754,7 @@
     suppIngTags = supplierId
       ? soIngredients
           .filter(i => i.supplier_id != null && String(i.supplier_id) === String(supplierId))
-          .map(i => ({ id: i.id, name: i.name }))
+          .map(i => ({ id: i.id, name: i.name, unit: i.unit || null }))
       : [];
     renderSuppIngTags();
     const inp = document.getElementById('suppIngInput');
@@ -2757,14 +2762,27 @@
     hideSuppIngSuggestions();
   }
 
+  const SUPP_UNITS = ['g', 'kg', 'ml', 'l'];
+
   function renderSuppIngTags() {
     const box = document.getElementById('suppIngTags');
     if (!box) return;
     box.innerHTML = suppIngTags.map((t, idx) => `
-      <div class="supp-ing-tag">
-        <span>${escapeHtml(t.name)}</span>
-        <button type="button" onclick="removeSuppIngTag(${idx})"><i class="ti ti-x" style="font-size:11px;"></i></button>
+      <div class="supp-ing-tag-row">
+        <div class="supp-ing-tag">
+          <span>${escapeHtml(t.name)}</span>
+          <button type="button" onclick="removeSuppIngTag(${idx})"><i class="ti ti-x" style="font-size:11px;"></i></button>
+        </div>
+        <div class="supp-ing-units">
+          ${SUPP_UNITS.map(u => `<button type="button" class="supp-unit-pill${t.unit === u ? ' active' : ''}" onclick="setSuppIngUnit(${idx},'${u}')">${u}</button>`).join('')}
+          <button type="button" class="supp-unit-pill${!t.unit ? ' active' : ''}" onclick="setSuppIngUnit(${idx}, null)">qty</button>
+        </div>
       </div>`).join('');
+  }
+
+  function setSuppIngUnit(idx, unit) {
+    if (suppIngTags[idx]) suppIngTags[idx].unit = unit || null;
+    renderSuppIngTags();
   }
 
   function removeSuppIngTag(idx) {
@@ -2819,7 +2837,9 @@
 
   function addSuppIngTag(name, id) {
     if (!suppIngTags.some(t => t.name.toLowerCase() === name.toLowerCase())) {
-      suppIngTags.push({ id: id || null, name });
+      // If this ingredient already exists in DB, carry over its unit
+      const existing = soIngredients.find(i => String(i.id) === String(id));
+      suppIngTags.push({ id: id || null, name, unit: existing ? (existing.unit || null) : null });
     }
     renderSuppIngTags();
     const inp = document.getElementById('suppIngInput');
@@ -2844,20 +2864,21 @@
     const taggedIds = new Set();
 
     for (const tag of suppIngTags) {
+      const unitVal = tag.unit || null;
       if (tag.id) {
         // Existing ingredient — ensure supplier_id is linked to this supplier
         const intId = /^\d+$/.test(String(tag.id)) ? parseInt(tag.id, 10) : tag.id;
         if (db) {
-          const { error } = await db.from('ingredients').update({ supplier_id: sid }).eq('id', intId);
+          const { error } = await db.from('ingredients').update({ supplier_id: sid, unit: unitVal }).eq('id', intId);
           if (error) console.error('ingredient link error:', error);
         } else {
           const x = soIngredients.find(i => String(i.id) === String(tag.id));
-          if (x) x.supplier_id = sid;
+          if (x) { x.supplier_id = sid; x.unit = unitVal; }
         }
         taggedIds.add(String(tag.id));
       } else {
         // New ingredient — insert into DB
-        const newRow = { name: tag.name, supplier_id: sid };
+        const newRow = { name: tag.name, supplier_id: sid, unit: unitVal };
         if (db) {
           const { data, error } = await db.from('ingredients').insert(newRow).select().single();
           if (error) {
@@ -3327,7 +3348,7 @@
           <button class="so-step-btn" onclick="soAdjust('${i.id}',-1)">\u2212</button>
           <div class="so-qty-wrap">
             <input class="so-qty-input" id="soQty_${i.id}" type="number" min="0" value="${qty}" onclick="event.stopPropagation()" onchange="soSetQty('${i.id}', this.value)" />
-            <div class="so-qty-unit">${escapeHtml(i.unit || 'g')}</div>
+            <div class="so-qty-unit">${escapeHtml(i.unit || '')}</div>
           </div>
           <button class="so-step-btn plus" onclick="soAdjust('${i.id}',1)">+</button>
         </div>
