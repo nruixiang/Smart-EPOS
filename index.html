@@ -2781,12 +2781,12 @@
     const matches = soIngredients.filter(i => i.name.toLowerCase().includes(q) && !already.has(i.name.toLowerCase()));
     const exactMatch = soIngredients.some(i => i.name.toLowerCase() === q);
     const rows = matches.slice(0, 8).map(i =>
-      `<div class="supp-ing-suggestion" onclick="addSuppIngTag(${JSON.stringify(i.name)}, '${i.id}')">
+      `<div class="supp-ing-suggestion" data-name="${escapeHtml(i.name)}" data-id="${i.id}">
         <span>${escapeHtml(i.name)}</span>
        </div>`
     );
     if (!exactMatch && val.trim()) {
-      rows.push(`<div class="supp-ing-suggestion" onclick="addSuppIngTag(${JSON.stringify(val.trim())}, null)">
+      rows.push(`<div class="supp-ing-suggestion supp-ing-add-new" data-name="${escapeHtml(val.trim())}" data-id="">
         <span>${escapeHtml(val.trim())}</span>
         <span class="sig-new">+ Add new</span>
       </div>`);
@@ -2794,6 +2794,14 @@
     if (rows.length === 0) { hideSuppIngSuggestions(); return; }
     box.innerHTML = rows.join('');
     box.style.display = 'block';
+    // Attach click handlers via JS — avoids quote-escaping issues with inline onclick
+    box.querySelectorAll('.supp-ing-suggestion').forEach(el => {
+      el.addEventListener('click', () => {
+        const name = el.dataset.name;
+        const id = el.dataset.id || null;
+        addSuppIngTag(name, id);
+      });
+    });
   }
 
   function onSuppIngKeydown(e) {
@@ -2832,6 +2840,7 @@
 
   async function saveSuppIngredients(supplierId) {
     const sid = /^\d+$/.test(String(supplierId)) ? parseInt(supplierId, 10) : supplierId;
+    console.log('[saveSuppIngredients] supplierId:', supplierId, '-> sid:', sid, '| tags:', JSON.stringify(suppIngTags));
     const taggedIds = new Set();
 
     for (const tag of suppIngTags) {
@@ -2848,7 +2857,7 @@
         taggedIds.add(String(tag.id));
       } else {
         // New ingredient — insert into DB
-        const newRow = { name: tag.name, supplier_id: sid, unit: 'g' };
+        const newRow = { name: tag.name, supplier_id: sid };
         if (db) {
           const { data, error } = await db.from('ingredients').insert(newRow).select().single();
           if (error) {
