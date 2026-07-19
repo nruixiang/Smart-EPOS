@@ -2102,11 +2102,11 @@
   const CHECKLIST_KEY = 'smartepos_checklist';
 
   const CHECKLIST_ITEMS = [
-    { id: 'business_profile', title: 'Set up your business profile', desc: 'Add your café name, address, phone, and GST number', path: 'Go to Admin → Settings → Business Profile', action: 'admin' },
-    { id: 'add_team', title: 'Add your team', desc: 'Create cashier profiles and set admin access levels', path: 'Go to Admin → Settings → Cashier Access', action: 'admin' },
-    { id: 'review_catalog', title: 'Review your product catalog', desc: 'Edit prices, toggle visibility, or add new items', path: 'Go to Admin → Products', action: 'admin' },
-    { id: 'add_suppliers', title: 'Add your suppliers', desc: 'Store contact details and packaging notes for quick reordering', path: 'Go to Admin → Suppliers', action: 'admin' },
-    { id: 'sales_target', title: 'Set a monthly sales target', desc: 'Track progress toward your revenue goal on the MTD dashboard', path: 'Go to Reports → Month to Date', action: 'reports' }
+    { id: 'business_profile', title: 'Set up your business profile', desc: 'Add your cafe name, address, phone, and GST number', path: 'Admin > Settings > Business Profile', action: 'admin' },
+    { id: 'add_team', title: 'Add your team', desc: 'Create cashier profiles and set admin access levels', path: 'Admin > Settings > Cashier Access', action: 'admin' },
+    { id: 'review_catalog', title: 'Review your product catalog', desc: 'Edit prices, toggle visibility, or add new items', path: 'Admin > Products', action: 'admin' },
+    { id: 'add_suppliers', title: 'Add your suppliers', desc: 'Store contact details and packaging notes for quick reordering', path: 'Admin > Suppliers', action: 'admin' },
+    { id: 'sales_target', title: 'Set a monthly sales target', desc: 'Track progress toward your revenue goal on the MTD dashboard', path: 'Reports > Month to Date', action: 'reports' }
   ];
 
   let checklistDone = {};
@@ -2149,12 +2149,13 @@
     }
 
     document.getElementById('checklistBody').innerHTML = CHECKLIST_ITEMS.map(function(item) {
-      return '<div class="checklist-item' + (checklistDone[item.id] ? ' done' : '') + '" onclick="toggleChecklistItem('' + item.id + '')">' +
+      var cls = 'checklist-item' + (checklistDone[item.id] ? ' done' : '');
+      return '<div class="' + cls + '" onclick="toggleChecklistItem(\'' + item.id + '\')">' +
         '<div class="checklist-radio"><i class="ti ti-check"></i></div>' +
         '<div class="checklist-item-content">' +
           '<div class="checklist-item-title">' + item.title + '</div>' +
           '<div class="checklist-item-desc">' + item.desc + '</div>' +
-          '<div class="checklist-item-path">› ' + item.path + '</div>' +
+          '<div class="checklist-item-path">&#8250; ' + item.path + '</div>' +
         '</div></div>';
     }).join('');
 
