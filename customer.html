@@ -103,6 +103,14 @@
     .pay { border:1.5px solid var(--line); border-radius:12px; padding:14px 8px; text-align:center; font-size:13px; font-weight:700; color:#555; display:flex; flex-direction:column; align-items:center; gap:7px; }
     .pay i { font-size:22px; }
     .pay.sel { border-color:var(--amber); background:var(--amber-soft); color:var(--ink); }
+    .cardtypes { margin-top:16px; }
+    .cardtypes.hidden { display:none; }
+    .cardtypes-label { font-size:12.5px; font-weight:700; color:#555; margin-bottom:9px; }
+    .cardtypes-label .req { color:var(--red); }
+    .cardtypes-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(96px, 1fr)); gap:8px; }
+    .ctype { display:flex; align-items:center; justify-content:center; gap:7px; padding:11px 8px; border:1.5px solid var(--line); border-radius:11px; font-size:12.5px; font-weight:700; color:#555; cursor:pointer; text-align:center; }
+    .ctype .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .ctype.sel { border-color:var(--amber); background:var(--amber-soft); color:var(--ink); }
 
     /* Bottom CTA */
     .cta-bar { position:fixed; left:0; right:0; bottom:0; background:linear-gradient(to top, var(--bg) 72%, transparent); padding:14px 20px calc(14px + env(safe-area-inset-bottom)); z-index:3; }
@@ -227,6 +235,10 @@
             <div class="pay" data-pay="Card" onclick="selectPay('Card')"><i class="ti ti-credit-card"></i> Card</div>
             <div class="pay" data-pay="PayNow" onclick="selectPay('PayNow')"><i class="ti ti-qrcode"></i> PayNow</div>
           </div>
+          <div class="cardtypes hidden" id="cardTypes">
+            <div class="cardtypes-label">Card type <span class="req">*</span></div>
+            <div class="cardtypes-grid" id="cardTypesGrid"></div>
+          </div>
         </div>
         <div class="panel">
           <div class="panel-title">Order summary</div>
@@ -279,6 +291,15 @@
     const SUPABASE_KEY = 'sb_publishable_HKnoQB5XhK-MfHNwpaTmXA_3479YHTE';
     const TAX_RATE = 0.09;
     const CUSTOMIZABLE_CATEGORIES = ['Hot Drinks', 'Cold Drinks'];
+    const CARD_TYPES = [
+      { name: 'NETS', color: '#2563eb' },
+      { name: 'NETS FlashPay', color: '#1e3a8a' },
+      { name: 'Visa', color: '#3b82f6' },
+      { name: 'Mastercard', color: '#ea580c' },
+      { name: 'Amex', color: '#0d9488' },
+      { name: 'UnionPay', color: '#dc2626' },
+      { name: 'JCB', color: '#16a34a' }
+    ];
     // Default menu images by product name (mirrors the POS) — used when a product has no uploaded image
     const PRODUCT_IMGS = {
       'Espresso':          'https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?w=300&q=80',
@@ -320,6 +341,7 @@
     let activeCat = 'All Items';
     let searchQ = '';
     let selectedPay = null;
+    let selectedCardType = null;
     // modal working state
     let mProduct = null, mOpts = null, mSel = {};
 
@@ -336,7 +358,7 @@
       await loadAll();
       document.getElementById('loadingView').classList.add('hidden');
       document.getElementById('menuView').classList.remove('hidden');
-      renderBiz(); renderCats(); renderGrid();
+      renderBiz(); renderCats(); renderGrid(); renderCardTypes();
     }
 
     function showLoadError(msg) {
@@ -600,14 +622,36 @@
         <div class="totrow grand"><span>Total</span><span>${money(sub + tax)}</span></div>`;
       document.getElementById('coCtaTotal').textContent = money(sub + tax);
     }
+    function renderCardTypes() {
+      const grid = document.getElementById('cardTypesGrid');
+      if (!grid) return;
+      grid.innerHTML = CARD_TYPES.map(c =>
+        `<div class="ctype" data-card="${esc(c.name)}" onclick="selectCardType('${esc(c.name).replace(/'/g,"\\'")}')">
+           <span class="dot" style="background:${c.color}"></span>${esc(c.name)}
+         </div>`).join('');
+    }
     function selectPay(m) {
       selectedPay = m;
       document.querySelectorAll('#pays .pay').forEach(p => p.classList.toggle('sel', p.dataset.pay === m));
+      const ct = document.getElementById('cardTypes');
+      if (m === 'Card') {
+        ct.classList.remove('hidden');
+      } else {
+        ct.classList.add('hidden');
+        selectedCardType = null;
+        document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel'));
+      }
+      updatePlaceBtn();
+    }
+    function selectCardType(name) {
+      selectedCardType = name;
+      document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.toggle('sel', x.dataset.card === name));
       updatePlaceBtn();
     }
     function updatePlaceBtn() {
       const name = (document.getElementById('custName').value || '').trim();
-      document.getElementById('placeBtn').disabled = !(name && selectedPay && cart.length);
+      const payOk = selectedPay && (selectedPay !== 'Card' || selectedCardType);
+      document.getElementById('placeBtn').disabled = !(name && payOk && cart.length);
     }
 
     async function placeOrder() {
@@ -615,13 +659,15 @@
       const notes = (document.getElementById('custNotes').value || '').trim();
       if (!name) { toast('Please enter your name'); return; }
       if (!selectedPay) { toast('Please choose a payment method'); return; }
+      if (selectedPay === 'Card' && !selectedCardType) { toast('Please choose a card type'); return; }
+      const payMethod = selectedPay === 'Card' ? selectedCardType : selectedPay;
       const btn = document.getElementById('placeBtn'); btn.disabled = true;
 
       const sub = cartSubtotal(), tax = sub * TAX_RATE, total = sub + tax;
       const items = cart.map(c => ({ name: c.name, qty: c.qty, unit_price: c.unit, line_total: c.unit * c.qty, options: c.options, options_label: c.optLabel }));
       const row = {
         customer_name: name, special_instructions: notes || null,
-        items, subtotal: sub, tax, total, payment_method: selectedPay,
+        items, subtotal: sub, tax, total, payment_method: payMethod,
         status: 'pending', outlet_id: (BIZ.default_outlet_id != null ? BIZ.default_outlet_id : null)
       };
 
@@ -644,11 +690,13 @@
       document.getElementById('confirmView').classList.remove('hidden');
     }
     function resetToMenu() {
-      cart = []; selectedPay = null; searchQ = ''; activeCat = 'All Items';
+      cart = []; selectedPay = null; selectedCardType = null; searchQ = ''; activeCat = 'All Items';
       document.getElementById('custName').value = '';
       document.getElementById('custNotes').value = '';
       document.getElementById('searchInput').value = '';
       document.querySelectorAll('#pays .pay').forEach(p => p.classList.remove('sel'));
+      document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel'));
+      document.getElementById('cardTypes').classList.add('hidden');
       updateCartBar();
       document.getElementById('confirmView').classList.add('hidden');
       document.getElementById('checkoutView').classList.add('hidden');
