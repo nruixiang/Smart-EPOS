@@ -263,7 +263,53 @@
 
     /* MIDDLE PANEL */
     .mid-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-primary); }
-    .cat-tabs { display: flex; gap: 6px; padding: 12px 14px 8px; border-bottom: 0.5px solid var(--border); overflow-x: auto; flex-shrink: 0; }
+    .cat-tabs { display: flex; gap: 6px; padding: 12px 14px 8px; overflow-x: auto; flex-shrink: 0; flex: 1; min-width: 0; }
+    .cat-tabs-row { display: flex; align-items: center; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+    .online-orders-btn { display:flex; align-items:center; gap:6px; margin:0 14px; padding:7px 15px; border-radius:20px; border:0.5px solid var(--border); background:var(--bg-primary); color:#2563eb; font-size:12.5px; font-weight:600; font-family:var(--font); white-space:nowrap; flex-shrink:0; position:relative; cursor:pointer; }
+    .online-orders-btn:hover { border-color:#93c5fd; background:#eff6ff; }
+    [data-theme="dark"] .online-orders-btn { color:#60a5fa; }
+    [data-theme="dark"] .online-orders-btn:hover { background:rgba(37,99,235,0.14); border-color:#1e40af; }
+    .online-orders-btn i { font-size:16px; }
+    .oo-badge { background:#ef4444; color:#fff; min-width:18px; height:18px; padding:0 5px; border-radius:9px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; position:absolute; top:-6px; right:-6px; box-shadow:0 0 0 2px var(--bg-primary); }
+    /* ── Online Orders drawer ── */
+    .oo-overlay { position:fixed; inset:0; display:flex; justify-content:flex-end; z-index:640; pointer-events:none; }
+    .oo-card { width:420px; max-width:100vw; height:100vh; background:var(--bg-secondary); border-left:0.5px solid var(--border); box-shadow:-10px 0 40px rgba(0,0,0,0.22); display:flex; flex-direction:column; pointer-events:auto; transform:translateX(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); }
+    .oo-overlay.show .oo-card { transform:translateX(0); }
+    @media (max-width:520px) { .oo-card { width:100vw; } }
+    .oo-header { display:flex; align-items:center; gap:12px; padding:16px 18px; background:var(--bg-primary); border-bottom:0.5px solid var(--border); flex-shrink:0; }
+    .oo-h-icon { width:38px; height:38px; border-radius:10px; background:#2563eb; color:#fff; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+    .oo-h-main { flex:1; min-width:0; }
+    .oo-h-title { font-size:16px; font-weight:700; color:var(--text-primary); }
+    .oo-h-sub { font-size:12.5px; color:var(--text-secondary); }
+    .oo-icon-btn { width:34px; height:34px; border-radius:8px; border:none; background:var(--bg-tertiary); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:17px; cursor:pointer; flex-shrink:0; }
+    .oo-icon-btn:hover { color:var(--text-primary); }
+    .oo-body { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:14px; }
+    .oo-order { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:14px; padding:14px 15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+    .oo-order-top { display:flex; align-items:flex-start; justify-content:space-between; }
+    .oo-num { font-size:15px; font-weight:800; color:var(--text-primary); }
+    .oo-online-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:#2563eb; background:#eff6ff; padding:2px 9px; border-radius:10px; margin-left:6px; }
+    [data-theme="dark"] .oo-online-badge { background:rgba(37,99,235,0.16); }
+    .oo-total { font-size:16px; font-weight:800; color:var(--text-primary); }
+    .oo-order-cust { display:flex; align-items:center; gap:8px; margin-top:3px; margin-bottom:10px; }
+    .oo-name { font-size:13.5px; font-weight:600; color:var(--text-primary); }
+    .oo-time { font-size:12px; color:var(--text-tertiary); display:inline-flex; align-items:center; gap:3px; }
+    .oo-items { background:var(--bg-secondary); border-radius:10px; padding:6px 12px; }
+    .oo-item { display:flex; justify-content:space-between; align-items:flex-start; padding:8px 0; border-bottom:0.5px solid var(--border); gap:10px; }
+    .oo-item:last-child { border-bottom:none; }
+    .oo-item-name { font-size:13.5px; font-weight:600; color:var(--text-primary); }
+    .oo-item-opts { font-size:12px; color:var(--text-tertiary); margin-top:1px; }
+    .oo-item-price { font-size:13px; color:var(--text-secondary); white-space:nowrap; }
+    .oo-note { font-size:12px; color:var(--text-secondary); margin-top:10px; background:#fffbeb; border:0.5px solid #fde68a; border-radius:8px; padding:8px 10px; }
+    [data-theme="dark"] .oo-note { background:rgba(234,179,8,0.1); border-color:rgba(234,179,8,0.3); }
+    .oo-actions { display:flex; gap:10px; margin-top:12px; }
+    .oo-reject, .oo-accept { flex:1; padding:11px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:6px; }
+    .oo-reject { background:var(--bg-primary); color:#dc2626; border:1px solid #fecaca; }
+    .oo-reject:hover { background:#fef2f2; }
+    .oo-accept { background:#1e9e57; color:#fff; border:none; }
+    .oo-accept:hover { filter:brightness(0.95); }
+    .oo-empty { text-align:center; color:var(--text-tertiary); font-size:13.5px; padding:50px 20px; }
+    .oo-empty i { font-size:38px; display:block; margin-bottom:12px; color:var(--border-hover); }
+    .oo-footer { padding:12px 16px; font-size:11.5px; color:var(--text-tertiary); text-align:center; border-top:0.5px solid var(--border); background:var(--bg-primary); flex-shrink:0; line-height:1.4; }
     .cat-tabs::-webkit-scrollbar { display: none; }
     .cat-tab { padding: 6px 16px; font-size: 12px; border-radius: 20px; border: 0.5px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: var(--font); font-weight: 400; }
     .cat-tab.active { background: #247F48; color: white; border-color: #247F48; font-weight: 500; }
@@ -1622,12 +1668,18 @@
 
   <!-- MIDDLE: Products -->
   <div class="mid-panel">
-    <div class="cat-tabs" id="catTabs">
-      <button class="cat-tab active" data-cat="Hot Drinks" onclick="selectCat(this)">Hot Drinks</button>
-      <button class="cat-tab" data-cat="Cold Drinks" onclick="selectCat(this)">Cold Drinks</button>
-      <button class="cat-tab" data-cat="Pastries" onclick="selectCat(this)">Pastries</button>
-      <button class="cat-tab" data-cat="Merch" onclick="selectCat(this)">Merch</button>
-      <button class="cat-tab" data-cat="Bundles" onclick="selectCat(this)">Bundles</button>
+    <div class="cat-tabs-row">
+      <div class="cat-tabs" id="catTabs">
+        <button class="cat-tab active" data-cat="Hot Drinks" onclick="selectCat(this)">Hot Drinks</button>
+        <button class="cat-tab" data-cat="Cold Drinks" onclick="selectCat(this)">Cold Drinks</button>
+        <button class="cat-tab" data-cat="Pastries" onclick="selectCat(this)">Pastries</button>
+        <button class="cat-tab" data-cat="Merch" onclick="selectCat(this)">Merch</button>
+        <button class="cat-tab" data-cat="Bundles" onclick="selectCat(this)">Bundles</button>
+      </div>
+      <button class="online-orders-btn" id="onlineOrdersBtn" onclick="openOnlineOrders()" title="Online orders">
+        <i class="ti ti-bell"></i> Orders
+        <span class="oo-badge" id="ooBadge" style="display:none;">0</span>
+      </button>
     </div>
     <div class="sub-tabs" id="subTabs">
       <button class="sub-tab active" onclick="selectSub(this,'All')">All</button>
@@ -4168,6 +4220,9 @@
   setInterval(trySyncQueue, 30000);
   trySyncQueue();
 
+  // Start polling for incoming online (customer) orders (deferred so its state vars are initialised)
+  setTimeout(function () { startOnlineOrdersPoll(); }, 0);
+
   // ── WhatsApp OTP Verification ──
   const OTP_SEND_URL = SUPABASE_URL + '/functions/v1/send-otp';
   const OTP_VERIFY_URL = SUPABASE_URL + '/functions/v1/verify-otp';
@@ -5539,6 +5594,117 @@
       const accMeta = document.getElementById('accMeta');
       if (accMeta) accMeta.textContent = `${attachedCustomer.points} pts \u00B7 will earn +${willEarn} pts`;
     }
+  }
+
+  // ── Online Orders (customer_orders queue) ──
+  let onlineOrders = [];
+  let ooPollTimer = null;
+
+  async function fetchPendingOrders() {
+    if (!db) return null;
+    try {
+      const { data, error } = await db.from('customer_orders').select('*').eq('status', 'pending').order('created_at', { ascending: false });
+      if (error) { console.warn('customer_orders load:', error.message); return null; }
+      return data || [];
+    } catch (e) { return null; }
+  }
+
+  function updateOoBadge(count) {
+    const badge = document.getElementById('ooBadge');
+    if (!badge) return;
+    if (count > 0) { badge.textContent = count > 99 ? '99+' : count; badge.style.display = 'flex'; }
+    else badge.style.display = 'none';
+  }
+
+  function openOnlineOrders() {
+    document.getElementById('ooOverlay').classList.add('show');
+    loadOnlineOrders();
+  }
+  function closeOnlineOrders() { document.getElementById('ooOverlay').classList.remove('show'); }
+
+  async function loadOnlineOrders() {
+    const body = document.getElementById('ooBody');
+    body.innerHTML = '<div class="oo-empty"><i class="ti ti-loader"></i>Loading…</div>';
+    const list = await fetchPendingOrders();
+    if (list === null) {
+      body.innerHTML = '<div class="oo-empty"><i class="ti ti-plug-connected-x"></i>Online ordering isn\'t set up yet.<br>Create the <b>customer_orders</b> table to start receiving orders.</div>';
+      document.getElementById('ooSub').textContent = 'Not connected';
+      updateOoBadge(0);
+      return;
+    }
+    onlineOrders = list;
+    updateOoBadge(list.length);
+    renderOnlineOrders();
+  }
+
+  function renderOnlineOrders() {
+    const body = document.getElementById('ooBody');
+    const n = onlineOrders.length;
+    document.getElementById('ooSub').textContent = n === 0 ? 'All caught up' : (n + (n === 1 ? ' order' : ' orders') + ' awaiting action');
+    if (n === 0) { body.innerHTML = '<div class="oo-empty"><i class="ti ti-checks"></i>No new orders right now.</div>'; return; }
+    body.innerHTML = onlineOrders.map(o => {
+      const num = o.order_number || ('#' + (1000 + o.id));
+      const items = (o.items || []).map(it => {
+        const lt = it.line_total != null ? it.line_total : ((it.unit_price || 0) * (it.qty || 1));
+        return `<div class="oo-item">
+          <div><div class="oo-item-name">${escapeHtml(it.name)}${it.qty > 1 ? ' ×' + it.qty : ''}</div>${it.options_label ? `<div class="oo-item-opts">${escapeHtml(it.options_label)}</div>` : ''}</div>
+          <div class="oo-item-price">$${Number(lt).toFixed(2)}</div>
+        </div>`;
+      }).join('');
+      return `<div class="oo-order">
+        <div class="oo-order-top">
+          <div><span class="oo-num">${escapeHtml(num)}</span><span class="oo-online-badge"><i class="ti ti-world"></i> Online</span></div>
+          <div class="oo-total">$${Number(o.total || 0).toFixed(2)}</div>
+        </div>
+        <div class="oo-order-cust"><span class="oo-name">${escapeHtml(o.customer_name || 'Guest')}</span><span class="oo-time"><i class="ti ti-clock"></i> ${ooTimeAgo(o.created_at)}</span></div>
+        <div class="oo-items">${items}</div>
+        ${o.special_instructions ? `<div class="oo-note"><b>Note:</b> ${escapeHtml(o.special_instructions)}</div>` : ''}
+        <div class="oo-actions">
+          <button class="oo-reject" onclick="decideOrder(${o.id}, 'rejected')"><i class="ti ti-circle-x"></i> Reject</button>
+          <button class="oo-accept" onclick="decideOrder(${o.id}, 'accepted')"><i class="ti ti-circle-check"></i> Accept</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function decideOrder(id, status) {
+    if (!db) return;
+    try {
+      const { error } = await db.from('customer_orders').update({ status }).eq('id', id);
+      if (error) { showToast('Failed: ' + (error.message || 'error')); return; }
+    } catch (e) { showToast('Failed to update order'); return; }
+    onlineOrders = onlineOrders.filter(o => String(o.id) !== String(id));
+    updateOoBadge(onlineOrders.length);
+    renderOnlineOrders();
+    showToast(status === 'accepted' ? 'Order accepted ✓' : 'Order rejected');
+  }
+
+  function ooTimeAgo(ts) {
+    if (!ts) return 'Just now';
+    const d = new Date(ts).getTime();
+    if (isNaN(d)) return 'Just now';
+    const m = Math.floor((Date.now() - d) / 60000);
+    if (m < 1) return 'Just now';
+    if (m < 60) return m + 'm ago';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  }
+
+  async function refreshOnlineOrdersBadge() {
+    const list = await fetchPendingOrders();
+    if (list === null) return;
+    updateOoBadge(list.length);
+    if (document.getElementById('ooOverlay').classList.contains('show')) {
+      onlineOrders = list;
+      renderOnlineOrders();
+    }
+  }
+
+  function startOnlineOrdersPoll() {
+    if (ooPollTimer) return;
+    refreshOnlineOrdersBadge();
+    ooPollTimer = setInterval(refreshOnlineOrdersBadge, 15000);
   }
 
   function showToast(msg) {
@@ -10444,6 +10610,23 @@ function exportBoMonthToExcel() {
     <div class="wa-footer">
       <button class="wa-send" id="waChatSend" onclick="waChatSend()" title="Send via WhatsApp"><i class="ti ti-brand-whatsapp"></i> Send Message</button>
     </div>
+  </div>
+</div>
+
+<!-- Online Orders drawer -->
+<div class="oo-overlay" id="ooOverlay">
+  <div class="oo-card">
+    <div class="oo-header">
+      <div class="oo-h-icon"><i class="ti ti-world"></i></div>
+      <div class="oo-h-main">
+        <div class="oo-h-title">Online Orders</div>
+        <div class="oo-h-sub" id="ooSub">0 awaiting action</div>
+      </div>
+      <button class="oo-icon-btn" onclick="loadOnlineOrders()" title="Refresh"><i class="ti ti-refresh"></i></button>
+      <button class="oo-icon-btn" onclick="closeOnlineOrders()" title="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="oo-body" id="ooBody"></div>
+    <div class="oo-footer">Accepted orders go straight to the Kitchen Display · Auto-refreshes every 15s</div>
   </div>
 </div>
 
