@@ -5710,6 +5710,9 @@
     };
     try { salesLog.push(entry); } catch (e) {}
     saveSalesEntry(entry);
+    // refresh any open reports / orders views so the new sale shows immediately
+    try { renderOrdersTab(); } catch (e) {}
+    try { renderRptEod(); } catch (e) {}
   }
 
   function ooTimeAgo(ts) {
