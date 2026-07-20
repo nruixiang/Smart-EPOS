@@ -111,6 +111,20 @@
     .ctype { display:flex; align-items:center; justify-content:center; gap:7px; padding:11px 8px; border:1.5px solid var(--line); border-radius:11px; font-size:12.5px; font-weight:700; color:#555; cursor:pointer; text-align:center; }
     .ctype .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
     .ctype.sel { border-color:var(--amber); background:var(--amber-soft); color:var(--ink); }
+    .paynow-box { margin-top:16px; text-align:center; padding:18px; border:1px solid var(--line); border-radius:14px; background:#fafafa; }
+    .paynow-box.hidden { display:none; }
+    .paynow-qr { width:174px; height:174px; margin:0 auto 12px; border-radius:12px; background:#fff; border:1px solid var(--line); padding:9px; box-sizing:border-box; }
+    .paynow-qr img { width:100%; height:100%; display:block; }
+    .paynow-hint { font-size:12.5px; color:var(--muted); margin-bottom:11px; display:flex; align-items:center; justify-content:center; gap:6px; }
+    .paynow-hint i { color:#7c3aed; }
+    .paynow-wallets { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-bottom:15px; }
+    .paynow-wallet { font-size:11px; font-weight:600; color:#555; background:#fff; border:1px solid var(--line); padding:4px 11px; border-radius:11px; }
+    .paynow-sim { width:100%; padding:13px; border-radius:11px; background:var(--ink); color:#fff; font-size:14px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .paynow-sim:disabled { opacity:0.6; }
+    .paynow-sim.hidden { display:none; }
+    .paynow-paid { display:flex; align-items:center; justify-content:center; gap:8px; color:var(--green); font-size:14.5px; font-weight:800; padding:12px; }
+    .paynow-paid.hidden { display:none; }
+    .paynow-paid i { font-size:20px; }
 
     /* Bottom CTA */
     .cta-bar { position:fixed; left:0; right:0; bottom:0; background:linear-gradient(to top, var(--bg) 72%, transparent); padding:14px 20px calc(14px + env(safe-area-inset-bottom)); z-index:3; }
@@ -239,6 +253,18 @@
             <div class="cardtypes-label">Card type <span class="req">*</span></div>
             <div class="cardtypes-grid" id="cardTypesGrid"></div>
           </div>
+          <div class="paynow-box hidden" id="paynowBox">
+            <div class="paynow-qr"><img id="paynowQr" src="" alt="PayNow QR" /></div>
+            <div class="paynow-hint"><i class="ti ti-wifi"></i> Scan with your banking app to pay</div>
+            <div class="paynow-wallets">
+              <span class="paynow-wallet">PayNow</span>
+              <span class="paynow-wallet">PayLah!</span>
+              <span class="paynow-wallet">GrabPay</span>
+              <span class="paynow-wallet">DBS/OCBC/UOB</span>
+            </div>
+            <button class="paynow-sim" id="paynowSimBtn" onclick="simulatePayNow()"><i class="ti ti-device-mobile"></i> Simulate payment</button>
+            <div class="paynow-paid hidden" id="paynowPaidMsg"><i class="ti ti-circle-check"></i> Payment received</div>
+          </div>
         </div>
         <div class="panel">
           <div class="panel-title">Order summary</div>
@@ -342,6 +368,7 @@
     let searchQ = '';
     let selectedPay = null;
     let selectedCardType = null;
+    let paynowPaid = false;
     // modal working state
     let mProduct = null, mOpts = null, mSel = {};
 
@@ -634,13 +661,13 @@
       selectedPay = m;
       document.querySelectorAll('#pays .pay').forEach(p => p.classList.toggle('sel', p.dataset.pay === m));
       const ct = document.getElementById('cardTypes');
-      if (m === 'Card') {
-        ct.classList.remove('hidden');
-      } else {
-        ct.classList.add('hidden');
-        selectedCardType = null;
-        document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel'));
-      }
+      const pn = document.getElementById('paynowBox');
+      // Card sub-options
+      if (m === 'Card') { ct.classList.remove('hidden'); }
+      else { ct.classList.add('hidden'); selectedCardType = null; document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel')); }
+      // PayNow QR
+      if (m === 'PayNow') { pn.classList.remove('hidden'); resetPayNowState(); refreshPayNowQr(); }
+      else { pn.classList.add('hidden'); paynowPaid = false; }
       updatePlaceBtn();
     }
     function selectCardType(name) {
@@ -648,9 +675,35 @@
       document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.toggle('sel', x.dataset.card === name));
       updatePlaceBtn();
     }
+    function refreshPayNowQr() {
+      const total = (cartSubtotal() * (1 + TAX_RATE)).toFixed(2);
+      const qr = document.getElementById('paynowQr');
+      if (qr) qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=174x174&data=' + encodeURIComponent('PAYNOW|SGD ' + total) + '&color=000000&bgcolor=ffffff';
+    }
+    function resetPayNowState() {
+      paynowPaid = false;
+      const btn = document.getElementById('paynowSimBtn');
+      const paid = document.getElementById('paynowPaidMsg');
+      if (btn) { btn.classList.remove('hidden'); btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-mobile"></i> Simulate payment'; }
+      if (paid) paid.classList.add('hidden');
+    }
+    function simulatePayNow() {
+      const btn = document.getElementById('paynowSimBtn');
+      if (!btn) return;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ti ti-loader-2"></i> Processing…';
+      setTimeout(() => {
+        paynowPaid = true;
+        btn.classList.add('hidden');
+        document.getElementById('paynowPaidMsg').classList.remove('hidden');
+        updatePlaceBtn();
+      }, 1200);
+    }
     function updatePlaceBtn() {
       const name = (document.getElementById('custName').value || '').trim();
-      const payOk = selectedPay && (selectedPay !== 'Card' || selectedCardType);
+      const payOk = selectedPay
+        && (selectedPay !== 'Card' || selectedCardType)
+        && (selectedPay !== 'PayNow' || paynowPaid);
       document.getElementById('placeBtn').disabled = !(name && payOk && cart.length);
     }
 
@@ -660,6 +713,7 @@
       if (!name) { toast('Please enter your name'); return; }
       if (!selectedPay) { toast('Please choose a payment method'); return; }
       if (selectedPay === 'Card' && !selectedCardType) { toast('Please choose a card type'); return; }
+      if (selectedPay === 'PayNow' && !paynowPaid) { toast('Please complete the PayNow payment'); return; }
       const payMethod = selectedPay === 'Card' ? selectedCardType : selectedPay;
       const btn = document.getElementById('placeBtn'); btn.disabled = true;
 
@@ -690,13 +744,15 @@
       document.getElementById('confirmView').classList.remove('hidden');
     }
     function resetToMenu() {
-      cart = []; selectedPay = null; selectedCardType = null; searchQ = ''; activeCat = 'All Items';
+      cart = []; selectedPay = null; selectedCardType = null; paynowPaid = false; searchQ = ''; activeCat = 'All Items';
       document.getElementById('custName').value = '';
       document.getElementById('custNotes').value = '';
       document.getElementById('searchInput').value = '';
       document.querySelectorAll('#pays .pay').forEach(p => p.classList.remove('sel'));
       document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel'));
       document.getElementById('cardTypes').classList.add('hidden');
+      document.getElementById('paynowBox').classList.add('hidden');
+      resetPayNowState();
       updateCartBar();
       document.getElementById('confirmView').classList.add('hidden');
       document.getElementById('checkoutView').classList.add('hidden');
