@@ -166,6 +166,13 @@
     .confirm-sub { font-size:14.5px; color:var(--muted); margin-top:10px; line-height:1.5; max-width:340px; }
     .confirm-num { margin-top:20px; font-size:13px; color:var(--muted); }
     .confirm-num b { font-size:22px; color:var(--ink); display:block; margin-top:2px; font-weight:800; }
+    .order-status { display:inline-flex; align-items:center; gap:9px; margin-top:20px; padding:11px 20px; border-radius:24px; font-size:13.5px; font-weight:700; }
+    .order-status.pending { background:#fff8e1; color:#b45309; }
+    .order-status.accepted { background:#ecfdf5; color:#047857; }
+    .order-status.rejected { background:#fef2f2; color:#b91c1c; }
+    .status-dot { width:9px; height:9px; border-radius:50%; background:currentColor; }
+    .order-status.pending .status-dot { animation:pulse 1.4s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
     .confirm-btn { margin-top:32px; padding:15px 34px; border-radius:14px; background:var(--ink); color:#fff; font-size:15px; font-weight:700; }
 
     .loading { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); gap:14px; }
@@ -253,18 +260,6 @@
             <div class="cardtypes-label">Card type <span class="req">*</span></div>
             <div class="cardtypes-grid" id="cardTypesGrid"></div>
           </div>
-          <div class="paynow-box hidden" id="paynowBox">
-            <div class="paynow-qr"><img id="paynowQr" src="" alt="PayNow QR" /></div>
-            <div class="paynow-hint"><i class="ti ti-wifi"></i> Scan with your banking app to pay</div>
-            <div class="paynow-wallets">
-              <span class="paynow-wallet">PayNow</span>
-              <span class="paynow-wallet">PayLah!</span>
-              <span class="paynow-wallet">GrabPay</span>
-              <span class="paynow-wallet">DBS/OCBC/UOB</span>
-            </div>
-            <button class="paynow-sim" id="paynowSimBtn" onclick="simulatePayNow()"><i class="ti ti-device-mobile"></i> Simulate payment</button>
-            <div class="paynow-paid hidden" id="paynowPaidMsg"><i class="ti ti-circle-check"></i> Payment received</div>
-          </div>
         </div>
         <div class="panel">
           <div class="panel-title">Order summary</div>
@@ -282,10 +277,14 @@
     <!-- CONFIRMATION VIEW -->
     <div id="confirmView" class="subview hidden">
       <div class="confirm-wrap">
-        <div class="confirm-check"><i class="ti ti-check"></i></div>
-        <div class="confirm-title">Order placed!</div>
-        <div class="confirm-sub">Thanks<span id="confName"></span> — your order has been sent to the counter. It'll be prepared once the staff confirm it.</div>
+        <div class="confirm-check" id="confIcon"><i class="ti ti-check"></i></div>
+        <div class="confirm-title" id="confTitle">Order placed!</div>
+        <div class="confirm-sub" id="confSub">Your order has been sent to the counter.</div>
         <div class="confirm-num">Order number <b id="confNum">#—</b></div>
+        <div class="order-status pending" id="orderStatus">
+          <span class="status-dot"></span>
+          <span id="statusText">Pending — waiting for the café to confirm</span>
+        </div>
         <button class="confirm-btn" onclick="resetToMenu()">Start a new order</button>
       </div>
     </div>
@@ -303,6 +302,32 @@
         <div class="modal-body" id="mBody"></div>
         <div class="modal-foot">
           <button class="cta dark" onclick="addFromModal()">Add to Cart • <span id="mAddTotal">$0.00</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYNOW QR MODAL -->
+    <div class="modal-ov" id="paynowModal">
+      <div class="modal" style="max-width:380px;">
+        <div class="modal-head">
+          <div>
+            <div class="modal-name">Scan to pay</div>
+            <div class="modal-price" id="paynowAmt">$0.00</div>
+          </div>
+          <button class="modal-x" onclick="closePayNow()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body" style="text-align:center; padding-bottom:8px;">
+          <div class="paynow-qr" style="margin-top:4px;"><img id="paynowQr" src="" alt="PayNow QR" /></div>
+          <div class="paynow-hint"><i class="ti ti-wifi"></i> Scan with your banking app to pay</div>
+          <div class="paynow-wallets">
+            <span class="paynow-wallet">PayNow</span>
+            <span class="paynow-wallet">PayLah!</span>
+            <span class="paynow-wallet">GrabPay</span>
+            <span class="paynow-wallet">DBS/OCBC/UOB</span>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="cta dark" id="paynowSimBtn" onclick="simulatePayNow()"><i class="ti ti-device-mobile"></i> Simulate payment</button>
         </div>
       </div>
     </div>
@@ -368,7 +393,8 @@
     let searchQ = '';
     let selectedPay = null;
     let selectedCardType = null;
-    let paynowPaid = false;
+    let placedOrderId = null;
+    let statusPollTimer = null;
     // modal working state
     let mProduct = null, mOpts = null, mSel = {};
 
@@ -661,13 +687,8 @@
       selectedPay = m;
       document.querySelectorAll('#pays .pay').forEach(p => p.classList.toggle('sel', p.dataset.pay === m));
       const ct = document.getElementById('cardTypes');
-      const pn = document.getElementById('paynowBox');
-      // Card sub-options
       if (m === 'Card') { ct.classList.remove('hidden'); }
       else { ct.classList.add('hidden'); selectedCardType = null; document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel')); }
-      // PayNow QR
-      if (m === 'PayNow') { pn.classList.remove('hidden'); resetPayNowState(); refreshPayNowQr(); }
-      else { pn.classList.add('hidden'); paynowPaid = false; }
       updatePlaceBtn();
     }
     function selectCardType(name) {
@@ -675,48 +696,51 @@
       document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.toggle('sel', x.dataset.card === name));
       updatePlaceBtn();
     }
-    function refreshPayNowQr() {
-      const total = (cartSubtotal() * (1 + TAX_RATE)).toFixed(2);
-      const qr = document.getElementById('paynowQr');
-      if (qr) qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=174x174&data=' + encodeURIComponent('PAYNOW|SGD ' + total) + '&color=000000&bgcolor=ffffff';
+    function updatePlaceBtn() {
+      const name = (document.getElementById('custName').value || '').trim();
+      const payOk = selectedPay && (selectedPay !== 'Card' || selectedCardType);
+      document.getElementById('placeBtn').disabled = !(name && payOk && cart.length);
     }
-    function resetPayNowState() {
-      paynowPaid = false;
+
+    // ── PayNow QR (shown after Place Order) ──
+    function openPayNow() {
+      const total = (cartSubtotal() * (1 + TAX_RATE)).toFixed(2);
+      document.getElementById('paynowAmt').textContent = '$' + total;
+      const qr = document.getElementById('paynowQr');
+      qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=174x174&data=' + encodeURIComponent('PAYNOW|SGD ' + total) + '&color=000000&bgcolor=ffffff';
       const btn = document.getElementById('paynowSimBtn');
-      const paid = document.getElementById('paynowPaidMsg');
-      if (btn) { btn.classList.remove('hidden'); btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-mobile"></i> Simulate payment'; }
-      if (paid) paid.classList.add('hidden');
+      btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-mobile"></i> Simulate payment';
+      document.getElementById('paynowModal').classList.add('show');
+    }
+    function closePayNow() {
+      document.getElementById('paynowModal').classList.remove('show');
+      const btn = document.getElementById('paynowSimBtn');
+      btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-mobile"></i> Simulate payment';
     }
     function simulatePayNow() {
       const btn = document.getElementById('paynowSimBtn');
-      if (!btn) return;
-      btn.disabled = true;
-      btn.innerHTML = '<i class="ti ti-loader-2"></i> Processing…';
+      btn.disabled = true; btn.innerHTML = 'Processing…';
       setTimeout(() => {
-        paynowPaid = true;
-        btn.classList.add('hidden');
-        document.getElementById('paynowPaidMsg').classList.remove('hidden');
-        updatePlaceBtn();
+        document.getElementById('paynowModal').classList.remove('show');
+        doPlaceOrder();
       }, 1200);
-    }
-    function updatePlaceBtn() {
-      const name = (document.getElementById('custName').value || '').trim();
-      const payOk = selectedPay
-        && (selectedPay !== 'Card' || selectedCardType)
-        && (selectedPay !== 'PayNow' || paynowPaid);
-      document.getElementById('placeBtn').disabled = !(name && payOk && cart.length);
     }
 
     async function placeOrder() {
       const name = (document.getElementById('custName').value || '').trim();
-      const notes = (document.getElementById('custNotes').value || '').trim();
       if (!name) { toast('Please enter your name'); return; }
       if (!selectedPay) { toast('Please choose a payment method'); return; }
       if (selectedPay === 'Card' && !selectedCardType) { toast('Please choose a card type'); return; }
-      if (selectedPay === 'PayNow' && !paynowPaid) { toast('Please complete the PayNow payment'); return; }
-      const payMethod = selectedPay === 'Card' ? selectedCardType : selectedPay;
-      const btn = document.getElementById('placeBtn'); btn.disabled = true;
+      // PayNow: show the QR first — the order is only placed after the simulated payment
+      if (selectedPay === 'PayNow') { openPayNow(); return; }
+      document.getElementById('placeBtn').disabled = true;
+      await doPlaceOrder();
+    }
 
+    async function doPlaceOrder() {
+      const name = (document.getElementById('custName').value || '').trim();
+      const notes = (document.getElementById('custNotes').value || '').trim();
+      const payMethod = selectedPay === 'Card' ? selectedCardType : selectedPay;
       const sub = cartSubtotal(), tax = sub * TAX_RATE, total = sub + tax;
       const items = cart.map(c => ({ name: c.name, qty: c.qty, unit_price: c.unit, line_total: c.unit * c.qty, options: c.options, options_label: c.optLabel }));
       const row = {
@@ -724,35 +748,80 @@
         items, subtotal: sub, tax, total, payment_method: payMethod,
         status: 'pending', outlet_id: (BIZ.default_outlet_id != null ? BIZ.default_outlet_id : null)
       };
-
       try {
         const { data, error } = await db.from('customer_orders').insert(row).select().single();
         if (error) throw error;
         const num = data.order_number || ('#' + (1000 + data.id));
         if (!data.order_number) { try { await db.from('customer_orders').update({ order_number: num }).eq('id', data.id); } catch (e) {} }
+        placedOrderId = data.id;
         showConfirm(name, num);
       } catch (e) {
         console.error('placeOrder error:', e);
         toast('Could not place order: ' + (e.message || 'try again'));
-        btn.disabled = false;
+        document.getElementById('placeBtn').disabled = false;
       }
     }
 
     function showConfirm(name, num) {
-      document.getElementById('confName').textContent = name ? (', ' + name) : '';
+      document.getElementById('confSub').textContent = (name ? ('Thanks, ' + name + ' — ') : '') + 'your order has been sent to the counter.';
       document.getElementById('confNum').textContent = num;
+      updateStatusUI('pending');
       document.getElementById('confirmView').classList.remove('hidden');
+      window.scrollTo(0, 0);
+      startStatusPoll();
     }
+
+    // ── Live order status (pending -> accepted / declined) ──
+    function updateStatusUI(status) {
+      const box = document.getElementById('orderStatus');
+      const txt = document.getElementById('statusText');
+      const title = document.getElementById('confTitle');
+      const icon = document.getElementById('confIcon');
+      box.classList.remove('pending', 'accepted', 'rejected');
+      if (status === 'accepted') {
+        box.classList.add('accepted');
+        txt.textContent = 'Accepted — your order is being prepared!';
+        title.textContent = 'Order accepted!';
+        icon.style.background = ''; icon.innerHTML = '<i class="ti ti-check"></i>';
+      } else if (status === 'rejected') {
+        box.classList.add('rejected');
+        txt.textContent = 'Declined — please speak to our staff';
+        title.textContent = 'Order declined';
+        icon.style.background = '#dc2626'; icon.innerHTML = '<i class="ti ti-x"></i>';
+      } else {
+        box.classList.add('pending');
+        txt.textContent = 'Pending — waiting for the café to confirm';
+        title.textContent = 'Order placed!';
+        icon.style.background = ''; icon.innerHTML = '<i class="ti ti-check"></i>';
+      }
+    }
+    function startStatusPoll() {
+      stopStatusPoll();
+      if (!placedOrderId || !db) return;
+      statusPollTimer = setInterval(checkStatus, 4000);
+      checkStatus();
+    }
+    async function checkStatus() {
+      if (!placedOrderId || !db) return;
+      try {
+        const { data, error } = await db.from('customer_orders').select('status').eq('id', placedOrderId).single();
+        if (error || !data) return;
+        updateStatusUI(data.status);
+        if (data.status === 'accepted' || data.status === 'rejected') stopStatusPoll();
+      } catch (e) {}
+    }
+    function stopStatusPoll() { if (statusPollTimer) { clearInterval(statusPollTimer); statusPollTimer = null; } }
+
     function resetToMenu() {
-      cart = []; selectedPay = null; selectedCardType = null; paynowPaid = false; searchQ = ''; activeCat = 'All Items';
+      stopStatusPoll(); placedOrderId = null;
+      cart = []; selectedPay = null; selectedCardType = null; searchQ = ''; activeCat = 'All Items';
       document.getElementById('custName').value = '';
       document.getElementById('custNotes').value = '';
       document.getElementById('searchInput').value = '';
       document.querySelectorAll('#pays .pay').forEach(p => p.classList.remove('sel'));
       document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel'));
       document.getElementById('cardTypes').classList.add('hidden');
-      document.getElementById('paynowBox').classList.add('hidden');
-      resetPayNowState();
+      closePayNow();
       updateCartBar();
       document.getElementById('confirmView').classList.add('hidden');
       document.getElementById('checkoutView').classList.add('hidden');
