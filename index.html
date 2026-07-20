@@ -5681,11 +5681,12 @@
     showToast(status === 'accepted' ? 'Order accepted — added to sales ✓' : 'Order rejected');
   }
 
-  // Map customer payment choice to the POS method buckets (Cash / Card / Mobile)
+  // Map customer payment choice to the POS method buckets (Cash / Card / Mobile).
+  // Card types (Visa/NETS/etc.) pass through as-is — getPaymentCategory maps them to 'Card'.
   function ooPayMethod(m) {
     if (m === 'Cash') return 'Cash';
     if (m === 'PayNow') return 'Mobile';
-    return 'Card';
+    return m || 'Card';
   }
 
   // Record an accepted online order into sales_log so it counts in reports
