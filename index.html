@@ -5669,14 +5669,47 @@
 
   async function decideOrder(id, status) {
     if (!db) return;
+    const o = onlineOrders.find(x => String(x.id) === String(id));
     try {
       const { error } = await db.from('customer_orders').update({ status }).eq('id', id);
       if (error) { showToast('Failed: ' + (error.message || 'error')); return; }
     } catch (e) { showToast('Failed to update order'); return; }
-    onlineOrders = onlineOrders.filter(o => String(o.id) !== String(id));
+    if (status === 'accepted' && o) recordOnlineOrderAsSale(o);
+    onlineOrders = onlineOrders.filter(x => String(x.id) !== String(id));
     updateOoBadge(onlineOrders.length);
     renderOnlineOrders();
-    showToast(status === 'accepted' ? 'Order accepted ✓' : 'Order rejected');
+    showToast(status === 'accepted' ? 'Order accepted — added to sales ✓' : 'Order rejected');
+  }
+
+  // Map customer payment choice to the POS method buckets (Cash / Card / Mobile)
+  function ooPayMethod(m) {
+    if (m === 'Cash') return 'Cash';
+    if (m === 'PayNow') return 'Mobile';
+    return 'Card';
+  }
+
+  // Record an accepted online order into sales_log so it counts in reports
+  function recordOnlineOrderAsSale(o) {
+    const now = new Date();
+    const entry = {
+      ref: o.order_number || ('#' + (1000 + o.id)),
+      method: ooPayMethod(o.payment_method),
+      date: now, hour: now.getHours(), day: now.getDate(),
+      gross: Number(o.subtotal) || 0,
+      discount: 0,
+      tax: Number(o.tax) || 0,
+      total: Number(o.total) || 0,
+      items: (o.items || []).map(it => ({
+        name: it.name, qty: it.qty || 1, price: Number(it.unit_price) || 0,
+        selectedOptions: it.options_label || undefined
+      })),
+      customer: o.customer_name || null,
+      outlet: currentOutletName,
+      outlet_id: (o.outlet_id != null ? o.outlet_id : currentOutletId),
+      voided: false
+    };
+    try { salesLog.push(entry); } catch (e) {}
+    saveSalesEntry(entry);
   }
 
   function ooTimeAgo(ts) {
