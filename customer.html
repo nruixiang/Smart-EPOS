@@ -279,6 +279,37 @@
     const SUPABASE_KEY = 'sb_publishable_HKnoQB5XhK-MfHNwpaTmXA_3479YHTE';
     const TAX_RATE = 0.09;
     const CUSTOMIZABLE_CATEGORIES = ['Hot Drinks', 'Cold Drinks'];
+    // Default menu images by product name (mirrors the POS) — used when a product has no uploaded image
+    const PRODUCT_IMGS = {
+      'Espresso':          'https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?w=300&q=80',
+      'Americano':         'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=300&q=80',
+      'Latte':             'https://images.unsplash.com/photo-1561047029-3000c68339ca?w=300&q=80',
+      'Cappuccino':        'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=300&q=80',
+      'Flat White':        'https://images.unsplash.com/photo-1577968897966-3d4325b36b61?w=300&q=80',
+      'Mocha':             'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300&q=80',
+      'Green Tea':         'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300&q=80',
+      'Earl Grey':         'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=300&q=80',
+      'Chamomile':         'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=300&q=80',
+      'Sakura Latte':      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80',
+      'Ube Matcha':        'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=300&q=80',
+      'Rose Espresso':     'https://images.unsplash.com/photo-1485808191679-5f86510bd9d4?w=300&q=80',
+      'Iced Latte':        'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=300&q=80',
+      'Cold Brew':         'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=300&q=80',
+      'Iced Matcha':       'https://images.unsplash.com/photo-1608889335941-32ac5f2041b9?w=300&q=80',
+      'Lemonade':          'https://images.unsplash.com/photo-1523677011781-c91d1bbe2f9e?w=300&q=80',
+      'Sparkling Water':   'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&q=80',
+      'Croissant':         'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=300&q=80',
+      'Muffin':            'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=300&q=80',
+      'Cinnamon Roll':     'https://images.unsplash.com/photo-1509365465985-25d11c17e812?w=300&q=80',
+      'Banana Bread':      'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=300&q=80',
+      'Brownie':           'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=300&q=80',
+      'Tote Bag':          'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=300&q=80',
+      'Travel Mug':        'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=300&q=80',
+      'Coffee Beans 250g': 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=300&q=80',
+      'Breakfast Set':     'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=300&q=80',
+      'Arvo Pick-Me-Up':   'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300&q=80',
+      'Gift Bundle':       'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=300&q=80',
+    };
     let db = null;
 
     // ── State ──
@@ -324,7 +355,7 @@
         const { data: prods } = await db.from('products').select('*').order('id', { ascending: true });
         PRODUCTS = (prods || []).map(r => ({
           id: r.id, name: r.name, price: parseFloat(r.price) || 0, category: r.category || 'Other',
-          description: r.description || '', image: r.image || ''
+          description: r.description || '', image: r.image || PRODUCT_IMGS[r.name] || ''
         }));
       } catch (e) { PRODUCTS = []; }
       // options
