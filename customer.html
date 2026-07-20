@@ -32,6 +32,22 @@
 
     /* Menu view */
     .menu-body { padding:22px 20px 120px; }
+    .track-banner { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 16px; border-radius:14px; margin-bottom:16px; cursor:pointer; border:1px solid transparent; }
+    .track-banner.hidden { display:none; }
+    .track-banner.pending { background:#fff8e1; border-color:#fde68a; }
+    .track-banner.accepted { background:#ecfdf5; border-color:#a7f3d0; }
+    .track-banner.rejected { background:#fef2f2; border-color:#fecaca; }
+    .track-left { display:flex; align-items:center; gap:12px; min-width:0; }
+    .track-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .track-banner.pending .track-dot { background:#f59e0b; animation:pulse 1.4s ease-in-out infinite; }
+    .track-banner.accepted .track-dot { background:#10b981; }
+    .track-banner.rejected .track-dot { background:#ef4444; }
+    .track-title { font-size:13.5px; font-weight:800; color:var(--ink); }
+    .track-sub { font-size:12px; color:var(--muted); margin-top:1px; }
+    .track-actions { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+    .track-view { display:inline-flex; align-items:center; gap:2px; font-size:12.5px; font-weight:700; color:var(--ink); }
+    .track-x { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:16px; }
+    .track-x:hover { background:rgba(0,0,0,0.05); }
     .search-wrap { position:relative; margin-bottom:16px; }
     .search-wrap i { position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--muted2); font-size:18px; }
     .search { width:100%; padding:14px 16px 14px 44px; border-radius:26px; border:1px solid var(--line); background:#fff; font-size:14px; font-family:var(--font); outline:none; }
@@ -199,6 +215,19 @@
         <div class="hero-addr" id="bizAddr"></div>
       </div>
       <div class="menu-body">
+        <div class="track-banner hidden" id="trackBanner" onclick="openOrderStatus()">
+          <div class="track-left">
+            <span class="track-dot"></span>
+            <div>
+              <div class="track-title">Track your order</div>
+              <div class="track-sub" id="trackSub">#— · Pending</div>
+            </div>
+          </div>
+          <div class="track-actions">
+            <span class="track-view">View <i class="ti ti-chevron-right"></i></span>
+            <button class="track-x" onclick="event.stopPropagation(); clearActiveOrder()" title="Dismiss"><i class="ti ti-x"></i></button>
+          </div>
+        </div>
         <div class="search-wrap">
           <i class="ti ti-search"></i>
           <input class="search" id="searchInput" placeholder="Search menu…" oninput="onSearch(this.value)" />
@@ -285,7 +314,7 @@
           <span class="status-dot"></span>
           <span id="statusText">Pending — waiting for the café to confirm</span>
         </div>
-        <button class="confirm-btn" onclick="resetToMenu()">Start a new order</button>
+        <button class="confirm-btn" onclick="backToMenu()">Back to menu</button>
       </div>
     </div>
 
@@ -395,6 +424,8 @@
     let selectedCardType = null;
     let placedOrderId = null;
     let statusPollTimer = null;
+    let activeOrder = null;               // { id, number, name, status } persisted in localStorage
+    const LAST_ORDER_KEY = 'customer_active_order';
     // modal working state
     let mProduct = null, mOpts = null, mSel = {};
 
@@ -411,7 +442,7 @@
       await loadAll();
       document.getElementById('loadingView').classList.add('hidden');
       document.getElementById('menuView').classList.remove('hidden');
-      renderBiz(); renderCats(); renderGrid(); renderCardTypes();
+      renderBiz(); renderCats(); renderGrid(); renderCardTypes(); loadActiveOrder();
     }
 
     function showLoadError(msg) {
@@ -754,7 +785,8 @@
         const num = data.order_number || ('#' + (1000 + data.id));
         if (!data.order_number) { try { await db.from('customer_orders').update({ order_number: num }).eq('id', data.id); } catch (e) {} }
         placedOrderId = data.id;
-        showConfirm(name, num);
+        saveActiveOrder({ id: data.id, number: num, name: name, status: 'pending' });
+        showConfirm(name, num, 'pending');
       } catch (e) {
         console.error('placeOrder error:', e);
         toast('Could not place order: ' + (e.message || 'try again'));
@@ -762,13 +794,49 @@
       }
     }
 
-    function showConfirm(name, num) {
+    function showConfirm(name, num, initialStatus) {
       document.getElementById('confSub').textContent = (name ? ('Thanks, ' + name + ' — ') : '') + 'your order has been sent to the counter.';
       document.getElementById('confNum').textContent = num;
-      updateStatusUI('pending');
+      updateStatusUI(initialStatus || 'pending');
       document.getElementById('confirmView').classList.remove('hidden');
       window.scrollTo(0, 0);
       startStatusPoll();
+    }
+
+    // ── Active order persistence + track banner ──
+    function saveActiveOrder(o) {
+      activeOrder = o;
+      try { localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(o)); } catch (e) {}
+      renderTrackBanner();
+    }
+    function clearActiveOrder() {
+      activeOrder = null;
+      try { localStorage.removeItem(LAST_ORDER_KEY); } catch (e) {}
+      stopStatusPoll(); placedOrderId = null;
+      renderTrackBanner();
+    }
+    function loadActiveOrder() {
+      try { const raw = localStorage.getItem(LAST_ORDER_KEY); if (raw) activeOrder = JSON.parse(raw); } catch (e) { activeOrder = null; }
+      renderTrackBanner();
+      if (activeOrder && activeOrder.status !== 'accepted' && activeOrder.status !== 'rejected') {
+        placedOrderId = activeOrder.id;
+        startStatusPoll();
+      }
+    }
+    function renderTrackBanner() {
+      const el = document.getElementById('trackBanner');
+      if (!el) return;
+      if (!activeOrder) { el.classList.add('hidden'); return; }
+      el.classList.remove('hidden', 'pending', 'accepted', 'rejected');
+      const st = activeOrder.status || 'pending';
+      el.classList.add(st);
+      const label = st === 'accepted' ? 'Accepted' : st === 'rejected' ? 'Declined' : 'Pending';
+      document.getElementById('trackSub').textContent = activeOrder.number + ' · ' + label;
+    }
+    function openOrderStatus() {
+      if (!activeOrder) return;
+      placedOrderId = activeOrder.id;
+      showConfirm(activeOrder.name, activeOrder.number, activeOrder.status);
     }
 
     // ── Live order status (pending -> accepted / declined) ──
@@ -806,14 +874,18 @@
       try {
         const { data, error } = await db.from('customer_orders').select('status').eq('id', placedOrderId).single();
         if (error || !data) return;
+        if (activeOrder && String(activeOrder.id) === String(placedOrderId)) {
+          activeOrder.status = data.status;
+          try { localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(activeOrder)); } catch (e) {}
+        }
         updateStatusUI(data.status);
+        renderTrackBanner();
         if (data.status === 'accepted' || data.status === 'rejected') stopStatusPoll();
       } catch (e) {}
     }
     function stopStatusPoll() { if (statusPollTimer) { clearInterval(statusPollTimer); statusPollTimer = null; } }
 
-    function resetToMenu() {
-      stopStatusPoll(); placedOrderId = null;
+    function backToMenu() {
       cart = []; selectedPay = null; selectedCardType = null; searchQ = ''; activeCat = 'All Items';
       document.getElementById('custName').value = '';
       document.getElementById('custNotes').value = '';
@@ -826,7 +898,7 @@
       document.getElementById('confirmView').classList.add('hidden');
       document.getElementById('checkoutView').classList.add('hidden');
       document.getElementById('cartView').classList.add('hidden');
-      renderCats(); renderGrid();
+      renderCats(); renderGrid(); renderTrackBanner();
       window.scrollTo(0, 0);
     }
 
