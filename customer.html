@@ -164,7 +164,7 @@
     <!-- MENU VIEW -->
     <div id="menuView" class="hidden">
       <div class="hero">
-        <div class="hero-icon"><i class="ti ti-shopping-bag"></i></div>
+        <div class="hero-icon" id="heroIcon"><i class="ti ti-shopping-bag"></i></div>
         <div class="hero-name" id="bizName">Café</div>
         <div class="hero-tag" id="bizTag"></div>
         <div class="hero-addr" id="bizAddr"></div>
@@ -385,10 +385,22 @@
 
     // ── Render menu ──
     function renderBiz() {
-      document.getElementById('bizName').textContent = BIZ.name || 'Our Café';
+      document.getElementById('bizName').textContent = BIZ.business_name || BIZ.name || 'Our Café';
       document.getElementById('bizTag').textContent = BIZ.tagline || '';
       document.getElementById('bizAddr').textContent = BIZ.address || '';
-      document.title = (BIZ.name || 'Order') + ' — Order Online';
+      const icon = document.getElementById('heroIcon');
+      if (icon) {
+        if (BIZ.logo_url) {
+          icon.innerHTML = `<img src="${BIZ.logo_url}" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:16px;" />`;
+          icon.style.background = 'transparent';
+          icon.style.boxShadow = 'none';
+        } else {
+          icon.innerHTML = '<i class="ti ti-shopping-bag"></i>';
+          icon.style.background = '';
+          icon.style.boxShadow = '';
+        }
+      }
+      document.title = (BIZ.business_name || BIZ.name || 'Order') + ' — Order Online';
     }
 
     function categories() {
