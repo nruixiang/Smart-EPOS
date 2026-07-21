@@ -3903,7 +3903,7 @@
     body.innerHTML = soRouting.map((g, idx) => {
       const name = g.supplier ? g.supplier.name : 'Unassigned';
       const lines = g.items.map(l =>
-        `<div class="so-supp-line"><span class="so-supp-line-name">${escapeHtml(l.ing.name)}</span><span class="so-supp-line-qty">${soPack(l.qty)}</span></div>`
+        `<div class="so-supp-line"><span class="so-supp-line-name">${escapeHtml(l.ing.name)}</span><span class="so-supp-line-qty">${soFmtQty(l.qty)}${l.ing.unit ? ' ' + escapeHtml(l.ing.unit) : ''}</span></div>`
       ).join('');
       let sendBtn;
       if (!g.supplier) sendBtn = `<button class="so-send-btn disabled"><i class="ti ti-alert-triangle"></i> No supplier assigned</button>`;
