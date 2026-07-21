@@ -136,6 +136,11 @@
     .card-info-btn { position: absolute; bottom: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.7); background: rgba(0,0,0,0.45); color: white; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, border-color 0.15s; font-family: var(--font); backdrop-filter: blur(3px); z-index: 5; line-height: 1; }
     .card-info-btn:hover { background: rgba(0,0,0,0.7); border-color: white; }
     .product-name-row { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+    .card-price-row { display: flex; align-items: center; justify-content: space-between; }
+    .card-qty-stepper { display: flex; align-items: center; gap: 4px; }
+    .card-qty-btn { width: 20px; height: 20px; border: 0.5px solid var(--border); border-radius: 4px; background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text-primary); line-height: 1; font-family: var(--font); flex-shrink: 0; }
+    .card-qty-btn:active { background: var(--border); }
+    .card-qty-num { font-size: 12px; font-weight: 600; min-width: 14px; text-align: center; color: var(--text-primary); }
 
     /* PRODUCT INFO MODAL */
     .pinfo-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -5530,7 +5535,14 @@
         + '<div class="product-info">'
         + '<div class="product-name-row"><div class="product-name">' + p.name + '</div>'
         + '</div>'
-        + '<div class="product-price">$' + p.price.toFixed(2) + '</div>'
+        + (order[p.name] && !Array.isArray(order[p.name].selectedOptions) && !Array.isArray(order[p.name].comboSelections)
+          ? '<div class="card-price-row"><div class="product-price">$' + p.price.toFixed(2) + '</div>'
+            + '<div class="card-qty-stepper" onclick="event.stopPropagation();">'
+            + '<button class="card-qty-btn" onclick="changeQty(\'' + p.name.replace(/'/g, "\\'") + '\',-1);renderProducts();">−</button>'
+            + '<span class="card-qty-num">' + order[p.name].qty + '</span>'
+            + '<button class="card-qty-btn" onclick="changeQty(\'' + p.name.replace(/'/g, "\\'") + '\',1);renderProducts();">+</button>'
+            + '</div></div>'
+          : '<div class="product-price">$' + p.price.toFixed(2) + '</div>')
         + '</div>'
         + '</div>';
     }).join('');
@@ -5952,6 +5964,7 @@
     }
     if (order[name]) order[name].qty++; else order[name]={name,price,emoji,qty:1};
     renderOrder();
+    renderProducts();
   }
 
   function changeQty(key, delta) {
@@ -5959,6 +5972,7 @@
     order[key].qty += delta;
     if (order[key].qty <= 0) delete order[key];
     renderOrder();
+    renderProducts();
   }
 
   function clearOrder() { order = {}; activeDiscount = null; attachedCustomer = null; renderOrder(); updateDiscountBadge(); updateCustomerRowDisplay(); }
