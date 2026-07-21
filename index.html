@@ -3556,7 +3556,20 @@
   }
 
   async function openSmartOrder() {
-    document.getElementById('soOverlay').classList.add('show');
+    const overlay = document.getElementById('soOverlay');
+    // Self-heal: if the modal was left borrowed inside the Back Office pane
+    // (e.g. Back Office closed mid New Order flow), bring it home first.
+    if (!overlay.querySelector('.so-modal')) {
+      const orphan = document.querySelector('.so-modal');
+      if (orphan) overlay.appendChild(orphan);
+      const boOrdMain = document.getElementById('boOrdMain');
+      const boWrap = document.getElementById('boNewOrderWrap');
+      if (boOrdMain) boOrdMain.style.display = '';
+      if (boWrap) boWrap.style.display = 'none';
+      if (orphan) orphan.style.cssText = '';
+      if (window._soOrigClose) { window.closeSmartOrder = window._soOrigClose; delete window._soOrigClose; }
+    }
+    overlay.classList.add('show');
     soCloseRoute();
     soShowStep(0);
     await soRenderStep0();
@@ -7738,6 +7751,12 @@
   }
 
   function closeAdminPanel() {
+    // If the Smart Ordering modal is currently borrowed into the Back Office
+    // "New Order" pane, restore it to its own overlay first so it isn't left
+    // orphaned (which would otherwise leave openSmartOrder() showing a blank
+    // darkened overlay next time it's opened).
+    const boWrap = document.getElementById('boNewOrderWrap');
+    if (boWrap && boWrap.style.display === 'block') { boExitNewOrder(); }
     document.getElementById('adminOverlay').classList.remove('show');
   }
 
