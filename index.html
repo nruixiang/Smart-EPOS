@@ -4022,14 +4022,14 @@
     const qty = escapeHtml(String(it.pack != null ? it.pack : it.qty));
     const note = isIssues && it.issue_note ? `<div class="item-receipt-note"><i class="ti ti-alert-circle"></i> ${escapeHtml(it.issue_note)}</div>` : '';
     return `<div class="so-supp-line">
-        <span class="so-supp-line-name">${escapeHtml(it.name)}</span>
-        <span style="display:flex;align-items:center;gap:10px;">
-          <span class="so-supp-line-qty">${qty}</span>
+        <span style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
           <span class="item-receipt-btns">
             <button class="item-receipt-btn ok ${isOk ? 'active' : ''}" title="Received correctly" onclick="markOrderItemReceipt('${orderId}', ${groupIdx === null ? 'null' : groupIdx}, ${itemIdx}, 'ok')"><i class="ti ti-check"></i></button>
             <button class="item-receipt-btn issue ${isIssues ? 'active' : ''}" title="Issue with this item" onclick="markOrderItemReceipt('${orderId}', ${groupIdx === null ? 'null' : groupIdx}, ${itemIdx}, 'issues')"><i class="ti ti-alert-triangle"></i></button>
           </span>
         </span>
+        <span class="so-supp-line-name" style="flex:1;">${escapeHtml(it.name)}</span>
+        <span class="so-supp-line-qty">${qty}</span>
       </div>${note}`;
   }
 
@@ -4179,13 +4179,15 @@
     const qty = escapeHtml(it.pack != null ? String(it.pack) : String(it.qty) + (it.unit || ''));
     const note = isIssues && it.issue_note ? `<div class="item-receipt-note"><i class="ti ti-alert-circle"></i> ${escapeHtml(it.issue_note)}</div>` : '';
     return `<div class="bo-ord-supp-line">
-        <span>${escapeHtml(it.name)}</span>
-        <span class="bo-ord-supp-line-wrap">
-          <span>${qty}</span>
+        <span style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
           <span class="item-receipt-btns">
             <button class="item-receipt-btn ok ${isOk ? 'active' : ''}" title="Received correctly" onclick="markOrderItemReceipt('${orderId}', ${groupIdx === null ? 'null' : groupIdx}, ${itemIdx}, 'ok')"><i class="ti ti-check"></i></button>
             <button class="item-receipt-btn issue ${isIssues ? 'active' : ''}" title="Issue with this item" onclick="markOrderItemReceipt('${orderId}', ${groupIdx === null ? 'null' : groupIdx}, ${itemIdx}, 'issues')"><i class="ti ti-alert-triangle"></i></button>
           </span>
+        </span>
+        <span style="flex:1;">${escapeHtml(it.name)}</span>
+        <span class="bo-ord-supp-line-wrap">
+          <span>${qty}</span>
         </span>
       </div>${note}`;
   }
