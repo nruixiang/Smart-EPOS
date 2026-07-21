@@ -4296,8 +4296,8 @@
   function renderItemReceiptLine(orderId, groupIdx, itemIdx, it) {
     const isOk = it.receipt === 'ok';
     const isIssues = it.receipt === 'issues';
-    const qty = escapeHtml(it.pack != null ? String(it.pack) : String(it.qty) + (it.unit || ''));
-    const note = isIssues && it.issue_note ? `<div class="item-receipt-note"><i class="ti ti-alert-circle"></i> ${escapeHtml(it.issue_note)}</div>` : '';
+    const qty = escapeHtml(String(it.pack != null ? it.pack : it.qty) + (it.unit ? ' ' + it.unit : ''));
+    const note = isIssues && it.issue_note ? `<div class="item-receipt-note" style="padding-left:12px;"><i class="ti ti-alert-circle"></i> ${escapeHtml(it.issue_note)}</div>` : '';
     return `<div class="bo-ord-supp-line">
         <span style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
           <span class="item-receipt-btns">
@@ -4456,7 +4456,7 @@
     const phone = supObj ? String(supObj.phone || '').replace(/[^\d]/g, '') : '';
     const contact = (supObj && supObj.contact_person) || r.supplier_name;
     let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
-    (r.items || []).forEach(it => { msg += '\u2022 ' + it.name + ': ' + (it.qty + (it.unit || '')) + (it.pack ? ' (' + it.pack + ')' : '') + '\n'; });
+    (r.items || []).forEach(it => { msg += '\u2022 ' + it.name + ': ' + String(it.pack != null ? it.pack : it.qty) + (it.unit ? ' ' + it.unit : '') + '\n'; });
     msg += '\nOrder ref: ' + (o.order_number || ('#' + o.id)) + '\nThank you';
     openWaChat({
       name: r.supplier_name, phone: phone, message: msg,
