@@ -1544,7 +1544,7 @@
     .item-receipt-btn.issue.active { background:#fef2f2; border-color:#dc2626; color:#dc2626; }
     [data-theme="dark"] .item-receipt-btn.ok.active { background:rgba(22,163,74,0.15); }
     [data-theme="dark"] .item-receipt-btn.issue.active { background:rgba(220,38,38,0.15); }
-    .item-receipt-note { font-size:11.5px; color:var(--red); padding:4px 14px 8px 10px; display:flex; align-items:center; gap:5px; }
+    .item-receipt-note { font-size:11.5px; color:var(--red); padding:4px 14px 8px 12px; display:flex; align-items:center; gap:5px; }
     .so-supp-line-wrap { border-top:0.5px solid var(--border); }
 
     /* SO Issue Picker Modal */
@@ -4095,17 +4095,23 @@
     // Show/hide WA issue button based on whether there are issues
     soUpdateStep3Footer(o);
 
-    // Disable complete if already completed
+    // Disable complete if already completed, or if not all items have been marked
     const completeBtn = document.getElementById('soCompleteBtn');
     if (isCompleted) {
       completeBtn.disabled = true;
       completeBtn.innerHTML = '<i class="ti ti-circle-check"></i> Order Completed';
     } else {
-      completeBtn.disabled = false;
+      const allMarked = soAllItemsMarked(o);
+      completeBtn.disabled = !allMarked;
       completeBtn.innerHTML = '<i class="ti ti-circle-check"></i> Complete Order';
     }
 
     soShowStep(3);
+  }
+
+  function soAllItemsMarked(o) {
+    const items = boOrderItemsFlat(o);
+    return items.length > 0 && items.every(it => it.receipt === 'ok' || it.receipt === 'issues');
   }
 
   function soUpdateStep3Footer(o) {
@@ -4121,6 +4127,12 @@
       hasIssues = (Array.isArray(o.items) ? o.items : []).some(it => it.receipt === 'issues');
     }
     document.getElementById('soWaIssueBtn').style.display = hasIssues ? 'flex' : 'none';
+
+    // Refresh Complete button state
+    const completeBtn = document.getElementById('soCompleteBtn');
+    if (completeBtn && o.status !== 'completed') {
+      completeBtn.disabled = !soAllItemsMarked(o);
+    }
   }
 
   async function soCompleteOrder() {
@@ -4235,6 +4247,7 @@
   }
 
   function boOrderStatusInfo(o) {
+    if (o.status === 'completed') return { cls: 'completed', label: 'Completed' };
     const items = boOrderItemsFlat(o);
     if (!items.length) return { cls: 'placed', label: 'Created' };
     if (items.some(it => it.receipt === 'issues')) return { cls: 'issues', label: 'Issues' };
