@@ -909,47 +909,6 @@
     .rpt-order-print-btn:hover { opacity: 0.75; }
     .rpt-order-void-btn { font-size: 13px; font-weight: 600; color: var(--red); background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25); border-radius: 8px; cursor: pointer; font-family: var(--font); padding: 8px 14px; transition: background 0.15s; }
     .rpt-order-void-btn:hover { background: rgba(220,38,38,0.15); }
-
-    /* ORDER DETAIL VIEW (replaces list inside modal) */
-    .ord-detail-header { display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding-bottom: 14px; border-bottom: 0.5px solid var(--border); }
-    .ord-detail-back { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 18px; display: flex; align-items: center; padding: 4px; border-radius: 6px; transition: background 0.15s; }
-    .ord-detail-back:hover { background: var(--bg-tertiary); }
-    .ord-detail-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-    .ord-detail-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
-    .ord-detail-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; background: #fef2f2; border: 1px solid #fecaca; font-size: 11px; font-weight: 700; color: var(--red); letter-spacing: 0.04em; margin-left: 6px; }
-    .ord-detail-items { display: flex; flex-direction: column; gap: 0; border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-    .ord-detail-item-row { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 0.5px solid var(--border); background: var(--bg-primary); }
-    .ord-detail-item-row:last-child { border-bottom: none; }
-    .ord-detail-checks { display: flex; gap: 8px; flex-shrink: 0; }
-    .ord-check-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.15s; flex-shrink: 0; }
-    .ord-check-btn.ok.active { border-color: #16a34a; background: #16a34a; color: white; }
-    .ord-check-btn.issue.active { border-color: var(--red); background: var(--red); color: white; }
-    .ord-check-btn:hover:not(.active) { border-color: var(--border-hover); background: var(--bg-tertiary); }
-    .ord-detail-item-info { flex: 1; min-width: 0; }
-    .ord-detail-item-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-    .ord-detail-item-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
-    .ord-detail-item-price { font-size: 13px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
-    .ord-detail-item-issue-tag { font-size: 11px; font-weight: 600; color: var(--red); background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 2px 6px; margin-top: 4px; display: inline-block; }
-    [data-theme="dark"] .ord-detail-item-issue-tag { background: rgba(220,38,38,0.12); border-color: rgba(220,38,38,0.3); }
-    .ord-detail-summary { background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
-    .ord-detail-total-label { font-size: 13px; color: var(--text-secondary); }
-    .ord-detail-total-val { font-size: 16px; font-weight: 800; color: var(--text-primary); }
-
-    /* ISSUE MODAL */
-    .ord-issue-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.18s; }
-    .ord-issue-overlay.show { opacity: 1; pointer-events: all; }
-    .ord-issue-modal { background: var(--bg-primary); border-radius: 16px; width: 340px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); border: 0.5px solid var(--border); }
-    .ord-issue-header { padding: 16px 18px 12px; border-bottom: 0.5px solid var(--border); }
-    .ord-issue-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-    .ord-issue-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 3px; }
-    .ord-issue-options { padding: 12px 18px; display: flex; flex-direction: column; gap: 8px; }
-    .ord-issue-option { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.15s; font-size: 13px; font-weight: 500; color: var(--text-primary); background: var(--bg-secondary); }
-    .ord-issue-option:hover { border-color: var(--red); background: #fef2f2; color: var(--red); }
-    [data-theme="dark"] .ord-issue-option:hover { background: rgba(220,38,38,0.1); }
-    .ord-issue-option i { font-size: 16px; color: var(--red); width: 20px; text-align: center; }
-    .ord-issue-footer { padding: 12px 18px; border-top: 0.5px solid var(--border); }
-    .ord-issue-cancel { width: 100%; padding: 11px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--bg-secondary); font-size: 13px; font-weight: 600; color: var(--text-secondary); font-family: var(--font); cursor: pointer; transition: background 0.15s; }
-    .ord-issue-cancel:hover { background: var(--bg-tertiary); }
     .rpt-order-voided-label { font-size: 12px; font-weight: 600; color: var(--text-tertiary); margin-left: auto; }
     .rpt-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px; color: var(--text-tertiary); font-size: 13px; text-align: center; gap: 8px; }
     .rpt-empty i { font-size: 36px; }
@@ -1572,6 +1531,22 @@
     [data-theme="dark"] .item-receipt-btn.ok.active { background:rgba(22,163,74,0.15); }
     [data-theme="dark"] .item-receipt-btn.issue.active { background:rgba(220,38,38,0.15); }
     .item-receipt-note { font-size:11.5px; color:var(--red); margin:2px 0 4px; }
+
+    /* SO Issue Picker Modal */
+    .so-issue-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:600; opacity:0; pointer-events:none; transition:opacity 0.18s; }
+    .so-issue-overlay.show { opacity:1; pointer-events:all; }
+    .so-issue-modal { background:var(--bg-primary); border-radius:16px; width:320px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3); border:0.5px solid var(--border); }
+    .so-issue-header { padding:16px 18px 12px; border-bottom:0.5px solid var(--border); }
+    .so-issue-title { font-size:15px; font-weight:700; color:var(--text-primary); }
+    .so-issue-sub { font-size:12px; color:var(--text-tertiary); margin-top:3px; }
+    .so-issue-options { padding:12px 18px; display:flex; flex-direction:column; gap:8px; }
+    .so-issue-option { display:flex; align-items:center; gap:10px; padding:12px 14px; border:1px solid var(--border); border-radius:10px; cursor:pointer; font-size:13px; font-weight:500; color:var(--text-primary); background:var(--bg-secondary); font-family:var(--font); text-align:left; transition:all 0.15s; }
+    .so-issue-option:hover { border-color:#dc2626; background:#fef2f2; color:#dc2626; }
+    [data-theme="dark"] .so-issue-option:hover { background:rgba(220,38,38,0.1); }
+    .so-issue-option i { font-size:16px; color:#dc2626; width:20px; text-align:center; flex-shrink:0; }
+    .so-issue-footer { padding:12px 18px; border-top:0.5px solid var(--border); }
+    .so-issue-cancel { width:100%; padding:11px; border-radius:var(--radius-md); border:0.5px solid var(--border); background:var(--bg-secondary); font-size:13px; font-weight:600; color:var(--text-secondary); font-family:var(--font); cursor:pointer; transition:background 0.15s; }
+    .so-issue-cancel:hover { background:var(--bg-tertiary); }
     .so-hist-del { width:30px; height:30px; border-radius:8px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--text-tertiary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:var(--font); }
     .so-hist-del:hover { color:var(--red); border-color:var(--red); }
     .so-hist-empty { text-align:center; padding:60px 20px; color:var(--text-tertiary); font-size:14px; }
@@ -4242,6 +4217,50 @@
 
   // Marks a single item as received OK or flagged with an issue (with an optional short note).
   // Works whether the item lives inside a supplier routing group (groupIdx set) or the flat items array (groupIdx null).
+  // ── SO Issue Picker (replaces blocked prompt()) ──
+  let soIssuePending = null; // { orderId, groupIdx, itemIdx, item, hasRouting, o }
+
+  function soOpenIssuePicker(orderId, groupIdx, itemIdx) {
+    const o = boOrders.find(x => String(x.id) === String(orderId));
+    if (!o) return;
+    const hasRouting = groupIdx !== null && Array.isArray(o.routing) && o.routing[groupIdx];
+    const items = hasRouting ? (o.routing[groupIdx].items || []) : (Array.isArray(o.items) ? o.items : []);
+    const item = items[itemIdx];
+    if (!item) return;
+    soIssuePending = { orderId, groupIdx, itemIdx, item, hasRouting, o };
+    document.getElementById('soIssueItemName').textContent = item.name;
+    document.getElementById('soIssueOverlay').classList.add('show');
+  }
+
+  function soCloseIssuePicker() {
+    document.getElementById('soIssueOverlay').classList.remove('show');
+    soIssuePending = null;
+  }
+
+  async function soSelectIssue(note) {
+    if (!soIssuePending) return;
+    const { orderId, item, hasRouting, o } = soIssuePending;
+    item.receipt = 'issues';
+    item.issue_note = note;
+    soCloseIssuePicker();
+
+    const info = boOrderStatusInfo(o);
+    o.status = info.cls === 'issues' ? 'issues' : (info.cls === 'completed' ? 'completed' : 'placed');
+
+    if (db) {
+      const payload = { status: o.status };
+      if (hasRouting) payload.routing = o.routing; else payload.items = o.items;
+      const { error } = await db.from('orders').update(payload).eq('id', orderId);
+      if (error) { showToast('Could not save receipt status'); return; }
+    }
+
+    if (document.getElementById('boOrdStats')) boRenderStats();
+    if (document.getElementById('boOrdList')) boRenderOrdersList();
+    if (document.getElementById('soHistTableWrap')) soRenderStep0();
+    const routeSheet = document.getElementById('soRouteSheet');
+    if (routeSheet && routeSheet.classList.contains('show')) soOpenHistDetail(orderId);
+  }
+
   async function markOrderItemReceipt(orderId, groupIdx, itemIdx, type) {
     const o = boOrders.find(x => String(x.id) === String(orderId));
     if (!o) return;
@@ -4261,13 +4280,13 @@
       if (item.receipt !== 'issues') delete item.issue_note;
     } else if (type === 'issues') {
       if (item.receipt === 'issues') {
+        // Toggle off
         item.receipt = null;
         delete item.issue_note;
       } else {
-        const note = prompt('Note about the issue with ' + item.name + ' (optional):', item.issue_note || '');
-        if (note === null) return; // cancelled
-        item.receipt = 'issues';
-        if (note) item.issue_note = note; else delete item.issue_note;
+        // Open issue picker instead of prompt()
+        soOpenIssuePicker(orderId, groupIdx, itemIdx);
+        return;
       }
     }
 
@@ -8502,8 +8521,6 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   function closeOrdersModal() {
     document.getElementById('ordersOverlay').classList.remove('show');
-    // Reset to list view
-    if (document.getElementById('ordDetailPane').style.display !== 'none') closeOrderDetail();
   }
 
   function openReports(startTab) {
@@ -9859,7 +9876,7 @@ function exportBoMonthToExcel() {
       const totalPrefix = '';
 
       return `<div class="rpt-order-card${cardClass}">
-        <div class="rpt-order-card-top" style="cursor:pointer;" onclick="openOrderDetail('${t.ref.replace('#','')}')">
+        <div class="rpt-order-card-top">
           <div>
             <div class="rpt-order-id">
               ${isRefunded ? 'Refund' : 'Order'} #${shortRef}
@@ -10028,115 +10045,6 @@ function exportBoMonthToExcel() {
 
     receiptIsLiveSale = false;
     document.getElementById('receiptOverlay').classList.add('show');
-  }
-  // ── Order Detail View ──
-  let currentDetailRef = null;
-  let orderItemStates = {}; // { itemIndex: 'ok' | 'issue' | null }
-  let orderItemIssues = {}; // { itemIndex: 'Wrong Quantity' | 'Damaged' | 'Missing' }
-  let pendingIssueIndex = null;
-
-  function openOrderDetail(shortRef) {
-    const fullRef = '#' + shortRef;
-    const tx = salesLog.find(t => t.ref === fullRef);
-    if (!tx) return;
-    currentDetailRef = fullRef;
-    orderItemStates = {};
-    orderItemIssues = {};
-
-    // Hide list, show detail
-    document.getElementById('rptOrdersList').style.display = 'none';
-    document.querySelector('#ordersOverlay .rpt-orders-toolbar').style.display = 'none';
-    document.getElementById('ordDetailPane').style.display = 'flex';
-
-    const d = tx.date instanceof Date ? tx.date : new Date(tx.date);
-    const timeStr = d.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-    const dateStr = d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
-    const isVoided = tx.voided === true;
-    const isRefunded = tx.refunded === true;
-
-    document.getElementById('ordDetailTitle').innerHTML =
-      `Order #${shortRef}` +
-      (isVoided ? '<span class="ord-detail-badge">VOIDED</span>' : '') +
-      (isRefunded ? '<span class="ord-detail-badge" style="background:#fff7ed;border-color:#fed7aa;color:#ea580c;">REFUNDED</span>' : '');
-    document.getElementById('ordDetailMeta').textContent = `${dateStr} · ${timeStr} · ${tx.method.toUpperCase()}${tx.customer ? ' · ' + tx.customer : ''}`;
-
-    const itemsHtml = tx.items.map((item, i) => `
-      <div class="ord-detail-item-row" id="ordItemRow_${i}">
-        <div class="ord-detail-checks">
-          <button class="ord-check-btn ok" id="ordChkOk_${i}" title="Received correctly" onclick="setItemState(${i},'ok')"><i class="ti ti-check"></i></button>
-          <button class="ord-check-btn issue" id="ordChkIssue_${i}" title="Report issue" onclick="setItemState(${i},'issue')"><i class="ti ti-alert-triangle"></i></button>
-        </div>
-        <div class="ord-detail-item-info">
-          <div class="ord-detail-item-name">${item.name}</div>
-          <div class="ord-detail-item-sub">Qty: ${item.qty} · $${item.price.toFixed(2)} each</div>
-          <div id="ordItemIssueTag_${i}" style="display:none;"><span class="ord-detail-item-issue-tag" id="ordItemIssueLabel_${i}"></span></div>
-        </div>
-        <div class="ord-detail-item-price">$${(item.price * item.qty).toFixed(2)}</div>
-      </div>`).join('');
-
-    document.getElementById('ordDetailItemsList').innerHTML = itemsHtml;
-    document.getElementById('ordDetailTotal').textContent = '$' + tx.total.toFixed(2);
-  }
-
-  function closeOrderDetail() {
-    currentDetailRef = null;
-    document.getElementById('ordDetailPane').style.display = 'none';
-    document.getElementById('rptOrdersList').style.display = 'flex';
-    document.querySelector('#ordersOverlay .rpt-orders-toolbar').style.display = 'flex';
-  }
-
-  function setItemState(index, state) {
-    // If already in that state, toggle off
-    if (orderItemStates[index] === state) {
-      orderItemStates[index] = null;
-      delete orderItemIssues[index];
-      document.getElementById('ordChkOk_' + index).classList.remove('active');
-      document.getElementById('ordChkIssue_' + index).classList.remove('active');
-      document.getElementById('ordItemIssueTag_' + index).style.display = 'none';
-      return;
-    }
-
-    if (state === 'issue') {
-      pendingIssueIndex = index;
-      const tx = salesLog.find(t => t.ref === currentDetailRef);
-      const itemName = tx ? tx.items[index].name : 'Item';
-      openIssueModal(itemName);
-    } else {
-      applyItemState(index, 'ok', null);
-    }
-  }
-
-  function applyItemState(index, state, issue) {
-    orderItemStates[index] = state;
-    const okBtn = document.getElementById('ordChkOk_' + index);
-    const issueBtn = document.getElementById('ordChkIssue_' + index);
-    okBtn.classList.toggle('active', state === 'ok');
-    issueBtn.classList.toggle('active', state === 'issue');
-
-    if (state === 'issue' && issue) {
-      orderItemIssues[index] = issue;
-      document.getElementById('ordItemIssueLabel_' + index).textContent = issue;
-      document.getElementById('ordItemIssueTag_' + index).style.display = '';
-    } else {
-      delete orderItemIssues[index];
-      document.getElementById('ordItemIssueTag_' + index).style.display = 'none';
-    }
-  }
-
-  function openIssueModal(itemName) {
-    document.getElementById('ordIssueSub').textContent = itemName;
-    document.getElementById('ordIssueOverlay').classList.add('show');
-  }
-
-  function closeIssueModal() {
-    document.getElementById('ordIssueOverlay').classList.remove('show');
-    pendingIssueIndex = null;
-  }
-
-  function selectIssue(type) {
-    if (pendingIssueIndex === null) return;
-    applyItemState(pendingIssueIndex, 'issue', type);
-    closeIssueModal();
   }
 
 </script>
@@ -10930,50 +10838,6 @@ function exportBoMonthToExcel() {
         <input class="rpt-orders-search" id="ordersSearch" type="text" placeholder="Search Order #..." readonly onclick="openFieldKb('ordersSearch','text','SEARCH ORDER #:')" />
       </div>
       <div id="rptOrdersList" style="display:flex;flex-direction:column;gap:10px;"></div>
-
-      <!-- ORDER DETAIL PANE -->
-      <div id="ordDetailPane" style="display:none;flex-direction:column;gap:14px;">
-        <div class="ord-detail-header">
-          <button class="ord-detail-back" onclick="closeOrderDetail()"><i class="ti ti-arrow-left"></i></button>
-          <div>
-            <div class="ord-detail-title" id="ordDetailTitle"></div>
-            <div class="ord-detail-meta" id="ordDetailMeta"></div>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-tertiary);display:flex;align-items:center;gap:6px;">
-          <i class="ti ti-info-circle"></i>
-          Mark each item as received <i class="ti ti-check" style="color:#16a34a;"></i> or flag an issue <i class="ti ti-alert-triangle" style="color:var(--red);"></i>
-        </div>
-        <div class="ord-detail-items" id="ordDetailItemsList"></div>
-        <div class="ord-detail-summary">
-          <span class="ord-detail-total-label">Order Total</span>
-          <span class="ord-detail-total-val" id="ordDetailTotal">$0.00</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Issue Modal -->
-<div class="ord-issue-overlay" id="ordIssueOverlay">
-  <div class="ord-issue-modal">
-    <div class="ord-issue-header">
-      <div class="ord-issue-title">Report an Issue</div>
-      <div class="ord-issue-sub" id="ordIssueSub"></div>
-    </div>
-    <div class="ord-issue-options">
-      <button class="ord-issue-option" onclick="selectIssue('Wrong Quantity')">
-        <i class="ti ti-numbers"></i> Wrong Quantity
-      </button>
-      <button class="ord-issue-option" onclick="selectIssue('Damaged')">
-        <i class="ti ti-mood-sad"></i> Damaged
-      </button>
-      <button class="ord-issue-option" onclick="selectIssue('Missing')">
-        <i class="ti ti-ghost"></i> Missing
-      </button>
-    </div>
-    <div class="ord-issue-footer">
-      <button class="ord-issue-cancel" onclick="closeIssueModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -11861,6 +11725,30 @@ function exportBoMonthToExcel() {
     <div class="checklist-footer">
       <button class="checklist-skip-btn" onclick="closeChecklist()">Skip for now</button>
       <button class="checklist-action-btn" id="checklistActionBtn" onclick="checklistDoAction()">Open Admin Panel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SO Issue Picker Modal -->
+<div class="so-issue-overlay" id="soIssueOverlay">
+  <div class="so-issue-modal">
+    <div class="so-issue-header">
+      <div class="so-issue-title">What's the issue?</div>
+      <div class="so-issue-sub" id="soIssueItemName"></div>
+    </div>
+    <div class="so-issue-options">
+      <button class="so-issue-option" onclick="soSelectIssue('Wrong Quantity')">
+        <i class="ti ti-numbers"></i> Wrong Quantity
+      </button>
+      <button class="so-issue-option" onclick="soSelectIssue('Damaged')">
+        <i class="ti ti-mood-sad"></i> Damaged
+      </button>
+      <button class="so-issue-option" onclick="soSelectIssue('Missing')">
+        <i class="ti ti-ghost"></i> Missing
+      </button>
+    </div>
+    <div class="so-issue-footer">
+      <button class="so-issue-cancel" onclick="soCloseIssuePicker()">Cancel</button>
     </div>
   </div>
 </div>
