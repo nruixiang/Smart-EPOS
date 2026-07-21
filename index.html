@@ -1598,6 +1598,38 @@
     .bo-ord-send:hover { opacity:0.93; }
     .bo-ord-send.sent { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
     .bo-ord-send.disabled { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
+    /* Receipt status */
+    .bo-ord-badge.received { background:#d1fae5; color:#047857; }
+    .bo-ord-badge.issues { background:#fee2e2; color:#b91c1c; }
+    .bo-ord-badge.awaiting { background:#fef3c7; color:#b45309; }
+    .bo-ord-receipt-row { display:flex; flex-direction:column; gap:8px; margin-top:12px; border-top:0.5px solid var(--border); padding-top:12px; }
+    .bo-ord-receipt-label { font-size:11px; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px; }
+    .bo-ord-check-row { display:flex; gap:10px; }
+    .bo-ord-check-btn { flex:1; display:flex; align-items:center; justify-content:center; gap:7px; padding:10px; border-radius:9px; border:1.5px solid var(--border); background:var(--bg-primary); color:var(--text-secondary); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); transition:all 0.15s; }
+    .bo-ord-check-btn:hover { border-color:var(--green); color:var(--green); }
+    .bo-ord-check-btn.active-ok { border-color:var(--green); background:#f0fdf4; color:#15803d; }
+    .bo-ord-check-btn.active-issues { border-color:var(--red); background:#fef2f2; color:#b91c1c; }
+    [data-theme="dark"] .bo-ord-check-btn.active-ok { background:rgba(22,163,74,0.15); }
+    [data-theme="dark"] .bo-ord-check-btn.active-issues { background:rgba(185,28,28,0.15); }
+    .bo-ord-issues-log { margin-top:8px; font-size:12px; color:var(--red); background:#fef2f2; border-radius:8px; padding:8px 10px; border:0.5px solid #fecaca; }
+    [data-theme="dark"] .bo-ord-issues-log { background:rgba(185,28,28,0.1); border-color:rgba(185,28,28,0.3); }
+    /* Issues modal */
+    .bo-issues-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:700; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+    .bo-issues-overlay.show { opacity:1; pointer-events:all; }
+    .bo-issues-card { background:var(--bg-primary); border-radius:16px; width:100%; max-width:400px; padding:24px; display:flex; flex-direction:column; gap:14px; margin:16px; transform:scale(0.95); transition:transform 0.2s; }
+    .bo-issues-overlay.show .bo-issues-card { transform:scale(1); }
+    .bo-issues-title { font-size:15px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px; }
+    .bo-issues-sub { font-size:13px; color:var(--text-secondary); }
+    .bo-issues-item-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:0.5px solid var(--border); }
+    .bo-issues-item-name { flex:1; font-size:13px; color:var(--text-primary); }
+    .bo-issues-type { display:flex; gap:6px; }
+    .bo-issues-type-btn { padding:5px 10px; border-radius:7px; border:1px solid var(--border); background:transparent; font-size:11px; font-weight:600; color:var(--text-secondary); cursor:pointer; font-family:var(--font); }
+    .bo-issues-type-btn.active { border-color:var(--red); background:#fef2f2; color:#b91c1c; }
+    .bo-issues-note { width:100%; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); background:var(--bg-secondary); font-size:13px; color:var(--text-primary); font-family:var(--font); outline:none; resize:none; }
+    .bo-issues-note:focus { border-color:var(--red); }
+    .bo-issues-actions { display:flex; gap:8px; }
+    .bo-issues-save { flex:1; padding:11px; border-radius:10px; border:none; background:var(--red); color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:var(--font); }
+    .bo-issues-cancel { padding:11px 18px; border-radius:10px; border:1.5px solid var(--border); background:transparent; color:var(--text-secondary); font-size:14px; font-weight:600; cursor:pointer; font-family:var(--font); }
     .bo-ord-empty { padding:44px 20px; text-align:center; color:var(--text-tertiary); font-size:14px; }
     .bo-ord-empty i { font-size:34px; display:block; margin-bottom:12px; }
 
@@ -3924,14 +3956,23 @@
 
   async function loadBoOrders() {
     if (!db) { boOrders = []; return; }
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    // Load all orders from last 30 days, plus any unsent orders regardless of age
     const { data, error } = await db.from('orders').select('*').order('created_at', { ascending: false });
     if (error) { console.error('loadBoOrders error:', JSON.stringify(error)); boOrders = []; return; }
-    boOrders = data || [];
+    boOrders = (data || []).filter(o => {
+      const createdAt = o.created_at ? new Date(o.created_at) : null;
+      const isRecent = createdAt && createdAt >= new Date(thirtyDaysAgo);
+      const routing = Array.isArray(o.routing) ? o.routing : [];
+      const allSent = routing.length > 0 && routing.filter(r => r.supplier_id != null).every(r => r.sent);
+      const isUnsent = !allSent;
+      return isRecent || isUnsent; // show if recent OR still unsent
+    });
   }
 
   function boSetOrdersFilter(f) {
     boOrdersFilter = f;
-    ['all', 'placed', 'sent'].forEach(x => {
+    ['all', 'awaiting', 'received', 'issues'].forEach(x => {
       const b = document.getElementById('boOrdFilter_' + x);
       if (b) b.classList.toggle('active', x === f);
     });
@@ -3951,29 +3992,35 @@
     const el = document.getElementById('boOrdStats');
     if (!el) return;
     const total = boOrders.length;
-    const sent = boOrders.filter(o => boOrderStatusInfo(o).cls === 'sent').length;
-    const placed = total - sent;
+    const received = boOrders.filter(o => { const c = boOrderStatusInfo(o).cls; return c === 'received'; }).length;
+    const issues = boOrders.filter(o => boOrderStatusInfo(o).cls === 'issues').length;
+    const awaiting = total - received - issues;
     el.innerHTML =
       `<div class="bo-ord-stat"><div class="bo-ord-stat-num">${total}</div><div class="bo-ord-stat-label">Total orders</div></div>` +
-      `<div class="bo-ord-stat"><div class="bo-ord-stat-num">${placed}</div><div class="bo-ord-stat-label">Awaiting send</div></div>` +
-      `<div class="bo-ord-stat"><div class="bo-ord-stat-num">${sent}</div><div class="bo-ord-stat-label">Fully sent</div></div>`;
+      `<div class="bo-ord-stat"><div class="bo-ord-stat-num">${awaiting}</div><div class="bo-ord-stat-label">Awaiting receipt</div></div>` +
+      `<div class="bo-ord-stat"><div class="bo-ord-stat-num" style="color:var(--red);">${issues}</div><div class="bo-ord-stat-label">With issues</div></div>`;
   }
 
   function boOrderStatusInfo(o) {
     const routing = Array.isArray(o.routing) ? o.routing : [];
     const withSupp = routing.filter(r => r.supplier_id != null);
+    const hasIssues = routing.some(r => r.receipt === 'issues');
+    const allReceived = routing.length > 0 && routing.every(r => r.receipt === 'ok' || r.receipt === 'issues');
+    if (hasIssues) return { cls: 'issues', label: 'Issues' };
+    if (allReceived) return { cls: 'received', label: 'Received' };
     const sentCount = withSupp.filter(r => r.sent).length;
-    if (o.status === 'sent' || (withSupp.length > 0 && sentCount === withSupp.length)) return { cls: 'sent', label: 'Sent' };
-    if (sentCount > 0) return { cls: 'partial', label: 'Partly sent' };
-    return { cls: 'placed', label: 'Placed' };
+    if (o.status === 'sent' || (withSupp.length > 0 && sentCount === withSupp.length)) return { cls: 'awaiting', label: 'Awaiting Receipt' };
+    if (sentCount > 0) return { cls: 'partial', label: 'Partly Sent' };
+    return { cls: 'placed', label: 'Created' };
   }
 
   function boRenderOrdersList() {
     const el = document.getElementById('boOrdList');
     if (!el) return;
     let rows = boOrders.slice();
-    if (boOrdersFilter === 'placed') rows = rows.filter(o => boOrderStatusInfo(o).cls !== 'sent');
-    else if (boOrdersFilter === 'sent') rows = rows.filter(o => boOrderStatusInfo(o).cls === 'sent');
+    if (boOrdersFilter === 'awaiting') rows = rows.filter(o => { const c = boOrderStatusInfo(o).cls; return c === 'awaiting' || c === 'partial' || c === 'placed'; });
+    else if (boOrdersFilter === 'received') rows = rows.filter(o => boOrderStatusInfo(o).cls === 'received');
+    else if (boOrdersFilter === 'issues') rows = rows.filter(o => boOrderStatusInfo(o).cls === 'issues');
 
     if (!rows.length) {
       el.innerHTML = '<div class="bo-ord-empty"><i class="ti ti-truck-delivery"></i>No orders here yet.<br>Tap \u201CNew Order\u201D to create one.</div>';
@@ -4014,14 +4061,37 @@
       const lines = (r.items || []).map(it => `<div class="bo-ord-supp-line"><span>${escapeHtml(it.name)}</span><span>${escapeHtml(it.pack || (it.qty + (it.unit || '')))}</span></div>`).join('');
       const supObj = r.supplier_id != null ? suppliers.find(s => String(s.id) === String(r.supplier_id)) : null;
       const hasPhone = supObj && supObj.phone && String(supObj.phone).replace(/[^\d]/g, '');
-      let btn;
-      if (r.sent) btn = `<button class="bo-ord-send sent"><i class="ti ti-check"></i> Sent to ${escapeHtml(r.supplier_name)}</button>`;
-      else if (!hasPhone) btn = `<button class="bo-ord-send disabled"><i class="ti ti-alert-triangle"></i> ${r.supplier_id == null ? 'No supplier assigned' : 'No phone on file'}</button>`;
-      else btn = `<button class="bo-ord-send" onclick="boSendOrderSupplier('${o.id}', ${idx})"><i class="ti ti-brand-whatsapp"></i> Send to ${escapeHtml(r.supplier_name)}</button>`;
+      let sendBtn;
+      if (r.sent) sendBtn = `<button class="bo-ord-send sent"><i class="ti ti-check"></i> Sent to ${escapeHtml(r.supplier_name)}</button>`;
+      else if (!hasPhone) sendBtn = `<button class="bo-ord-send disabled"><i class="ti ti-alert-triangle"></i> ${r.supplier_id == null ? 'No supplier assigned' : 'No phone on file'}</button>`;
+      else sendBtn = `<button class="bo-ord-send" onclick="boSendOrderSupplier('${o.id}', ${idx})"><i class="ti ti-brand-whatsapp"></i> Send to ${escapeHtml(r.supplier_name)}</button>`;
+
+      // Receipt section — only show if order has been sent
+      let receiptSection = '';
+      if (r.sent) {
+        const isOk = r.receipt === 'ok';
+        const isIssues = r.receipt === 'issues';
+        const issuesSummary = (r.issues_note || r.issues_items) ? `<div class="bo-ord-issues-log"><i class="ti ti-alert-circle"></i> ${escapeHtml(r.issues_note || 'Issues logged')}</div>` : '';
+        receiptSection = `
+          <div class="bo-ord-receipt-row">
+            <div class="bo-ord-receipt-label">Receipt Confirmation</div>
+            <div class="bo-ord-check-row">
+              <button class="bo-ord-check-btn ${isOk ? 'active-ok' : ''}" onclick="boMarkReceipt('${o.id}', ${idx}, 'ok')">
+                <i class="ti ti-circle-check"></i> Received correctly
+              </button>
+              <button class="bo-ord-check-btn ${isIssues ? 'active-issues' : ''}" onclick="boMarkReceipt('${o.id}', ${idx}, 'issues')">
+                <i class="ti ti-alert-triangle"></i> Issues received
+              </button>
+            </div>
+            ${issuesSummary}
+          </div>`;
+      }
+
       return `<div class="bo-ord-supp">
         <div class="bo-ord-supp-head"><span class="bo-ord-supp-name">${escapeHtml(r.supplier_name || 'Unassigned')}</span></div>
         ${lines}
-        ${btn}
+        ${sendBtn}
+        ${receiptSection}
       </div>`;
     }).join('');
     return `<div class="bo-ord-detail">${groups}</div>`;
@@ -4080,7 +4150,116 @@
     showToast('Order deleted');
   }
 
-  // ── Offline Sync Queue ──
+  // ── Receipt Confirmation & Issues ──
+  let boIssuesContext = null; // { orderId, routingIdx, items }
+
+  async function boMarkReceipt(orderId, idx, type) {
+    const o = boOrders.find(x => String(x.id) === String(orderId));
+    if (!o) return;
+    const routing = Array.isArray(o.routing) ? [...o.routing] : [];
+    const r = routing[idx];
+    if (!r) return;
+
+    if (type === 'issues') {
+      // Open issues modal first
+      openBoIssuesModal(orderId, idx, r);
+      return;
+    }
+
+    // Mark as received ok
+    r.receipt = 'ok';
+    r.issues_note = null;
+    r.issues_items = null;
+    routing[idx] = r;
+    o.routing = routing;
+
+    // Update overall order status
+    const allReceived = routing.every(x => x.receipt === 'ok' || x.receipt === 'issues');
+    if (allReceived) o.status = 'received';
+
+    if (db) {
+      const { error } = await db.from('orders').update({ routing, status: o.status }).eq('id', orderId);
+      if (error) { console.error('boMarkReceipt error:', error); showToast('Could not save receipt status'); return; }
+    }
+    boRenderStats();
+    boRenderOrdersList();
+    showToast('✓ Marked as received');
+  }
+
+  function openBoIssuesModal(orderId, idx, r) {
+    boIssuesContext = { orderId, idx };
+    const items = r.items || [];
+    document.getElementById('boIssuesSub').textContent = `Supplier: ${r.supplier_name || 'Unknown'} · ${items.length} item${items.length !== 1 ? 's' : ''}`;
+    document.getElementById('boIssuesNote').value = r.issues_note || '';
+
+    // Render item rows
+    const issuesItems = r.issues_items || {};
+    document.getElementById('boIssuesItemList').innerHTML = items.map((it, i) => {
+      const current = issuesItems[it.name] || null;
+      return `<div class="bo-issues-item-row">
+        <div class="bo-issues-item-name">${escapeHtml(it.name)}<br><span style="font-size:11px;color:var(--text-tertiary);">${escapeHtml(it.pack || it.qty + (it.unit || ''))}</span></div>
+        <div class="bo-issues-type">
+          <button class="bo-issues-type-btn ${current === 'damaged' ? 'active' : ''}" onclick="boToggleIssueType('${escapeHtml(it.name)}', 'damaged', this)">Damaged</button>
+          <button class="bo-issues-type-btn ${current === 'missing' ? 'active' : ''}" onclick="boToggleIssueType('${escapeHtml(it.name)}', 'missing', this)">Missing</button>
+          <button class="bo-issues-type-btn ${current === 'wrong' ? 'active' : ''}" onclick="boToggleIssueType('${escapeHtml(it.name)}', 'wrong', this)">Wrong item</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('boIssuesOverlay').classList.add('show');
+  }
+
+  function boToggleIssueType(itemName, type, btn) {
+    // Toggle active on sibling buttons
+    const row = btn.closest('.bo-issues-type');
+    row.querySelectorAll('.bo-issues-type-btn').forEach(b => b.classList.remove('active'));
+    if (btn.classList.contains('active')) {
+      btn.classList.remove('active'); // clicking same = deselect
+    } else {
+      btn.classList.add('active');
+    }
+  }
+
+  function closeBoIssuesModal() {
+    document.getElementById('boIssuesOverlay').classList.remove('show');
+    boIssuesContext = null;
+  }
+
+  async function saveBoIssues() {
+    if (!boIssuesContext) return;
+    const { orderId, idx } = boIssuesContext;
+    const o = boOrders.find(x => String(x.id) === String(orderId));
+    if (!o) return;
+    const routing = Array.isArray(o.routing) ? [...o.routing] : [];
+    const r = routing[idx];
+    if (!r) return;
+
+    // Collect flagged items
+    const issuesItems = {};
+    document.querySelectorAll('#boIssuesItemList .bo-issues-item-row').forEach(row => {
+      const name = row.querySelector('.bo-issues-item-name').childNodes[0].textContent.trim();
+      const activeBtn = row.querySelector('.bo-issues-type-btn.active');
+      if (activeBtn) issuesItems[name] = activeBtn.textContent.trim().toLowerCase();
+    });
+
+    const note = document.getElementById('boIssuesNote').value.trim();
+    r.receipt = 'issues';
+    r.issues_items = Object.keys(issuesItems).length ? issuesItems : null;
+    r.issues_note = note || null;
+    routing[idx] = r;
+    o.routing = routing;
+    o.status = 'issues';
+
+    if (db) {
+      const { error } = await db.from('orders').update({ routing, status: 'issues' }).eq('id', orderId);
+      if (error) { console.error('saveBoIssues error:', error); showToast('Could not save issues'); return; }
+    }
+
+    closeBoIssuesModal();
+    boRenderStats();
+    boRenderOrdersList();
+    showToast('Issues logged');
+  }
   // Queues failed EOD-relevant writes (sales, voids, refunds, wastage, cash float)
   // in localStorage, then retries them once the connection to Supabase is back.
   const SYNC_QUEUE_KEY = 'epos_sync_queue';
@@ -11303,8 +11482,9 @@ function exportBoMonthToExcel() {
       <div class="bo-ord-toolbar">
         <div class="bo-ord-filters" id="boOrdFilters">
           <button class="bo-ord-filter active" id="boOrdFilter_all" onclick="boSetOrdersFilter('all')">All</button>
-          <button class="bo-ord-filter" id="boOrdFilter_placed" onclick="boSetOrdersFilter('placed')">Placed</button>
-          <button class="bo-ord-filter" id="boOrdFilter_sent" onclick="boSetOrdersFilter('sent')">Sent</button>
+          <button class="bo-ord-filter" id="boOrdFilter_awaiting" onclick="boSetOrdersFilter('awaiting')">Awaiting Receipt</button>
+          <button class="bo-ord-filter" id="boOrdFilter_received" onclick="boSetOrdersFilter('received')">Received</button>
+          <button class="bo-ord-filter" id="boOrdFilter_issues" onclick="boSetOrdersFilter('issues')">Issues</button>
         </div>
         <div style="display:flex;gap:10px;">
           <button class="bo-ord-refresh" onclick="renderBoOrders()"><i class="ti ti-refresh"></i> Refresh</button>
@@ -11438,6 +11618,23 @@ function exportBoMonthToExcel() {
     <div class="checklist-footer">
       <button class="checklist-skip-btn" onclick="closeChecklist()">Skip for now</button>
       <button class="checklist-action-btn" id="checklistActionBtn" onclick="checklistDoAction()">Open Admin Panel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt Issues Modal -->
+<div class="bo-issues-overlay" id="boIssuesOverlay">
+  <div class="bo-issues-card">
+    <div class="bo-issues-title"><i class="ti ti-alert-triangle" style="color:var(--red);"></i> Log Received Issues</div>
+    <div class="bo-issues-sub" id="boIssuesSub">Mark items that had problems</div>
+    <div id="boIssuesItemList"></div>
+    <div>
+      <div class="bo-issues-receipt-label" style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Additional Notes</div>
+      <textarea class="bo-issues-note" id="boIssuesNote" rows="3" placeholder="Describe any other issues (e.g. wrong items, late delivery)…"></textarea>
+    </div>
+    <div class="bo-issues-actions">
+      <button class="bo-issues-cancel" onclick="closeBoIssuesModal()">Cancel</button>
+      <button class="bo-issues-save" onclick="saveBoIssues()"><i class="ti ti-check"></i> Save Issues</button>
     </div>
   </div>
 </div>
