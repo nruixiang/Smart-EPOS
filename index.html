@@ -9589,7 +9589,7 @@ function exportBoMonthToExcel() {
                     }
                     return '';
                   })()}
-                  <button class="rpt-order-void-btn" id="voidBtn_${shortRef}" onclick="showVoidConfirm('${shortRef}')">Void</button>
+                  ${isToday ? '<button class="rpt-order-void-btn" id="voidBtn_' + shortRef + '" onclick="showVoidConfirm(\'' + shortRef + '\')">Void</button>' : ''}
                 </div>`
           }
         </div>
