@@ -26,15 +26,14 @@
       --bg-primary: #ffffff;
       --bg-secondary: #f9f8f6;
       --bg-tertiary: #f1efe8;
-      --text-primary: #111111;
-      --text-secondary: #6B7280;
-      --text-tertiary: #6B7280;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
       --border: rgba(0,0,0,0.12);
       --border-hover: rgba(0,0,0,0.22);
-      --green: #247F48;
-      --blue: #2563EB;
-      --red: #DC2626;
-      --orange: #AE5109;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --red: #dc2626;
       --radius-md: 8px;
       --radius-lg: 12px;
       --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -65,9 +64,9 @@
       --bg-primary: #ffffff;
       --bg-secondary: #f9f8f6;
       --bg-tertiary: #f1efe8;
-      --text-primary: #111111;
+      --text-primary: #1a1a1a;
       --text-secondary: #6b7280;
-      --text-tertiary: #6B7280;
+      --text-tertiary: #9ca3af;
       --border: rgba(0,0,0,0.12);
       --border-hover: rgba(0,0,0,0.22);
     }
@@ -76,17 +75,17 @@
     .pin-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .pin-overlay.show { opacity: 1; pointer-events: all; }
     .pin-modal { background: var(--bg-primary); border-radius: 20px; width: 340px; overflow: hidden; }
-    .pin-modal-top { background: #111111; padding: 28px 24px 22px; text-align: center; }
+    .pin-modal-top { background: #1a1a1a; padding: 28px 24px 22px; text-align: center; }
     .pin-shield { width: 44px; height: 44px; border-radius: 50%; background: rgba(239,68,68,0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
-    .pin-shield i { font-size: 22px; color: #DC2626; }
+    .pin-shield i { font-size: 22px; color: #ef4444; }
     .pin-modal-title { font-size: 18px; font-weight: 700; color: white; margin-bottom: 4px; }
     .pin-modal-sub { font-size: 13px; color: rgba(255,255,255,0.5); }
     .pin-modal-body { background: var(--bg-primary); padding: 24px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
     .pin-dots { display: flex; gap: 12px; }
     .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; transition: background 0.15s, border-color 0.15s; }
-    .pin-dot.filled { background: #111111; border-color: #111111; }
+    .pin-dot.filled { background: #1a1a1a; border-color: #1a1a1a; }
     [data-theme="dark"] .pin-dot.filled { background: #f2f2f7; border-color: #f2f2f7; }
-    .pin-error { font-size: 0.857rem; color: #DC2626; min-height: 16px; text-align: center; }
+    .pin-error { font-size: 0.857rem; color: #ef4444; min-height: 16px; text-align: center; }
     .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
     .pin-key { padding: 16px 0; border-radius: 12px; border: none; background: var(--bg-secondary); font-size: 1.571rem; font-weight: 500; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.1s; }
     .pin-key:active { background: var(--bg-tertiary); transform: scale(0.95); }
@@ -119,11 +118,11 @@
     .seg-btn { padding: 6px 14px; font-size: 0.857rem; font-weight: 500; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-family: var(--font); display: flex; align-items: center; gap: 5px; transition: all 0.15s; white-space: nowrap; }
     .seg-btn.active { background: var(--bg-primary); color: var(--text-primary); border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .cashier-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-md); border: 0.5px solid var(--border); }
-    .cashier-avatar { width: 36px; height: 36px; border-radius: 50%; background: #FEF3C7; display: flex; align-items: center; justify-content: center; font-size: 0.929rem; font-weight: 700; color: #AE5109; flex-shrink: 0; }
+    .cashier-avatar { width: 36px; height: 36px; border-radius: 50%; background: #fef3c7; display: flex; align-items: center; justify-content: center; font-size: 0.929rem; font-weight: 700; color: #d97706; flex-shrink: 0; }
     .cashier-name { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
-    .cashier-badge { font-size: 0.786rem; color: #AE5109; display: flex; align-items: center; gap: 3px; margin-top: 2px; }
-    .revoke-btn { margin-left: auto; padding: 6px 14px; border-radius: 20px; border: none; background: #FEF3C7; color: #AE5109; font-size: 0.857rem; font-weight: 600; cursor: pointer; font-family: var(--font); }
-    .revoke-btn:hover { background: #FEF3C7; }
+    .cashier-badge { font-size: 0.786rem; color: #d97706; display: flex; align-items: center; gap: 3px; margin-top: 2px; }
+    .revoke-btn { margin-left: auto; padding: 6px 14px; border-radius: 20px; border: none; background: #fef3c7; color: #d97706; font-size: 0.857rem; font-weight: 600; cursor: pointer; font-family: var(--font); }
+    .revoke-btn:hover { background: #fde68a; }
     .admin-section-note { font-size: 0.857rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 12px; }
 
     /* PRODUCT CARD ADMIN OVERLAYS */
@@ -153,9 +152,9 @@
     .pinfo-section-label { font-size: 10.5px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 5px; margin-bottom: 7px; }
     .pinfo-section-label i { font-size: 13px; }
     .pinfo-desc { font-size: 14px; color: var(--text-primary); line-height: 1.6; }
-    .pinfo-allergen-pill { display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 10px; background: #D1FAE5; border: 1px solid #a7d8b8; color: #247F48; font-size: 13px; font-weight: 600; width: 100%; }
+    .pinfo-allergen-pill { display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 10px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; font-size: 13px; font-weight: 600; width: 100%; }
     .pinfo-allergen-pill i { font-size: 15px; }
-    [data-theme="dark"] .pinfo-allergen-pill { background: rgba(36,127,72,0.15); border-color: rgba(22,163,74,0.3); }
+    [data-theme="dark"] .pinfo-allergen-pill { background: rgba(22,163,74,0.15); border-color: rgba(22,163,74,0.3); }
     .pinfo-ingredients { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
     html, body { height: 100vh; overflow: hidden; font-size: 14px; }
     body { font-family: var(--font); background: var(--bg-tertiary); display: flex; flex-direction: column; }
@@ -185,7 +184,7 @@
     .clockin-field-box.active { border-color: var(--blue); background: var(--bg-primary); }
     .clockin-field-box .placeholder { color: var(--text-tertiary); font-weight: 400; }
     .clockin-field-box .value { color: var(--text-primary); letter-spacing: 3px; }
-    .clockin-btn { width: 100%; padding: 14px; border-radius: var(--radius-md); border: none; font-size: 15px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: opacity 0.15s; background: #6B7280; color: white; }
+    .clockin-btn { width: 100%; padding: 14px; border-radius: var(--radius-md); border: none; font-size: 15px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: opacity 0.15s; background: #374151; color: white; }
     .clockin-btn.ready { background: #111; }
     .clockin-btn:hover { opacity: 0.85; }
 
@@ -218,7 +217,7 @@
     .forecast-chart-title { font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em; }
     .forecast-bars { display:flex; align-items:flex-end; gap:4px; height:80px; }
     .forecast-bar-wrap { display:flex; flex-direction:column; align-items:center; gap:3px; flex:1; }
-    .forecast-bar { width:100%; border-radius:4px 4px 0 0; background:#DBEAFE; transition:height 0.4s ease; min-height:2px; }
+    .forecast-bar { width:100%; border-radius:4px 4px 0 0; background:#ddd6fe; transition:height 0.4s ease; min-height:2px; }
     [data-theme="dark"] .forecast-bar { background:#4c1d95; }
     .forecast-bar.peak { background:#7c3aed; }
     .forecast-bar-label { font-size:9px; color:var(--text-tertiary); white-space:nowrap; }
@@ -267,11 +266,11 @@
     .cat-tabs { display: flex; gap: 6px; padding: 12px 14px 8px; overflow-x: auto; flex-shrink: 0; flex: 1; min-width: 0; }
     .cat-tabs-row { display: flex; align-items: center; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
     .online-orders-btn { display:flex; align-items:center; gap:6px; margin:0 14px; padding:7px 15px; border-radius:20px; border:0.5px solid var(--border); background:var(--bg-primary); color:#2563eb; font-size:12.5px; font-weight:600; font-family:var(--font); white-space:nowrap; flex-shrink:0; position:relative; cursor:pointer; }
-    .online-orders-btn:hover { border-color:#DBEAFE; background:#DBEAFE; }
-    [data-theme="dark"] .online-orders-btn { color:#2563EB; }
-    [data-theme="dark"] .online-orders-btn:hover { background:rgba(37,99,235,0.14); border-color:#1D4EDF; }
+    .online-orders-btn:hover { border-color:#93c5fd; background:#eff6ff; }
+    [data-theme="dark"] .online-orders-btn { color:#60a5fa; }
+    [data-theme="dark"] .online-orders-btn:hover { background:rgba(37,99,235,0.14); border-color:#1e40af; }
     .online-orders-btn i { font-size:16px; }
-    .oo-badge { background:#DC2626; color:#fff; min-width:18px; height:18px; padding:0 5px; border-radius:9px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; position:absolute; top:-6px; right:-6px; box-shadow:0 0 0 2px var(--bg-primary); }
+    .oo-badge { background:#ef4444; color:#fff; min-width:18px; height:18px; padding:0 5px; border-radius:9px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; position:absolute; top:-6px; right:-6px; box-shadow:0 0 0 2px var(--bg-primary); }
     /* ── Online Orders drawer ── */
     .oo-overlay { position:fixed; inset:0; display:flex; justify-content:flex-end; z-index:640; pointer-events:none; }
     .oo-card { width:420px; max-width:100vw; height:100vh; background:var(--bg-secondary); border-left:0.5px solid var(--border); display:flex; flex-direction:column; pointer-events:auto; transform:translateX(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); }
@@ -288,7 +287,7 @@
     .oo-order { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:14px; padding:14px 15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
     .oo-order-top { display:flex; align-items:flex-start; justify-content:space-between; }
     .oo-num { font-size:15px; font-weight:800; color:var(--text-primary); }
-    .oo-online-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:#2563eb; background:#DBEAFE; padding:2px 9px; border-radius:10px; margin-left:6px; }
+    .oo-online-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:#2563eb; background:#eff6ff; padding:2px 9px; border-radius:10px; margin-left:6px; }
     [data-theme="dark"] .oo-online-badge { background:rgba(37,99,235,0.16); }
     .oo-total { font-size:16px; font-weight:800; color:var(--text-primary); }
     .oo-order-cust { display:flex; align-items:center; gap:8px; margin-top:3px; margin-bottom:10px; }
@@ -300,13 +299,13 @@
     .oo-item-name { font-size:13.5px; font-weight:600; color:var(--text-primary); }
     .oo-item-opts { font-size:12px; color:var(--text-tertiary); margin-top:1px; }
     .oo-item-price { font-size:13px; color:var(--text-secondary); white-space:nowrap; }
-    .oo-note { font-size:12px; color:var(--text-secondary); margin-top:10px; background:#FEF3C7; border:0.5px solid #FEF3C7; border-radius:8px; padding:8px 10px; }
-    [data-theme="dark"] .oo-note { background:rgba(234,179,8,0.1); border-color:rgba(174,81,9,0.3); }
+    .oo-note { font-size:12px; color:var(--text-secondary); margin-top:10px; background:#fffbeb; border:0.5px solid #fde68a; border-radius:8px; padding:8px 10px; }
+    [data-theme="dark"] .oo-note { background:rgba(234,179,8,0.1); border-color:rgba(234,179,8,0.3); }
     .oo-actions { display:flex; gap:10px; margin-top:12px; }
     .oo-reject, .oo-accept { flex:1; padding:11px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:6px; }
-    .oo-reject { background:var(--bg-primary); color:#dc2626; border:1px solid #fcc8c8; }
-    .oo-reject:hover { background:#FEF0F0; }
-    .oo-accept { background:#247F48; color:#fff; border:none; }
+    .oo-reject { background:var(--bg-primary); color:#dc2626; border:1px solid #fecaca; }
+    .oo-reject:hover { background:#fef2f2; }
+    .oo-accept { background:#1e9e57; color:#fff; border:none; }
     .oo-accept:hover { filter:brightness(0.95); }
     .oo-empty { text-align:center; color:var(--text-tertiary); font-size:13.5px; padding:50px 20px; }
     .oo-empty i { font-size:38px; display:block; margin-bottom:12px; color:var(--border-hover); }
@@ -361,24 +360,24 @@
     .order-item-remove-btn { display: flex; align-items: center; color: var(--red); background: none; border: none; cursor: pointer; padding: 2px; font-size: 15px; }
     .order-item-remove-btn:hover { opacity: 0.75; }
     .customer-row { padding: 8px 10px; border-top: 0.5px solid var(--border); display: flex; gap: 6px; flex-shrink: 0; }
-    .attached-customer-chip { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #D1FAE5; border: 0.5px solid #a7d8b8; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    [data-theme="dark"] .attached-customer-chip { background: rgba(36,127,72,0.15); border-color: rgba(22,163,74,0.35); }
-    .acc-avatar { width: 32px; height: 32px; border-radius: 50%; background: #247F48; color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .attached-customer-chip { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #f0fdf4; border: 0.5px solid #bbf7d0; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    [data-theme="dark"] .attached-customer-chip { background: rgba(22,163,74,0.15); border-color: rgba(22,163,74,0.35); }
+    .acc-avatar { width: 32px; height: 32px; border-radius: 50%; background: #16a34a; color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .acc-info { flex: 1; min-width: 0; }
     .acc-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-    .acc-meta { font-size: 11px; color: #247F48; margin-top: 1px; }
+    .acc-meta { font-size: 11px; color: #16a34a; margin-top: 1px; }
     .acc-close { color: var(--text-tertiary); cursor: pointer; font-size: 14px; flex-shrink: 0; padding: 2px; display: flex; align-items: center; }
     .acc-close:hover { color: var(--text-primary); }
-    .suggest-today { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #FEF3C7; border: 0.5px solid #FEF3C7; flex-shrink: 0; }
-    [data-theme="dark"] .suggest-today { background: rgba(174,81,9,0.12); border-color: rgba(174,81,9,0.3); }
-    [data-theme="dark"] .suggest-today-label { color: #AE5109; }
-    .suggest-today-label { font-size: 10px; font-weight: 700; color: #AE5109; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+    .suggest-today { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #fffbeb; border: 0.5px solid #fde68a; flex-shrink: 0; }
+    [data-theme="dark"] .suggest-today { background: rgba(161,124,0,0.12); border-color: rgba(234,179,8,0.3); }
+    [data-theme="dark"] .suggest-today-label { color: #fcd34d; }
+    .suggest-today-label { font-size: 10px; font-weight: 700; color: #d97706; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
     .suggest-today-items { display: flex; gap: 6px; flex-wrap: wrap; }
-    .suggest-today-chip { padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: 14px; background: var(--bg-primary); border: 0.5px solid #FEF3C7; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.15s; }
-    .suggest-today-chip:hover { background: #FEF3C7; }
+    .suggest-today-chip { padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: 14px; background: var(--bg-primary); border: 0.5px solid #fde68a; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.15s; }
+    .suggest-today-chip:hover { background: #fef3c7; }
     [data-theme="dark"] .suggest-today-chip { border-color: rgba(234,179,8,0.4); }
     [data-theme="dark"] .suggest-today-chip:hover { background: rgba(234,179,8,0.15); }
-    .customer-match-card { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #D1FAE5; border: 0.5px solid #a7d8b8; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .customer-match-card { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #f0fdf4; border: 0.5px solid #bbf7d0; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .match-attach-btn { padding: 7px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--font); flex-shrink: 0; transition: opacity 0.15s; }
     .match-attach-btn:hover { opacity: 0.85; }
     .match-attach-btn.attached { background: var(--text-tertiary); }
@@ -396,7 +395,7 @@
     .pay-btn span { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
     .pay-btn.cash { background: var(--green); border-color: var(--green); }
     .pay-btn.cash i, .pay-btn.cash span { color: white; }
-    .pay-btn.card { background: #6B7280; border-color: #6B7280; }
+    .pay-btn.card { background: #374151; border-color: #374151; }
     .pay-btn.card i, .pay-btn.card span { color: white; }
 
     /* CASH KEYPAD PANEL */
@@ -486,8 +485,8 @@
     .customize-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 12px; letter-spacing: 0.02em; }
     .customize-pill.required { background: #111; color: white; }
     [data-theme="dark"] .customize-pill.required { background: #f2f2f7; color: #1c1c1e; }
-    .customize-pill.optional { background: #DBEAFE; color: #2563eb; }
-    [data-theme="dark"] .customize-pill.optional { background: rgba(37,99,235,0.18); color: #2563EB; }
+    .customize-pill.optional { background: #dbeafe; color: #2563eb; }
+    [data-theme="dark"] .customize-pill.optional { background: rgba(37,99,235,0.18); color: #60a5fa; }
     .customize-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .customize-choice { border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; text-align: left; cursor: pointer; background: var(--bg-primary); font-family: var(--font); transition: all 0.15s; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .customize-choice:hover { border-color: var(--border-hover); }
@@ -535,7 +534,7 @@
     .combo-item-text { flex: 1; min-width: 0; }
     .combo-item-name { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
     .combo-item-row.selected .combo-item-name { color: var(--green); }
-    [data-theme="dark"] .combo-item-row.selected .combo-item-name { color: #6bbf85; }
+    [data-theme="dark"] .combo-item-row.selected .combo-item-name { color: #4ade80; }
     .combo-item-price { font-size: 11.5px; color: var(--text-tertiary); margin-top: 1px; }
     .combo-item-check { width: 18px; height: 18px; border-radius: 50%; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
     .combo-slot-customize { margin-top: 10px; background: var(--bg-secondary); border-radius: var(--radius-md); padding: 14px 16px; }
@@ -553,7 +552,7 @@
     .countdown-ring { position: relative; width: 90px; height: 90px; }
     .countdown-ring svg { animation: spinRing 1s linear infinite; }
     @keyframes spinRing { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
-    .countdown-ring .track { fill: none; stroke: #DBEAFE; stroke-width: 6; }
+    .countdown-ring .track { fill: none; stroke: #ede9fe; stroke-width: 6; }
     .countdown-ring .progress { fill: none; stroke: #7c3aed; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 245; stroke-dashoffset: 60; }
     .countdown-number { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; color: #7c3aed; }
     .processing-title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
@@ -598,12 +597,12 @@
     .btn-print { background: #111; color: white; border-color: #111 !important; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
     /* Applied Discount Banner */
-    .disc-applied-banner { display: none; align-items: center; justify-content: space-between; margin: 0 20px 14px; padding: 11px 14px; background: #D1FAE5; border: 1px solid #a7d8b8; border-radius: var(--radius-md); flex-shrink: 0; }
+    .disc-applied-banner { display: none; align-items: center; justify-content: space-between; margin: 0 20px 14px; padding: 11px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); flex-shrink: 0; }
     [data-theme="dark"] .disc-applied-banner { background: rgba(22,163,74,0.12); border-color: rgba(22,163,74,0.3); }
     .disc-applied-banner.show { display: flex; }
     .disc-applied-left { display: flex; align-items: center; gap: 8px; }
-    .disc-applied-check { color: #247F48; font-size: 16px; }
-    .disc-applied-text { font-size: 13px; font-weight: 600; color: #247F48; }
+    .disc-applied-check { color: #16a34a; font-size: 16px; }
+    .disc-applied-text { font-size: 13px; font-weight: 600; color: #16a34a; }
     .disc-applied-remove { display: flex; align-items: center; gap: 4px; background: none; border: none; color: #dc2626; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font); padding: 0; }
     .disc-applied-remove:hover { opacity: 0.75; }
     .disc-applied-remove i { font-size: 13px; }
@@ -655,7 +654,7 @@
     .disc-code-row { display: flex; gap: 8px; }
     .disc-code-input { flex: 1; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; background: var(--bg-secondary); color: var(--text-tertiary); font-family: var(--font); outline: none; cursor: pointer; }
     .disc-code-input:focus { border-color: var(--blue); color: var(--text-primary); }
-    .disc-apply-btn { padding: 11px 20px; background: #6B7280; color: white; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+    .disc-apply-btn { padding: 11px 20px; background: #374151; color: white; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
     .disc-apply-btn:hover { opacity: 0.85; }
     /* Keyboard sheet */
     .disc-kb-sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: flex-end; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -672,8 +671,8 @@
     .disc-kb-key { flex: 1; padding: 13px 0; border-radius: 9px; border: none; background: var(--bg-secondary); font-size: 15px; font-weight: 500; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.1s; text-align: center; }
     .disc-kb-key:active { background: var(--bg-tertiary); transform: scale(0.95); }
     .disc-kb-key.wide { flex: 2; }
-    .disc-kb-key.action { background: #6B7280; color: white; font-size: 13px; font-weight: 600; }
-    .disc-kb-key.done { background: #AE5109; color: white; font-size: 13px; font-weight: 600; flex: 2; }
+    .disc-kb-key.action { background: #374151; color: white; font-size: 13px; font-weight: 600; }
+    .disc-kb-key.done { background: #d97706; color: white; font-size: 13px; font-weight: 600; flex: 2; }
     .disc-kb-key.del { background: var(--bg-tertiary); }
 
     /* MEMBERS */
@@ -699,7 +698,7 @@
     .mem-row-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
     .mem-row-phone { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
     .mem-row-right { text-align: right; flex-shrink: 0; }
-    .mem-tier { font-size: 11px; font-weight: 700; color: #AE5109; }
+    .mem-tier { font-size: 11px; font-weight: 700; color: #d97706; }
     .mem-pts { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-top: 2px; }
     .mem-spent { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
     .mem-empty { text-align: center; padding: 40px 20px; color: var(--text-tertiary); font-size: 13px; }
@@ -716,13 +715,13 @@
     .mem-btn-save:hover { opacity: 0.88; }
     /* Profile */
     .mem-profile-head { display: flex; align-items: center; gap: 14px; }
-    .mem-profile-avatar { width: 50px; height: 50px; border-radius: 50%; background: #fef3e8; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #AE5109; flex-shrink: 0; }
+    .mem-profile-avatar { width: 50px; height: 50px; border-radius: 50%; background: #fef3e8; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #d97706; flex-shrink: 0; }
     .mem-profile-name-row { display: flex; align-items: center; gap: 8px; }
     .mem-profile-name { font-size: 16px; font-weight: 800; color: var(--text-primary); }
-    .mem-profile-tier { font-size: 11px; font-weight: 700; color: #AE5109; background: #fef3e8; padding: 2px 8px; border-radius: 5px; display: inline-flex; align-items: center; gap: 4px; }
+    .mem-profile-tier { font-size: 11px; font-weight: 700; color: #d97706; background: #fef3e8; padding: 2px 8px; border-radius: 5px; display: inline-flex; align-items: center; gap: 4px; }
     .mem-profile-contact { font-size: 12px; color: var(--text-secondary); margin-top: 4px; display: flex; flex-direction: column; gap: 2px; }
     .mem-profile-contact span { display: flex; align-items: center; gap: 6px; }
-    .mem-points-card { background: linear-gradient(135deg, #247F48, #1a5c33); border-radius: var(--radius-md); padding: 16px; color: white; }
+    .mem-points-card { background: linear-gradient(135deg, #16a34a, #15803d); border-radius: var(--radius-md); padding: 16px; color: white; }
     .mem-points-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
     .mem-points-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; opacity: 0.85; }
     .mem-points-val { font-size: 28px; font-weight: 800; line-height: 1; margin-top: 4px; }
@@ -738,15 +737,15 @@
     .mem-no-purchases { font-size: 12px; color: var(--text-tertiary); text-align: center; padding: 14px; background: var(--bg-secondary); border-radius: var(--radius-md); }
     .mem-purchase-row { font-size: 12px; color: var(--text-primary); padding: 8px 10px; background: var(--bg-secondary); border-radius: var(--radius-md); display: flex; justify-content: space-between; }
     .mem-recommend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .mem-recommend-chip { padding: 10px 12px; background: #D1FAE5; color: #247F48; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; text-align: center; cursor: pointer; border: none; font-family: var(--font); transition: opacity 0.15s; }
-    [data-theme="dark"] .mem-recommend-chip { background: rgba(36,127,72,0.15); }
-    [data-theme="dark"] .mem-profile-avatar, [data-theme="dark"] .mem-profile-tier { background: rgba(174,81,9,0.18); }
+    .mem-recommend-chip { padding: 10px 12px; background: #f0fdf4; color: #16a34a; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; text-align: center; cursor: pointer; border: none; font-family: var(--font); transition: opacity 0.15s; }
+    [data-theme="dark"] .mem-recommend-chip { background: rgba(22,163,74,0.15); }
+    [data-theme="dark"] .mem-profile-avatar, [data-theme="dark"] .mem-profile-tier { background: rgba(217,119,6,0.18); }
     .mem-recommend-chip:hover { opacity: 0.8; }
     .mem-profile-footer { display: flex; gap: 8px; padding: 14px 18px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
     .mem-btn-edit { flex: 1; padding: 11px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background 0.15s; }
     .mem-btn-edit:hover { background: var(--bg-secondary); }
-    .mem-btn-delete { width: 44px; border-radius: var(--radius-md); border: 1px solid #fcc8c8; background: #FEF0F0; color: #dc2626; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
-    .mem-btn-delete:hover { background: #FEF0F0; }
+    .mem-btn-delete { width: 44px; border-radius: var(--radius-md); border: 1px solid #fecaca; background: #fef2f2; color: #dc2626; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    .mem-btn-delete:hover { background: #fee2e2; }
     [data-theme="dark"] .mem-btn-delete { background: rgba(220,38,38,0.12); border-color: rgba(220,38,38,0.3); }
     .mem-back-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 18px; display: flex; align-items: center; padding: 0; }
 
@@ -805,7 +804,7 @@
     .rpt-hour-label { width: 44px; color: var(--text-tertiary); font-size: 12px; flex-shrink: 0; text-align: right; }
     .rpt-hour-bar-wrap { flex: 1; background: var(--bg-secondary); border-radius: 6px; height: 28px; overflow: hidden; }
     .rpt-hour-bar { height: 100%; background: var(--bg-tertiary); border-radius: 6px; transition: width 0.4s ease; min-width: 0; }
-    .rpt-hour-bar.has-sales { background: #247F4822; }
+    .rpt-hour-bar.has-sales { background: #16a34a22; }
     .rpt-hour-val { width: 52px; text-align: right; font-size: 12px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
     /* Month to date */
     .rpt-month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
@@ -825,7 +824,7 @@
     .rpt-target-stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-tertiary); margin-bottom: 4px; }
     .rpt-target-stat-val { font-size: 16px; font-weight: 800; color: var(--text-primary); }
     .rpt-target-stat-val.red { color: var(--red); }
-    .rpt-alert { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #FEF0F0; border: 0.5px solid #fcc8c8; border-radius: 8px; font-size: 12px; color: var(--red); }
+    .rpt-alert { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #fef2f2; border: 0.5px solid #fecaca; border-radius: 8px; font-size: 12px; color: var(--red); }
     [data-theme="dark"] .rpt-alert { background: rgba(220,38,38,0.1); border-color: rgba(220,38,38,0.25); }
     .rpt-total-banner { background: #111; border-radius: var(--radius-lg); padding: 20px; color: white; }
     [data-theme="dark"] .rpt-total-banner { background: #2c2c2e; }
@@ -841,22 +840,22 @@
     .rpt-cal-day.clickable:hover { box-shadow: 0 0 0 1.5px var(--text-primary) inset; }
     .rpt-cal-day.clickable:active { transform: scale(0.97); }
     .rpt-cal-day.today { border-color: var(--green); }
-    .rpt-cal-day.has-sales { background: #D1FAE5; border-color: #6bbf85; }
-    [data-theme="dark"] .rpt-cal-day.has-sales { background: rgba(22,163,74,0.18); border-color: rgba(36,127,72,0.4); }    .rpt-cal-day-num { font-weight: 600; color: var(--text-primary); }
-    .rpt-cal-day-sal { font-size: 11px; font-weight: 700; color: #247F48; margin-top: 2px; }
+    .rpt-cal-day.has-sales { background: #d1fae5; border-color: #6ee7b7; }
+    [data-theme="dark"] .rpt-cal-day.has-sales { background: rgba(22,163,74,0.18); border-color: rgba(22,163,74,0.4); }    .rpt-cal-day-num { font-weight: 600; color: var(--text-primary); }
+    .rpt-cal-day-sal { font-size: 11px; font-weight: 700; color: #16a34a; margin-top: 2px; }
     .rpt-cal-day-ord { font-size: 10px; color: var(--text-tertiary); }
     .rpt-cal-legend { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
     .rpt-cal-dot { width: 12px; height: 12px; border-radius: 3px; }
     /* Wastage */
     .rpt-wastage-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .rpt-wastage-stat { border-radius: var(--radius-lg); padding: 14px 16px; border: 0.5px solid var(--border); }
-    .rpt-wastage-stat.red { background: #FEF0F0; border-color: #fcc8c8; }
+    .rpt-wastage-stat.red { background: #fef2f2; border-color: #fecaca; }
     [data-theme="dark"] .rpt-wastage-stat.red { background: rgba(220,38,38,0.08); border-color: rgba(220,38,38,0.2); }
     .rpt-wastage-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); margin-bottom: 6px; }
     .rpt-wastage-stat-val { font-size: 28px; font-weight: 800; color: var(--red); }
     .rpt-wastage-stat-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-    .rpt-wastage-hint { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; background: #FEF3C7; border: 0.5px solid #FEF3C7; border-radius: 8px; font-size: 12px; color: #92400e; }
-    [data-theme="dark"] .rpt-wastage-hint { background: rgba(174,81,9,0.1); border-color: rgba(174,81,9,0.3); color: #AE5109; }
+    .rpt-wastage-hint { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; background: #fefce8; border: 0.5px solid #fde68a; border-radius: 8px; font-size: 12px; color: #92400e; }
+    [data-theme="dark"] .rpt-wastage-hint { background: rgba(217,119,6,0.1); border-color: rgba(217,119,6,0.3); color: #d97706; }
 
     /* ORDERS TAB */
     .rpt-orders-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; }
@@ -879,14 +878,14 @@
     .rpt-order-card.refunded-original .rpt-order-total,
     .rpt-order-card.refunded-original .rpt-order-items-count,
     .rpt-order-card.refunded-original .rpt-order-items-list { text-decoration: line-through; color: var(--text-tertiary); }
-    .rpt-order-card.refunded { opacity: 0.75; border-color: #FEF3C7; }
-    .rpt-order-refund-card { border: 0.5px solid #FEF3C7; border-radius: var(--radius-lg); background: #FEF3C7; overflow: hidden; }
-    [data-theme="dark"] .rpt-order-refund-card { background: rgba(174,81,9,0.08); border-color: rgba(174,81,9,0.3); }
-    .rpt-order-refund-btn { font-size: 13px; font-weight: 600; color: #AE5109; background: rgba(174,81,9,0.08); border: 1px solid rgba(174,81,9,0.3); border-radius: 8px; cursor: pointer; font-family: var(--font); padding: 8px 14px; transition: background 0.15s; }
+    .rpt-order-card.refunded { opacity: 0.75; border-color: #fed7aa; }
+    .rpt-order-refund-card { border: 0.5px solid #fed7aa; border-radius: var(--radius-lg); background: #fff7ed; overflow: hidden; }
+    [data-theme="dark"] .rpt-order-refund-card { background: rgba(234,88,12,0.08); border-color: rgba(234,88,12,0.3); }
+    .rpt-order-refund-btn { font-size: 13px; font-weight: 600; color: #ea580c; background: rgba(234,88,12,0.08); border: 1px solid rgba(234,88,12,0.3); border-radius: 8px; cursor: pointer; font-family: var(--font); padding: 8px 14px; transition: background 0.15s; }
     .rpt-order-refund-btn:hover { background: rgba(234,88,12,0.15); }
     .rpt-order-card-top { padding: 12px 14px 10px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
     .rpt-order-id { font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
-    .rpt-order-voided-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; background: #FEF0F0; border: 1px solid #fcc8c8; font-size: 11px; font-weight: 700; color: var(--red); letter-spacing: 0.04em; }
+    .rpt-order-voided-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; background: #fef2f2; border: 1px solid #fecaca; font-size: 11px; font-weight: 700; color: var(--red); letter-spacing: 0.04em; }
     .rpt-order-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 3px; }
     .rpt-order-right { text-align: right; flex-shrink: 0; }
     .rpt-order-total { font-size: 15px; font-weight: 700; color: var(--text-primary); }
@@ -968,12 +967,12 @@
     .wastage-step-pane.hidden { display: none; }
     /* Selected items chips at top of step 2 */
     .wastage-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .wastage-chip { display: flex; align-items: center; gap: 6px; padding: 5px 10px 5px 6px; border-radius: 20px; background: #D1FAE5; border: 1px solid #a7d8b8; font-size: 12px; font-weight: 600; color: #1a5c33; cursor: pointer; }
-    [data-theme="dark"] .wastage-chip { background: rgba(36,127,72,0.15); border-color: rgba(36,127,72,0.4); color: #6bbf85; }
+    .wastage-chip { display: flex; align-items: center; gap: 6px; padding: 5px 10px 5px 6px; border-radius: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 12px; font-weight: 600; color: #15803d; cursor: pointer; }
+    [data-theme="dark"] .wastage-chip { background: rgba(22,163,74,0.15); border-color: rgba(22,163,74,0.4); color: #4ade80; }
     .wastage-chip-img { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; background: var(--bg-secondary); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; }
     .wastage-chip-img img { width: 100%; height: 100%; object-fit: cover; }
-    .wastage-chip-qty { background: #1a5c33; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; margin-left: 2px; }
-    [data-theme="dark"] .wastage-chip-qty { background: #247F48; }
+    .wastage-chip-qty { background: #15803d; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; margin-left: 2px; }
+    [data-theme="dark"] .wastage-chip-qty { background: #16a34a; }
     .wastage-search { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 24px; border: 1px solid var(--border); background: var(--bg-secondary); flex-shrink: 0; }
     .wastage-search input { flex: 1; border: none; background: transparent; font-size: 14px; color: var(--text-primary); outline: none; font-family: var(--font); }
     .wastage-search input::placeholder { color: var(--text-tertiary); }
@@ -981,7 +980,7 @@
     .wastage-section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: -6px; }
     .wastage-item-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--bg-primary); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
     .wastage-item-row:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
-    .wastage-item-row.selected { border-color: #247F48; background: #D1FAE5; }
+    .wastage-item-row.selected { border-color: #16a34a; background: #f0fdf4; }
     [data-theme="dark"] .wastage-item-row.selected { background: rgba(22,163,74,0.12); border-color: rgba(22,163,74,0.5); }
     .wastage-item-img { width: 40px; height: 40px; border-radius: 10px; background: var(--bg-secondary); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
     .wastage-item-img img { width: 100%; height: 100%; object-fit: cover; }
@@ -992,13 +991,13 @@
     .wastage-qty-btn:hover { background: var(--bg-secondary); }
     .wastage-qty-num { font-size: 15px; font-weight: 700; color: var(--text-primary); min-width: 20px; text-align: center; }
     .wastage-item-cost { font-size: 12px; font-weight: 600; color: var(--red); white-space: nowrap; }
-    .wastage-item-check { width: 22px; height: 22px; border-radius: 50%; background: #247F48; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .wastage-item-check { width: 22px; height: 22px; border-radius: 50%; background: #16a34a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .wastage-item-check i { font-size: 13px; color: white; }
     .wastage-reasons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .wastage-reason-btn { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 8px; border-radius: var(--radius-md); border: 1.5px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
     .wastage-reason-btn:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
-    .wastage-reason-btn.active { border-color: #AE5109; background: #FEF3C7; color: #92400e; }
-    [data-theme="dark"] .wastage-reason-btn.active { background: rgba(174,81,9,0.12); border-color: rgba(174,81,9,0.5); color: #AE5109; }
+    .wastage-reason-btn.active { border-color: #d97706; background: #fffbeb; color: #92400e; }
+    [data-theme="dark"] .wastage-reason-btn.active { background: rgba(217,119,6,0.12); border-color: rgba(217,119,6,0.5); color: #d97706; }
     .wastage-note-input { width: 100%; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 13px; font-family: var(--font); outline: none; resize: none; transition: border-color 0.15s; }
     .wastage-note-input:focus { border-color: var(--blue); }
     .wastage-summary { border-top: 0.5px solid var(--border); padding-top: 12px; display: flex; flex-direction: column; gap: 6px; }
@@ -1046,10 +1045,10 @@
     .toast.show { opacity: 1; }
 
     /* SYNC QUEUE INDICATOR */
-    .sync-queue-indicator { position: fixed; top: 20px; right: 20px; display: none; align-items: center; gap: 7px; background: #FEF3C7; border: 1px solid #FEF3C7; color: #AE5109; padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; z-index: 998; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .sync-queue-indicator { position: fixed; top: 20px; right: 20px; display: none; align-items: center; gap: 7px; background: #fff7ed; border: 1px solid #fed7aa; color: #ea580c; padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; z-index: 998; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     [data-theme="dark"] .sync-queue-indicator { background: rgba(234,88,12,0.12); border-color: rgba(234,88,12,0.35); }
     .sync-queue-indicator i { font-size: 14px; }
-    .sync-queue-indicator .sync-queue-count { background: #AE5109; color: white; border-radius: 10px; padding: 1px 6px; font-size: 11px; }
+    .sync-queue-indicator .sync-queue-count { background: #ea580c; color: white; border-radius: 10px; padding: 1px 6px; font-size: 11px; }
 
     /* PAYMENTS DASHBOARD */
     /* ── Payments Dashboard ── */
@@ -1068,8 +1067,8 @@
     .pay-dash-sidebar-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 0 8px; margin-bottom: 4px; }
     .pay-dash-nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border: none; background: transparent; width: 100%; font-family: var(--font); transition: background 0.12s, color 0.12s; }
     .pay-dash-nav-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
-    .pay-dash-nav-item.active { background: #DBEAFE; color: #2563eb; font-weight: 600; }
-    [data-theme="dark"] .pay-dash-nav-item.active { background: rgba(29,78,223,0.12); color: #2563EB; }
+    .pay-dash-nav-item.active { background: #eff6ff; color: #2563eb; font-weight: 600; }
+    [data-theme="dark"] .pay-dash-nav-item.active { background: rgba(37,99,235,0.15); color: #60a5fa; }
     .pay-dash-nav-item i { font-size: 16px; flex-shrink: 0; }
     .pay-dash-sidebar-footer { margin-top: auto; padding: 12px 10px; border-top: 0.5px solid var(--border); }
     .pay-dash-close-btn { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border: none; background: transparent; width: 100%; font-family: var(--font); transition: background 0.12s, color 0.12s; }
@@ -1186,11 +1185,11 @@
     .pay-table-cell.green { color: var(--green); font-weight: 600; }
     .pay-table-empty { padding: 40px 20px; text-align: center; color: var(--text-tertiary); font-size: 13px; }
     .pay-method-badge { display: inline-flex; align-items: center; font-size: 11px; padding: 3px 9px; border-radius: 12px; font-weight: 600; }
-    .pay-method-badge.cash { background: #D1FAE5; color: #247F48; }
-    .pay-method-badge.card { background: #DBEAFE; color: #2563eb; }
+    .pay-method-badge.cash { background: #f0fdf4; color: #16a34a; }
+    .pay-method-badge.card { background: #eff6ff; color: #2563eb; }
     .pay-method-badge.mobile { background: #faf5ff; color: #7c3aed; }
-    [data-theme="dark"] .pay-method-badge.cash { background: rgba(36,127,72,0.15); }
-    [data-theme="dark"] .pay-method-badge.card { background: rgba(29,78,223,0.12); }
+    [data-theme="dark"] .pay-method-badge.cash { background: rgba(22,163,74,0.15); }
+    [data-theme="dark"] .pay-method-badge.card { background: rgba(37,99,235,0.15); }
     [data-theme="dark"] .pay-method-badge.mobile { background: rgba(124,58,237,0.15); }
 
     /* Method breakdown */
@@ -1396,7 +1395,7 @@
     .so-subhead-title { font-size:15px; font-weight:700; color:var(--text-primary); }
     .so-body { flex:1; overflow-y:auto; padding:0 20px 16px; }
     /* suggestions banner */
-    .so-sug { background:rgba(29,78,223,0.06); border:0.5px solid rgba(37,99,235,0.25); border-radius:var(--radius-lg); padding:14px 16px; margin-bottom:16px; }
+    .so-sug { background:rgba(37,99,235,0.06); border:0.5px solid rgba(37,99,235,0.25); border-radius:var(--radius-lg); padding:14px 16px; margin-bottom:16px; }
     .so-sug-head { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
     .so-sug-icon { width:26px; height:26px; border-radius:8px; background:var(--blue); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; }
     .so-sug-title { font-size:12px; font-weight:800; letter-spacing:0.04em; color:var(--blue); text-transform:uppercase; }
@@ -1415,8 +1414,8 @@
     .so-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:14px; }
     .so-card { border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; background:var(--bg-primary); }
     .so-card-tag { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:12px; margin-bottom:10px; }
-    .so-tag-coffee { background:#FEF3C7; color:#b45309; }
-    .so-tag-baking { background:#FEF3C7; color:#AE5109; }
+    .so-tag-coffee { background:#fef3c7; color:#b45309; }
+    .so-tag-baking { background:#ffedd5; color:#c2410c; }
     .so-tag-general { background:var(--bg-tertiary); color:var(--text-secondary); }
     .so-tag-default { background:var(--bg-tertiary); color:var(--text-secondary); }
     .so-card-name { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:3px; }
@@ -1456,7 +1455,7 @@
     .so-empty { text-align:center; padding:50px 20px; color:var(--text-tertiary); font-size:14px; }
     .so-empty i { font-size:34px; display:block; margin-bottom:12px; }
     /* routing bottom sheet */
-    .so-route-sheet { position:absolute; left:0; right:0; bottom:0; max-height:78%; background:#D1FAE5; border-top-left-radius:18px; border-top-right-radius:18px; box-shadow:0 -8px 30px rgba(0,0,0,0.18); transform:translateY(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; z-index:5; }
+    .so-route-sheet { position:absolute; left:0; right:0; bottom:0; max-height:78%; background:#ecfdf5; border-top-left-radius:18px; border-top-right-radius:18px; box-shadow:0 -8px 30px rgba(0,0,0,0.18); transform:translateY(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; z-index:5; }
     [data-theme="dark"] .so-route-sheet { background:#0f2e20; }
     .so-route-sheet.show { transform:translateY(0); }
     .so-route-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; flex-shrink:0; }
@@ -1473,7 +1472,7 @@
     .so-supp-line-qty { color:var(--green); font-weight:700; }
     .so-ai-btn { width:100%; margin-top:12px; padding:10px; border-radius:10px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--blue); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:7px; }
     .so-ai-btn:hover { border-color:var(--blue); }
-    .so-ai-out { margin-top:10px; font-size:12.5px; line-height:1.5; color:var(--text-secondary); background:rgba(29,78,223,0.06); border-radius:10px; padding:10px 12px; }
+    .so-ai-out { margin-top:10px; font-size:12.5px; line-height:1.5; color:var(--text-secondary); background:rgba(37,99,235,0.06); border-radius:10px; padding:10px 12px; }
     .so-send-btn { width:100%; margin-top:10px; padding:12px; border-radius:10px; border:none; background:var(--green); color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; }
     .so-send-btn:hover { opacity:0.94; }
     .so-send-btn.sent { background:var(--bg-tertiary); color:var(--text-tertiary); pointer-events:none; }
@@ -1513,7 +1512,7 @@
     .confirm-box { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:16px; padding:24px 24px 20px; width:370px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,0.3); transform:scale(0.94); transition:transform 0.15s; text-align:center; }
     .confirm-overlay.show .confirm-box { transform:scale(1); }
     .confirm-icon { width:50px; height:50px; border-radius:50%; background:var(--bg-tertiary); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 14px; }
-    .confirm-icon.danger { background:#FEF0F0; color:#dc2626; }
+    .confirm-icon.danger { background:#fef2f2; color:#dc2626; }
     [data-theme="dark"] .confirm-icon.danger { background:rgba(220,38,38,0.14); }
     .confirm-title { font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
     .confirm-msg { font-size:13.5px; color:var(--text-secondary); line-height:1.5; white-space:pre-line; margin-bottom:20px; }
@@ -1570,9 +1569,9 @@
     .bo-ord-sub { font-size:12px; color:var(--text-tertiary); margin-top:3px; }
     .bo-ord-mid { flex:1; min-width:0; }
     .bo-ord-badge { font-size:11px; font-weight:700; padding:4px 10px; border-radius:12px; white-space:nowrap; }
-    .bo-ord-badge.placed { background:#FEF3C7; color:#b45309; }
-    .bo-ord-badge.sent { background:#D1FAE5; color:#247F48; }
-    .bo-ord-badge.partial { background:#DBEAFE; color:#1D4EDF; }
+    .bo-ord-badge.placed { background:#fef3c7; color:#b45309; }
+    .bo-ord-badge.sent { background:#d1fae5; color:#047857; }
+    .bo-ord-badge.partial { background:#dbeafe; color:#1d4ed8; }
     .bo-ord-del { width:32px; height:32px; border-radius:8px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--text-tertiary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:var(--font); }
     .bo-ord-del:hover { color:var(--red); border-color:var(--red); }
     .bo-ord-detail { border-top:0.5px solid var(--border); padding:16px 18px; background:var(--bg-secondary); display:flex; flex-direction:column; gap:12px; }
@@ -1601,14 +1600,14 @@
     .checklist-close:hover { background: var(--bg-tertiary); color: var(--text-primary); }
     .checklist-progress-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 12px; color: var(--text-tertiary); font-weight: 500; }
     .checklist-progress-bar { height: 5px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden; }
-    .checklist-progress-fill { height: 100%; background: #247F48; border-radius: 3px; transition: width 0.4s ease; }
+    .checklist-progress-fill { height: 100%; background: #16a34a; border-radius: 3px; transition: width 0.4s ease; }
     .checklist-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
     .checklist-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-primary); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
-    .checklist-item:hover { border-color: #247F48; background: var(--bg-secondary); }
-    .checklist-item.done { background: #D1FAE5; border-color: #a7d8b8; }
+    .checklist-item:hover { border-color: #16a34a; background: var(--bg-secondary); }
+    .checklist-item.done { background: #f0fdf4; border-color: #bbf7d0; }
     [data-theme="dark"] .checklist-item.done { background: rgba(22,163,74,0.08); border-color: rgba(22,163,74,0.3); }
     .checklist-radio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: all 0.15s; }
-    .checklist-item.done .checklist-radio { background: #247F48; border-color: #247F48; }
+    .checklist-item.done .checklist-radio { background: #16a34a; border-color: #16a34a; }
     .checklist-radio i { font-size: 12px; color: white; display: none; }
     .checklist-item.done .checklist-radio i { display: block; }
     .checklist-item-content { flex: 1; min-width: 0; }
@@ -1616,14 +1615,14 @@
     .checklist-item.done .checklist-item-title { color: var(--text-secondary); text-decoration: line-through; }
     .checklist-item-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 5px; }
     .checklist-item-path { font-size: 11px; color: #2563eb; font-weight: 500; }
-    [data-theme="dark"] .checklist-item-path { color: #2563EB; }
+    [data-theme="dark"] .checklist-item-path { color: #60a5fa; }
     .checklist-footer { padding: 14px 16px; border-top: 0.5px solid var(--border); display: flex; gap: 10px; flex-shrink: 0; }
     .checklist-skip-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
     .checklist-skip-btn:hover { opacity: 0.7; }
-    .checklist-action-btn { flex: 2; padding: 12px; border-radius: 10px; border: none; background: #247F48; color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+    .checklist-action-btn { flex: 2; padding: 12px; border-radius: 10px; border: none; background: #16a34a; color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
     .checklist-action-btn:hover { opacity: 0.88; }
     /* Sidebar checklist button badge */
-    .lsb-checklist-badge { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: #AE5109; border: 1.5px solid var(--bg-primary); }
+    .lsb-checklist-badge { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; border: 1.5px solid var(--bg-primary); }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1700,7 +1699,7 @@
       </button>
       <button class="action-btn" id="discountBtn" onclick="openDiscount()" style="position:relative;">
         <i class="ti ti-tag"></i><span>Discount</span>
-        <span class="recall-badge" id="discountBadge" style="display:none;background:#C81E1E;">✓</span>
+        <span class="recall-badge" id="discountBadge" style="display:none;background:#e11d48;">✓</span>
       </button>
       <button class="action-btn" onclick="openReports()"><i class="ti ti-chart-bar"></i><span>Reports</span></button>
       <button class="action-btn" onclick="openMembers()"><i class="ti ti-users"></i><span>Members</span></button>
@@ -1828,18 +1827,18 @@
           <i class="ti ti-credit-card"></i>
           <div><div class="cardtype-card-label">NETS</div><div class="cardtype-card-sub">Debit card</div></div>
         </button>
-        <button class="cardtype-card" style="background:#1D4EDF;" onclick="selectCardType('NETS FlashPay')">
+        <button class="cardtype-card" style="background:#1e3a8a;" onclick="selectCardType('NETS FlashPay')">
           <i class="ti ti-credit-card"></i>
           <div><div class="cardtype-card-label">NETS FlashPay</div><div class="cardtype-card-sub">Contactless</div></div>
         </button>
       </div>
       <div class="cardtype-section-label">Credit / Prepaid Card</div>
       <div class="cardtype-grid">
-        <button class="cardtype-card" style="background:#2563EB;" onclick="selectCardType('Visa')">
+        <button class="cardtype-card" style="background:#3b82f6;" onclick="selectCardType('Visa')">
           <i class="ti ti-credit-card"></i>
           <div><div class="cardtype-card-label">Visa</div><div class="cardtype-card-sub">Credit card</div></div>
         </button>
-        <button class="cardtype-card" style="background:#AE5109;" onclick="selectCardType('Mastercard')">
+        <button class="cardtype-card" style="background:#ea580c;" onclick="selectCardType('Mastercard')">
           <i class="ti ti-credit-card"></i>
           <div><div class="cardtype-card-label">Mastercard</div><div class="cardtype-card-sub">Credit card</div></div>
         </button>
@@ -1851,7 +1850,7 @@
           <i class="ti ti-credit-card"></i>
           <div><div class="cardtype-card-label">UnionPay</div><div class="cardtype-card-sub">Credit / debit</div></div>
         </button>
-        <button class="cardtype-card" style="background:#247F48;" onclick="selectCardType('JCB')">
+        <button class="cardtype-card" style="background:#16a34a;" onclick="selectCardType('JCB')">
           <i class="ti ti-credit-card"></i>
           <div><div class="cardtype-card-label">JCB</div><div class="cardtype-card-sub">Credit card</div></div>
         </button>
@@ -2198,7 +2197,7 @@
       actionBtn.style.background = '#7c3aed';
     } else {
       actionBtn.textContent = checklistFocusedAction === 'reports' ? 'Open Reports' : 'Open Admin Panel';
-      actionBtn.style.background = '#247F48';
+      actionBtn.style.background = '#16a34a';
     }
 
     document.getElementById('checklistBody').innerHTML = CHECKLIST_ITEMS.map(function(item) {
@@ -5588,7 +5587,7 @@
   async function fetchPendingOrders() {
     if (!db) return null;
     try {
-      const { data, error } = await db.from('customer_orders').select('*').in('status', ['pending','preparing']).order('created_at', { ascending: false });
+      const { data, error } = await db.from('customer_orders').select('*').eq('status', 'pending').order('created_at', { ascending: false });
       if (error) { console.warn('customer_orders load:', error.message); return null; }
       return data || [];
     } catch (e) { return null; }
@@ -5618,20 +5617,14 @@
       return;
     }
     onlineOrders = list;
-    updateOoBadge(list.filter(x => x.status === 'pending').length);
+    updateOoBadge(list.length);
     renderOnlineOrders();
   }
 
   function renderOnlineOrders() {
     const body = document.getElementById('ooBody');
-    const nPending = onlineOrders.filter(x => x.status === 'pending').length;
-    const nPreparing = onlineOrders.filter(x => x.status === 'preparing').length;
     const n = onlineOrders.length;
-    let subText = 'All caught up';
-    if (nPending > 0 && nPreparing > 0) subText = nPending + ' pending · ' + nPreparing + ' preparing';
-    else if (nPending > 0) subText = nPending + (nPending === 1 ? ' order' : ' orders') + ' awaiting action';
-    else if (nPreparing > 0) subText = nPreparing + (nPreparing === 1 ? ' order' : ' orders') + ' being prepared';
-    document.getElementById('ooSub').textContent = subText;
+    document.getElementById('ooSub').textContent = n === 0 ? 'All caught up' : (n + (n === 1 ? ' order' : ' orders') + ' awaiting action');
     if (n === 0) { body.innerHTML = '<div class="oo-empty"><i class="ti ti-checks"></i>No new orders right now.</div>'; return; }
     body.innerHTML = onlineOrders.map(o => {
       const num = o.order_number || ('#' + (1000 + o.id));
@@ -5644,19 +5637,15 @@
       }).join('');
       return `<div class="oo-order">
         <div class="oo-order-top">
-          <div><span class="oo-num">${escapeHtml(num)}</span><span class="oo-online-badge"><i class="ti ti-world"></i> Online</span>${o.status === 'preparing' ? '<span class="oo-preparing-badge"><i class="ti ti-clock"></i> Preparing</span>' : ''}</div>
+          <div><span class="oo-num">${escapeHtml(num)}</span><span class="oo-online-badge"><i class="ti ti-world"></i> Online</span></div>
           <div class="oo-total">$${Number(o.total || 0).toFixed(2)}</div>
         </div>
         <div class="oo-order-cust"><span class="oo-name">${escapeHtml(o.customer_name || 'Guest')}</span><span class="oo-time"><i class="ti ti-clock"></i> ${ooTimeAgo(o.created_at)}</span></div>
         <div class="oo-items">${items}</div>
         ${o.special_instructions ? `<div class="oo-note"><b>Note:</b> ${escapeHtml(o.special_instructions)}</div>` : ''}
         <div class="oo-actions">
-          ${o.status === 'preparing'
-            ? `<button class="oo-reject" disabled style="opacity:0.35;cursor:default;"><i class="ti ti-circle-x"></i> Reject</button>
-               <button class="oo-accept" onclick="decideOrder(${o.id}, 'completed')"><i class="ti ti-checks"></i> Complete</button>`
-            : `<button class="oo-reject" onclick="decideOrder(${o.id}, 'rejected')"><i class="ti ti-circle-x"></i> Reject</button>
-               <button class="oo-accept" onclick="decideOrder(${o.id}, 'accepted')"><i class="ti ti-circle-check"></i> Accept</button>`
-          }
+          <button class="oo-reject" onclick="decideOrder(${o.id}, 'rejected')"><i class="ti ti-circle-x"></i> Reject</button>
+          <button class="oo-accept" onclick="decideOrder(${o.id}, 'accepted')"><i class="ti ti-circle-check"></i> Accept</button>
         </div>
       </div>`;
     }).join('');
@@ -5665,26 +5654,15 @@
   async function decideOrder(id, status) {
     if (!db) return;
     const o = onlineOrders.find(x => String(x.id) === String(id));
-    // 'accepted' → move to 'preparing'; 'completed' → log sale; 'rejected' → remove
-    const dbStatus = status === 'accepted' ? 'preparing' : status;
     try {
-      const { error } = await db.from('customer_orders').update({ status: dbStatus }).eq('id', id);
+      const { error } = await db.from('customer_orders').update({ status }).eq('id', id);
       if (error) { showToast('Failed: ' + (error.message || 'error')); return; }
     } catch (e) { showToast('Failed to update order'); return; }
-    if (status === 'completed' && o) {
-      recordOnlineOrderAsSale(o);
-      onlineOrders = onlineOrders.filter(x => String(x.id) !== String(id));
-      showToast('Order completed — added to sales ✓');
-    } else if (status === 'accepted' && o) {
-      // Update in-memory status to preparing so the card re-renders with Complete button
-      o.status = 'preparing';
-      showToast('Order accepted — now preparing');
-    } else if (status === 'rejected') {
-      onlineOrders = onlineOrders.filter(x => String(x.id) !== String(id));
-      showToast('Order rejected');
-    }
-    updateOoBadge(onlineOrders.filter(x => x.status === 'pending').length);
+    if (status === 'accepted' && o) recordOnlineOrderAsSale(o);
+    onlineOrders = onlineOrders.filter(x => String(x.id) !== String(id));
+    updateOoBadge(onlineOrders.length);
     renderOnlineOrders();
+    showToast(status === 'accepted' ? 'Order accepted — added to sales ✓' : 'Order rejected');
   }
 
   // Map customer payment choice to the POS method buckets (Cash / Card / Mobile).
@@ -5982,7 +5960,7 @@
     if (activeDiscount && sub > 0) {
       if (activeDiscount.type === 'percent') discountAmt = sub * activeDiscount.value / 100;
       else if (activeDiscount.type === 'fixed') discountAmt = Math.min(activeDiscount.value, sub);
-      discountRow = `<tr style="color:#247F48;"><td>Discount (${activeDiscount.label})</td><td>-$${discountAmt.toFixed(2)}</td></tr>`;
+      discountRow = `<tr style="color:#16a34a;"><td>Discount (${activeDiscount.label})</td><td>-$${discountAmt.toFixed(2)}</td></tr>`;
     }
     const discounted = Math.max(0, sub - discountAmt);
     const tax = discounted * 0.09;
@@ -6623,7 +6601,7 @@
     const timeStr = d.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
 
     document.getElementById('receiptModalTitle').textContent = tx.voided ? 'Voided Receipt' : 'Receipt';
-    document.getElementById('receiptIcon').style.background = tx.voided ? '#6B7280' : '#111';
+    document.getElementById('receiptIcon').style.background = tx.voided ? '#9ca3af' : '#111';
     document.getElementById('receiptRef').textContent = tx.ref;
 
     const itemRows = (tx.items || []).map(item => {
@@ -6644,10 +6622,10 @@
       </tr>${optsLine}`;
     }).join('');
 
-    const discountRow = tx.discount > 0 ? `<tr style="color:#247F48;"><td>Discount</td><td>-$${tx.discount.toFixed(2)}</td></tr>` : '';
+    const discountRow = tx.discount > 0 ? `<tr style="color:#16a34a;"><td>Discount</td><td>-$${tx.discount.toFixed(2)}</td></tr>` : '';
     const customerRow = tx.customer ? `<tr><td>Customer</td><td>${tx.customer}</td></tr>` : '';
     const statusRow = tx.voided ? `<div style="text-align:center;margin:8px 0 14px;"><span style="display:inline-block;background:var(--bg-tertiary);color:var(--text-tertiary);font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">VOIDED</span></div>`
-      : tx.refunded ? `<div style="text-align:center;margin:8px 0 14px;"><span style="display:inline-block;background:#FEF3C7;border:1px solid #FEF3C7;color:#AE5109;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUNDED</span></div>` : '';
+      : tx.refunded ? `<div style="text-align:center;margin:8px 0 14px;"><span style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#ea580c;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUNDED</span></div>` : '';
 
     const tagline = businessInfoCache?.tagline ? `<div class="receipt-shop-sub">${businessInfoCache.tagline}</div>` : '';
     const address = businessInfoCache?.address ? `<div class="receipt-shop-sub">${businessInfoCache.address}</div>` : '';
@@ -7048,7 +7026,7 @@
   function fieldKbToggleShift() {
     fieldKbShift = !fieldKbShift;
     document.getElementById('fieldKbShift').classList.toggle('active', fieldKbShift);
-    document.getElementById('fieldKbShift').style.background = fieldKbShift ? 'var(--blue)' : '#6B7280';
+    document.getElementById('fieldKbShift').style.background = fieldKbShift ? 'var(--blue)' : '#374151';
   }
 
   function openFieldKb(inputId, mode, label) {
@@ -7060,7 +7038,7 @@
     document.getElementById('fieldKbLabel').textContent = label;
     document.getElementById('fieldKbVal').value = fieldKbBuffer;
     const shiftBtn = document.getElementById('fieldKbShift');
-    shiftBtn.style.background = '#6B7280';
+    shiftBtn.style.background = '#374151';
     document.getElementById('fieldKbSheet').classList.add('show');
   }
 
@@ -8049,7 +8027,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const total = txs.reduce((a,t) => a + t.total, 0);
 
     const methods = [
-      { key: 'Cash',   label: 'Cash',   color: '#247F48' },
+      { key: 'Cash',   label: 'Cash',   color: '#16a34a' },
       { key: 'Card',   label: 'Card',   color: '#2563eb' },
       { key: 'Mobile', label: 'Mobile', color: '#7c3aed' },
     ];
@@ -8860,10 +8838,10 @@ function renderBoMonth() {
     }
     cal += '</div>';
     cal += `<div class="rpt-cal-legend">
-      <div class="rpt-cal-dot" style="background:#D1FAE5;border:1px solid #6bbf85;"></div> Low
-      <div class="rpt-cal-dot" style="background:#6bbf85;"></div>
-      <div class="rpt-cal-dot" style="background:#247F48;"></div>
-      <div class="rpt-cal-dot" style="background:#174029;"></div> High
+      <div class="rpt-cal-dot" style="background:#d1fae5;border:1px solid #6ee7b7;"></div> Low
+      <div class="rpt-cal-dot" style="background:#6ee7b7;"></div>
+      <div class="rpt-cal-dot" style="background:#16a34a;"></div>
+      <div class="rpt-cal-dot" style="background:#065f46;"></div> High
     </div>`;
     document.getElementById('boCalendar').innerHTML = cal;
   }
@@ -9080,10 +9058,10 @@ function exportBoMonthToExcel() {
     }
     cal += '</div>';
     cal += `<div class="rpt-cal-legend">
-      <div class="rpt-cal-dot" style="background:#D1FAE5;border:1px solid #6bbf85;"></div> Low
-      <div class="rpt-cal-dot" style="background:#6bbf85;"></div>
-      <div class="rpt-cal-dot" style="background:#247F48;"></div>
-      <div class="rpt-cal-dot" style="background:#174029;"></div> High
+      <div class="rpt-cal-dot" style="background:#d1fae5;border:1px solid #6ee7b7;"></div> Low
+      <div class="rpt-cal-dot" style="background:#6ee7b7;"></div>
+      <div class="rpt-cal-dot" style="background:#16a34a;"></div>
+      <div class="rpt-cal-dot" style="background:#065f46;"></div> High
     </div>`;
     document.getElementById('rptCalendar').innerHTML = cal;
   }
@@ -9174,7 +9152,7 @@ function exportBoMonthToExcel() {
           <div class="rpt-wastage-log-meta">${e.reason} · ${e.staffName || 'Unknown'} · ${timeStr}</div>
         </div>
         <div class="rpt-wastage-log-qty">−${e.qty} units</div>
-        <button onclick="deleteWastageEntry('${e.id}')" style="margin-left:10px;background:none;border:none;cursor:pointer;color:var(--text-tertiary);font-size:16px;display:flex;align-items:center;padding:4px;border-radius:6px;transition:color 0.15s,background 0.15s;" onmouseover="this.style.color='var(--red)';this.style.background='#FEF0F0';" onmouseout="this.style.color='var(--text-tertiary)';this.style.background='none';"><i class="ti ti-trash"></i></button>`;
+        <button onclick="deleteWastageEntry('${e.id}')" style="margin-left:10px;background:none;border:none;cursor:pointer;color:var(--text-tertiary);font-size:16px;display:flex;align-items:center;padding:4px;border-radius:6px;transition:color 0.15s,background 0.15s;" onmouseover="this.style.color='var(--red)';this.style.background='#fef2f2';" onmouseout="this.style.color='var(--text-tertiary)';this.style.background='none';"><i class="ti ti-trash"></i></button>`;
       logContainer.appendChild(el);
     });
   }
@@ -9527,15 +9505,21 @@ function exportBoMonthToExcel() {
     const search = (document.getElementById('ordersSearch').value || '').toLowerCase();
     const cutoffs = { '1h': 60, '2h': 120, '3h': 180 };
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const sevenDaysAgo = now.getTime() - (7 * 24 * 60 * 60 * 1000);
+    const oneDayMs = 24 * 60 * 60 * 1000;
 
     let entries = salesLog.filter(t => {
       const tTime = t.date instanceof Date ? t.date.getTime() : new Date(t.date).getTime();
+      // When searching by order #, show all DB records regardless of date
+      if (search) {
+        return t.ref.toLowerCase().includes(search);
+      }
+      // Default view: today only
       if (tTime < todayStart) return false;
       if (ordersFilter !== 'all') {
         const mins = (now - tTime) / 60000;
         if (mins > cutoffs[ordersFilter]) return false;
       }
-      if (search && !t.ref.toLowerCase().includes(search)) return false;
       return true;
     }).slice().reverse();
 
@@ -9558,7 +9542,7 @@ function exportBoMonthToExcel() {
       const badge = isVoided
         ? '<span class="rpt-order-voided-badge">VOIDED</span>'
         : isRefunded
-          ? '<span class="rpt-order-voided-badge" style="background:#FEF3C7;border-color:#FEF3C7;color:#AE5109;">REFUNDED</span>'
+          ? '<span class="rpt-order-voided-badge" style="background:#fff7ed;border-color:#fed7aa;color:#ea580c;">REFUNDED</span>'
           : '';
       const totalClass = 'rpt-order-total';
       const totalPrefix = '';
@@ -9583,7 +9567,7 @@ function exportBoMonthToExcel() {
           ${isVoided
             ? '<span class="rpt-order-voided-label">Order voided</span>'
             : isRefunded
-              ? '<span class="rpt-order-voided-label" style="color:#AE5109;">Order refunded</span>'
+              ? '<span class="rpt-order-voided-label" style="color:#ea580c;">Order refunded</span>'
               : `<div style="display:flex;gap:8px;align-items:center;margin-left:auto;">
                   <div class="rpt-void-confirm" id="voidConfirm_${shortRef}" style="display:none;align-items:center;gap:8px;">
                     <span style="font-size:12px;color:var(--text-secondary);">Void this order?</span>
@@ -9592,10 +9576,21 @@ function exportBoMonthToExcel() {
                   </div>
                   <div class="rpt-refund-confirm" id="refundConfirm_${shortRef}" style="display:none;align-items:center;gap:8px;">
                     <span style="font-size:12px;color:var(--text-secondary);">Issue refund for $${t.total.toFixed(2)}?</span>
-                    <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:#AE5109;color:white;cursor:pointer;" onclick="refundOrder('${shortRef}')">Yes, Refund</button>
+                    <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:#ea580c;color:white;cursor:pointer;" onclick="refundOrder('${shortRef}')">Yes, Refund</button>
                     <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;" onclick="cancelRefund('${shortRef}')">Cancel</button>
                   </div>
-                  <button class="rpt-order-refund-btn" id="refundBtn_${shortRef}" onclick="showRefundConfirm('${shortRef}')">Refund</button>
+                  ${(() => {
+                    const ageMs = now - d.getTime();
+                    const within7Days = ageMs <= sevenDaysAgo ? false : true;
+                    const olderThan24h = ageMs >= oneDayMs;
+                    if (!within7Days) {
+                      return '<span class="rpt-order-voided-label" style="color:var(--text-tertiary);font-style:italic;">View only — outside refund window</span>';
+                    }
+                    if (!olderThan24h) {
+                      return '<span class="rpt-order-voided-label" style="color:var(--text-tertiary);font-style:italic;">Refund available after 24h</span>';
+                    }
+                    return '<button class="rpt-order-refund-btn" id="refundBtn_${shortRef}" onclick="showRefundConfirm(\'' + shortRef + '\')">Refund</button>';
+                  })()}
                   <button class="rpt-order-void-btn" id="voidBtn_${shortRef}" onclick="showVoidConfirm('${shortRef}')">Void</button>
                 </div>`
           }
@@ -9681,11 +9676,11 @@ function exportBoMonthToExcel() {
     const timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
 
     document.getElementById('receiptModalTitle').textContent = 'Refund Receipt';
-    document.getElementById('receiptIcon').style.background = '#AE5109';
+    document.getElementById('receiptIcon').style.background = '#ea580c';
     document.getElementById('receiptRef').textContent = tx.ref;
 
     const itemRows = tx.items.map(item => `
-      <tr style="color:#AE5109;">
+      <tr style="color:#ea580c;">
         <td><span class="item-qty-label">${item.qty}×</span> ${item.name}</td>
         <td>-$${(item.price * item.qty).toFixed(2)}</td>
       </tr>`).join('');
@@ -9708,7 +9703,7 @@ function exportBoMonthToExcel() {
       <div class="receipt-shop-sub${refundAddress ? ' tight' : ''}">${currentOutletName}</div>
       ${refundAddress}
       <div style="text-align:center;margin:8px 0 14px;">
-        <span style="display:inline-block;background:#FEF3C7;border:1px solid #FEF3C7;color:#AE5109;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUND</span>
+        <span style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#ea580c;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUND</span>
       </div>
       <table class="receipt-meta">
         <tr><td>Date</td><td>${dateStr}</td></tr>
@@ -9721,13 +9716,13 @@ function exportBoMonthToExcel() {
       <table class="receipt-items">${itemRows}</table>
       <hr class="receipt-divider"/>
       <table class="receipt-totals">
-        <tr><td>Subtotal</td><td style="color:#AE5109;">-$${Math.abs(tx.gross).toFixed(2)}</td></tr>
+        <tr><td>Subtotal</td><td style="color:#ea580c;">-$${Math.abs(tx.gross).toFixed(2)}</td></tr>
         ${discountRow}
-        <tr><td>Tax (9%)</td><td style="color:#AE5109;">-$${Math.abs(tx.tax).toFixed(2)}</td></tr>
-        <tr class="receipt-total-final"><td>REFUND TOTAL</td><td style="color:#AE5109;">-$${tx.total.toFixed(2)}</td></tr>
+        <tr><td>Tax (9%)</td><td style="color:#ea580c;">-$${Math.abs(tx.tax).toFixed(2)}</td></tr>
+        <tr class="receipt-total-final"><td>REFUND TOTAL</td><td style="color:#ea580c;">-$${tx.total.toFixed(2)}</td></tr>
         ${refundPhoneGstRow}
       </table>
-      <div class="receipt-paid" style="color:#AE5109;">Refunded via ${tx.method}</div>
+      <div class="receipt-paid" style="color:#ea580c;">Refunded via ${tx.method}</div>
       <hr class="receipt-divider"/>
       <div class="receipt-thank">We're sorry for the inconvenience.</div>`;
 
@@ -9794,7 +9789,7 @@ function exportBoMonthToExcel() {
   .edit-outlet-list { display: flex; flex-direction: column; gap: 8px; }
   .edit-outlet-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
   .edit-outlet-item:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
-  .edit-outlet-item.checked { border-color: var(--green); background: #D1FAE5; }
+  .edit-outlet-item.checked { border-color: var(--green); background: #f0fdf4; }
   [data-theme="dark"] .edit-outlet-item.checked { background: rgba(22,163,74,0.1); }
   .edit-outlet-check { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
   .edit-outlet-item.checked .edit-outlet-check { background: var(--green); border-color: var(--green); }
@@ -9964,25 +9959,25 @@ function exportBoMonthToExcel() {
       <!-- Voucher -->
       <div id="discPaneVoucher" style="display:none;">
         <div class="disc-voucher-grid">
-          <div class="disc-voucher-card" style="background:#DBEAFE;" onclick="selectVoucherCard('Mall Voucher ($10 off)','fixed',10,this)">
+          <div class="disc-voucher-card" style="background:#eff6ff;" onclick="selectVoucherCard('Mall Voucher ($10 off)','fixed',10,this)">
             <span class="disc-voucher-icon" style="color:#2563eb;">🏬</span>
             <div><div class="disc-voucher-name" style="color:#2563eb;">Mall Voucher</div><div class="disc-voucher-val" style="color:#2563eb;">$10 off</div></div>
           </div>
-          <div class="disc-voucher-card" style="background:#DBEAFE;" onclick="selectVoucherCard('Mall Voucher ($5 off)','fixed',5,this)">
+          <div class="disc-voucher-card" style="background:#eff6ff;" onclick="selectVoucherCard('Mall Voucher ($5 off)','fixed',5,this)">
             <span class="disc-voucher-icon" style="color:#2563eb;">🏬</span>
             <div><div class="disc-voucher-name" style="color:#2563eb;">Mall Voucher</div><div class="disc-voucher-val" style="color:#2563eb;">$5 off</div></div>
           </div>
-          <div class="disc-voucher-card" style="background:#FEF3C7;" onclick="selectVoucherCard('Lucky Draw ($10 off)','fixed',10,this)">
-            <span class="disc-voucher-icon" style="color:#AE5109;">⭐</span>
-            <div><div class="disc-voucher-name" style="color:#AE5109;">Lucky Draw</div><div class="disc-voucher-val" style="color:#AE5109;">$10 off</div></div>
+          <div class="disc-voucher-card" style="background:#fefce8;" onclick="selectVoucherCard('Lucky Draw ($10 off)','fixed',10,this)">
+            <span class="disc-voucher-icon" style="color:#d97706;">⭐</span>
+            <div><div class="disc-voucher-name" style="color:#d97706;">Lucky Draw</div><div class="disc-voucher-val" style="color:#d97706;">$10 off</div></div>
           </div>
           <div class="disc-voucher-card" style="background:#fdf2f8;" onclick="selectVoucherCard('Senior Citizen ($5 off)','fixed',5,this)">
-            <span class="disc-voucher-icon" style="color:#C81E1E;">❤️</span>
-            <div><div class="disc-voucher-name" style="color:#C81E1E;">Senior Citizen</div><div class="disc-voucher-val" style="color:#C81E1E;">$5 off</div></div>
+            <span class="disc-voucher-icon" style="color:#db2777;">❤️</span>
+            <div><div class="disc-voucher-name" style="color:#db2777;">Senior Citizen</div><div class="disc-voucher-val" style="color:#db2777;">$5 off</div></div>
           </div>
-          <div class="disc-voucher-card" style="background:#D1FAE5;" onclick="selectVoucherCard('Student Voucher ($5 off)','fixed',5,this)">
-            <span class="disc-voucher-icon" style="color:#247F48;">🎓</span>
-            <div><div class="disc-voucher-name" style="color:#247F48;">Student Voucher</div><div class="disc-voucher-val" style="color:#247F48;">$5 off</div></div>
+          <div class="disc-voucher-card" style="background:#f0fdf4;" onclick="selectVoucherCard('Student Voucher ($5 off)','fixed',5,this)">
+            <span class="disc-voucher-icon" style="color:#16a34a;">🎓</span>
+            <div><div class="disc-voucher-name" style="color:#16a34a;">Student Voucher</div><div class="disc-voucher-val" style="color:#16a34a;">$5 off</div></div>
           </div>
           <div class="disc-voucher-card" style="background:#faf5ff;" onclick="selectVoucherCard('Promo Voucher ($15 off)','fixed',15,this)">
             <span class="disc-voucher-icon" style="color:#7c3aed;">🎟️</span>
