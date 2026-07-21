@@ -3754,6 +3754,7 @@
     else if (/^\d+$/.test(String(currentOutletId))) outletId = parseInt(currentOutletId, 10);
 
     if (db && !sandboxMode) {
+      const { data, error } = await db.from('orders').insert({
         order_number: soOrderNumber, status: 'placed', outlet_id: outletId,
         item_count: soOrderLines.length, items: itemsJson, routing: routingJson
       }).select().single();
