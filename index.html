@@ -3780,7 +3780,7 @@
         <div class="so-item-emoji">${soEmoji()}</div>
         <div class="so-item-main">
           <div class="so-item-name">${escapeHtml(l.ing.name)}</div>
-          <div class="so-item-meta">${soFmtQty(l.qty)} \u00B7 <b>${soPack(l.qty)}</b></div>
+          <div class="so-item-meta">${soFmtQty(l.qty)} <b>${escapeHtml(l.ing.unit || '')}</b></div>
         </div>
         <div class="so-item-actions">
           <button class="so-item-btn" onclick="soEditLine(${idx})"><i class="ti ti-pencil"></i></button>
@@ -3961,7 +3961,7 @@
     const phone = String(g.supplier.phone || '').replace(/[^\d]/g, '');
     const contact = g.supplier.contact_person || g.supplier.name;
     let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
-    g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty) + ' (' + soPack(l.qty) + ')\n'; });
+    g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty) + (l.ing.unit ? ' ' + l.ing.unit : '') + '\n'; });
     msg += '\nOrder ref: ' + soOrderNumber + '\nThank you';
     openWaChat({
       name: g.supplier.name, phone: phone, message: msg,
