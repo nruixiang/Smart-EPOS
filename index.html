@@ -5651,7 +5651,8 @@
         ${o.special_instructions ? `<div class="oo-note"><b>Note:</b> ${escapeHtml(o.special_instructions)}</div>` : ''}
         <div class="oo-actions">
           ${o.status === 'preparing'
-            ? `<button class="oo-complete" onclick="decideOrder(${o.id}, 'completed')"><i class="ti ti-checks"></i> Complete</button>`
+            ? `<button class="oo-reject" disabled style="opacity:0.35;cursor:default;"><i class="ti ti-circle-x"></i> Reject</button>
+               <button class="oo-accept" onclick="decideOrder(${o.id}, 'completed')"><i class="ti ti-checks"></i> Complete</button>`
             : `<button class="oo-reject" onclick="decideOrder(${o.id}, 'rejected')"><i class="ti ti-circle-x"></i> Reject</button>
                <button class="oo-accept" onclick="decideOrder(${o.id}, 'accepted')"><i class="ti ti-circle-check"></i> Accept</button>`
           }
