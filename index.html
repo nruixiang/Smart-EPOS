@@ -4036,7 +4036,7 @@
   function renderSoItemReceiptLine(orderId, groupIdx, itemIdx, it) {
     const isOk = it.receipt === 'ok';
     const isIssues = it.receipt === 'issues';
-    const qty = escapeHtml(String(it.pack != null ? it.pack : it.qty));
+    const qty = escapeHtml(String(it.pack != null ? it.pack : it.qty) + (it.unit ? ' ' + it.unit : ''));
     const note = isIssues && it.issue_note ? `<div class="item-receipt-note"><i class="ti ti-alert-circle"></i> ${escapeHtml(it.issue_note)}</div>` : '';
     return `<div class="so-supp-line">
         <span style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
