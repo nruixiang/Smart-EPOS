@@ -9542,6 +9542,10 @@ function exportBoMonthToExcel() {
       const shortRef = t.ref.replace('#','');
       const isVoided = t.voided === true;
       const isRefunded = t.refunded === true;
+      const txDateKey = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+      const todayKey2 = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
+      const isToday = txDateKey === todayKey2;
+      const within7Days = d.getTime() >= sevenDaysAgo;
 
       const cardClass = isVoided ? ' voided' : isRefunded ? ' refunded-original' : '';
       const badge = isVoided
@@ -9584,16 +9588,7 @@ function exportBoMonthToExcel() {
                     <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:#ea580c;color:white;cursor:pointer;" onclick="refundOrder('${shortRef}')">Yes, Refund</button>
                     <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;" onclick="cancelRefund('${shortRef}')">Cancel</button>
                   </div>
-                  ${(() => {
-                    const txDateKey = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
-                    const todayKey2 = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
-                    const isToday = txDateKey === todayKey2;
-                    const within7Days = d.getTime() >= sevenDaysAgo;
-                    if (!isToday && within7Days) {
-                      return '<button class="rpt-order-refund-btn" id="refundBtn_' + shortRef + '" onclick="showRefundConfirm(\'' + shortRef + '\')">Refund</button>';
-                    }
-                    return '';
-                  })()}
+                  ${(!isToday && within7Days) ? '<button class="rpt-order-refund-btn" id="refundBtn_' + shortRef + '" onclick="showRefundConfirm(\'' + shortRef + '\')">Refund</button>' : ''}
                   ${isToday ? '<button class="rpt-order-void-btn" id="voidBtn_' + shortRef + '" onclick="showVoidConfirm(\'' + shortRef + '\')">Void</button>' : ''}
                 </div>`
           }
