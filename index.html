@@ -3961,7 +3961,7 @@
     const phone = String(g.supplier.phone || '').replace(/[^\d]/g, '');
     const contact = g.supplier.contact_person || g.supplier.name;
     let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
-    g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty) + (l.ing.unit ? ' ' + l.ing.unit : '') + '\n'; });
+    g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty) + ' (' + soPack(l.qty) + ')\n'; });
     msg += '\nOrder ref: ' + soOrderNumber + '\nThank you';
     openWaChat({
       name: g.supplier.name, phone: phone, message: msg,
@@ -4152,7 +4152,7 @@
       const contact = suppWithIssues.supplier_name || 'Supplier';
       const issueLines = (suppWithIssues.items || [])
         .filter(it => it.receipt === 'issues')
-        .map(it => `• ${it.name}: ${it.issue_note || 'Issue reported'}`)
+        .map(it => `• ${it.name} (${String(it.pack != null ? it.pack : it.qty)}${it.unit ? ' ' + it.unit : ''}): ${it.issue_note || 'Issue reported'}`)
         .join('\n');
       const msg = `Hi ${contact}, we received order ${o.order_number || ('#' + o.id)} but have the following issues:\n\n${issueLines}\n\nCould you please advise? Thank you.`;
       openWaChat({ name: contact, phone, message: msg });
@@ -4160,7 +4160,7 @@
       // Flat items — no supplier routing, use first available supplier phone
       const issueItems = (Array.isArray(o.items) ? o.items : []).filter(it => it.receipt === 'issues');
       if (!issueItems.length) return;
-      const issueLines = issueItems.map(it => `• ${it.name}: ${it.issue_note || 'Issue reported'}`).join('\n');
+      const issueLines = issueItems.map(it => `• ${it.name} (${String(it.pack != null ? it.pack : it.qty)}${it.unit ? ' ' + it.unit : ''}): ${it.issue_note || 'Issue reported'}`).join('\n');
       const msg = `Hi, we received order ${o.order_number || ('#' + o.id)} but have the following issues:\n\n${issueLines}\n\nCould you please advise? Thank you.`;
       openWaChat({ name: 'Supplier', phone: '', message: msg });
     }
