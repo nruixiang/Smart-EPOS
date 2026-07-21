@@ -840,8 +840,19 @@
       }
     }
 
-    function showConfirm(name, num, initialStatus) {
-      document.getElementById('confSub').textContent = (name ? ('Thanks, ' + name + ' — ') : '') + 'your order has been sent to the counter.';
+    function showConfirm(name, num, initialStatus, focused) {
+      const title = document.getElementById('confTitle');
+      const sub = document.getElementById('confSub');
+      if (focused) {
+        // Re-viewing an existing order: keep it focused on the order number + live status
+        title.style.display = 'none';
+        sub.style.display = 'none';
+      } else {
+        // Fresh placement: show the celebratory title
+        title.style.display = '';
+        sub.style.display = '';
+        sub.textContent = (name ? ('Thanks, ' + name + ' — ') : '') + 'your order has been sent to the counter.';
+      }
       document.getElementById('confNum').textContent = num;
       updateStatusUI(initialStatus || 'pending');
       document.getElementById('confirmView').classList.remove('hidden');
@@ -885,7 +896,7 @@
     function openOrderStatus() {
       if (!activeOrder) return;
       placedOrderId = activeOrder.id;
-      showConfirm(activeOrder.name, activeOrder.number, activeOrder.status);
+      showConfirm(activeOrder.name, activeOrder.number, activeOrder.status, true);
     }
 
     // ── Live order status (pending -> accepted / declined) ──
