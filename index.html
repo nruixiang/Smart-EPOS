@@ -4351,7 +4351,7 @@
       const allOk = (r.items || []).length > 0 && (r.items || []).every(it => it.receipt === 'ok');
 
       const issueBtn = hasIssues && hasPhone
-        ? `<button class="bo-ord-send" style="background:var(--orange,#ea580c);" onclick="boSendIssueFromBo('${o.id}', ${idx})"><i class="ti ti-brand-whatsapp"></i> Message About Issues</button>`
+        ? `<button class="bo-ord-send" style="background:var(--orange,#ea580c);" onclick="boSendIssueFromBo('${o.id}', ${idx})"><i class="ti ti-brand-whatsapp"></i> Message Supplier About Issues</button>`
         : '';
       const completeBtn = isCompleted
         ? `<button class="bo-ord-send sent"><i class="ti ti-circle-check"></i> Order Completed</button>`
