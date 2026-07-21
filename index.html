@@ -8197,8 +8197,11 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   function openOrdersModal() {
     document.getElementById('ordersOverlay').classList.add('show');
-    renderOrdersTab();
-    if (db) loadSalesLog();
+    if (db) {
+      loadSalesLog().then(() => renderOrdersTab());
+    } else {
+      renderOrdersTab();
+    }
   }
 
   function closeOrdersModal() {
@@ -9502,11 +9505,8 @@ function exportBoMonthToExcel() {
   }
 
   function renderOrdersTab() {
-    const container = document.getElementById('rptOrdersList');
-    if (!container) return;
     const now = new Date();
-    const searchEl = document.getElementById('ordersSearch');
-    const search = ((searchEl && searchEl.value) || '').toLowerCase().trim();
+    const search = (document.getElementById('ordersSearch').value || '').toLowerCase();
     const cutoffs = { '1h': 60, '2h': 120, '3h': 180 };
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const sevenDaysAgo = now.getTime() - (7 * 24 * 60 * 60 * 1000);
@@ -9515,9 +9515,11 @@ function exportBoMonthToExcel() {
     let entries = salesLog.filter(t => {
       if (!t || !t.ref) return false;
       const tTime = t.date instanceof Date ? t.date.getTime() : new Date(t.date).getTime();
+      // When searching by order #, show all DB records regardless of date
       if (search) {
         return t.ref.toLowerCase().includes(search);
       }
+      // Default view: today only
       if (tTime < todayStart) return false;
       if (ordersFilter !== 'all') {
         const mins = (now - tTime) / 60000;
@@ -9526,6 +9528,7 @@ function exportBoMonthToExcel() {
       return true;
     }).slice().reverse();
 
+    const container = document.getElementById('rptOrdersList');
     if (!entries.length) {
       container.innerHTML = `<div class="rpt-empty"><i class="ti ti-receipt-off"></i><div style="font-weight:600;">No orders found</div><div style="color:var(--text-tertiary);">Completed orders will appear here.</div></div>`;
       return;
