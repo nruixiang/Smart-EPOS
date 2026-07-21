@@ -3867,6 +3867,19 @@
       showToast('Order ' + soOrderNumber + ' (offline)');
     }
     btn.disabled = false;
+    // Open WhatsApp for each routed supplier immediately, then mark all as sent
+    soRouting.forEach((g, idx) => {
+      if (!g.supplier) return;
+      const phone = String(g.supplier.phone || '').replace(/[^\d]/g, '');
+      if (!phone) return;
+      const contact = g.supplier.contact_person || g.supplier.name;
+      let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
+      g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty) + (l.ing.unit ? ' ' + l.ing.unit : '') + '\n'; });
+      msg += '\nOrder ref: ' + soOrderNumber + '\nThank you';
+      setTimeout(() => window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank'), idx * 300);
+      g.sent = true;
+    });
+    await soPersistSent();
     soRenderRouting();
     document.getElementById('soRouteSheet').classList.add('show');
     // keep Back Office Orders pane in sync if it's open
