@@ -34,13 +34,13 @@
     .menu-body { padding:22px 20px 120px; }
     .track-banner { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 16px; border-radius:14px; margin-bottom:16px; cursor:pointer; border:1px solid transparent; }
     .track-banner.hidden { display:none; }
-    .track-banner.pending { background:#fff8e1; border-color:#fde68a; }
-    .track-banner.preparing { background:#f5f3ff; border-color:#ddd6fe; }
-    .track-banner.completed { background:#edf7f1; border-color:#b8dfc7; }
-    .track-banner.rejected { background:#fdf2f2; border-color:#f9b8b8; }
+    .track-banner.pending { background:#fff8e1; border-color:#FEF3C7; }
+    .track-banner.preparing { background:#f5f3ff; border-color:#DBEAFE; }
+    .track-banner.completed { background:#D1FAE5; border-color:#a7d8b8; }
+    .track-banner.rejected { background:#FEF0F0; border-color:#fcc8c8; }
     .track-left { display:flex; align-items:center; gap:12px; min-width:0; }
     .track-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-    .track-banner.pending .track-dot { background:#f59e0b; animation:pulse 1.4s ease-in-out infinite; }
+    .track-banner.pending .track-dot { background:#AE5109; animation:pulse 1.4s ease-in-out infinite; }
     .track-banner.preparing .track-dot { background:#7c3aed; animation:pulse 1.4s ease-in-out infinite; }
     .track-banner.completed .track-dot { background:#247F48; }
     .track-banner.rejected .track-dot { background:#DC2626; }
@@ -175,7 +175,7 @@
     .ogroup { margin-top:18px; }
     .ogroup-head { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
     .ogroup-name { font-size:15px; font-weight:800; }
-    .req-badge { font-size:10px; font-weight:700; color:var(--red); background:#fdf2f2; padding:2px 8px; border-radius:10px; }
+    .req-badge { font-size:10px; font-weight:700; color:var(--red); background:#FEF0F0; padding:2px 8px; border-radius:10px; }
     .opt { display:flex; align-items:center; gap:12px; padding:12px 14px; border:1.5px solid transparent; border-radius:12px; margin-bottom:4px; }
     .opt.sel { border-color:var(--amber-border); background:var(--amber-soft); }
     .opt-radio { width:20px; height:20px; border-radius:50%; border:2px solid #ccc; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
@@ -202,8 +202,8 @@
     .order-status { display:inline-flex; align-items:center; gap:9px; margin-top:20px; padding:11px 20px; border-radius:24px; font-size:13.5px; font-weight:700; }
     .order-status.pending { background:#fff8e1; color:#b45309; }
     .order-status.preparing { background:#f5f3ff; color:#6d28d9; }
-    .order-status.completed { background:#edf7f1; color:#247F48; }
-    .order-status.rejected { background:#fdf2f2; color:#DC2626; }
+    .order-status.completed { background:#D1FAE5; color:#247F48; }
+    .order-status.rejected { background:#FEF0F0; color:#DC2626; }
     .status-dot { width:9px; height:9px; border-radius:50%; background:currentColor; }
     .order-status.pending .status-dot { animation:pulse 1.4s ease-in-out infinite; }
     .order-status.preparing .status-dot { animation:pulse 1.4s ease-in-out infinite; }
@@ -398,9 +398,9 @@
     const CUSTOMIZABLE_CATEGORIES = ['Hot Drinks', 'Cold Drinks'];
     const CARD_TYPES = [
       { name: 'NETS', color: '#2563eb' },
-      { name: 'NETS FlashPay', color: '#1e3a8a' },
-      { name: 'Visa', color: '#3b82f6' },
-      { name: 'Mastercard', color: '#ea580c' },
+      { name: 'NETS FlashPay', color: '#1D4EDF' },
+      { name: 'Visa', color: '#2563EB' },
+      { name: 'Mastercard', color: '#AE5109' },
       { name: 'Amex', color: '#0d9488' },
       { name: 'UnionPay', color: '#dc2626' },
       { name: 'JCB', color: '#247F48' }
