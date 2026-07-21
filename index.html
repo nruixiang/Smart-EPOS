@@ -9580,16 +9580,14 @@ function exportBoMonthToExcel() {
                     <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;" onclick="cancelRefund('${shortRef}')">Cancel</button>
                   </div>
                   ${(() => {
-                    const ageMs = now - d.getTime();
-                    const within7Days = ageMs <= sevenDaysAgo ? false : true;
-                    const olderThan24h = ageMs >= oneDayMs;
-                    if (!within7Days) {
-                      return '<span class="rpt-order-voided-label" style="color:var(--text-tertiary);font-style:italic;">View only — outside refund window</span>';
+                    const txDateKey = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+                    const todayKey2 = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
+                    const isToday = txDateKey === todayKey2;
+                    const within7Days = d.getTime() >= sevenDaysAgo;
+                    if (!isToday && within7Days) {
+                      return '<button class="rpt-order-refund-btn" id="refundBtn_' + shortRef + '" onclick="showRefundConfirm(\'' + shortRef + '\')">Refund</button>';
                     }
-                    if (!olderThan24h) {
-                      return '<span class="rpt-order-voided-label" style="color:var(--text-tertiary);font-style:italic;">Refund available after 24h</span>';
-                    }
-                    return '<button class="rpt-order-refund-btn" id="refundBtn_${shortRef}" onclick="showRefundConfirm(\'' + shortRef + '\')">Refund</button>';
+                    return '';
                   })()}
                   <button class="rpt-order-void-btn" id="voidBtn_${shortRef}" onclick="showVoidConfirm('${shortRef}')">Void</button>
                 </div>`
