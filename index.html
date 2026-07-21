@@ -4111,7 +4111,7 @@
 
   function soAllItemsMarked(o) {
     const items = boOrderItemsFlat(o);
-    return items.length > 0 && items.every(it => it.receipt === 'ok' || it.receipt === 'issues');
+    return items.length > 0 && items.every(it => it.receipt === 'ok');
   }
 
   function soUpdateStep3Footer(o) {
