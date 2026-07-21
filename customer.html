@@ -58,8 +58,15 @@
     .cat.active { background:#247F48; color:#fff; border-color:#247F48; }
     .menu-label { text-align:center; font-size:11px; font-weight:700; letter-spacing:0.14em; color:var(--muted2); margin:26px 0 16px; }
     .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:16px; }
-    .card { background:var(--card); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); border:1px solid var(--line2); cursor:pointer; transition:transform 0.12s; }
-    .card:active { transform:scale(0.98); }
+    .card { background:var(--card); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); border:1px solid var(--line2); cursor:default; transition:transform 0.12s; }
+    .card.clickable { cursor:pointer; }
+    .card.clickable:active { transform:scale(0.98); }
+    .card-btn { margin-top:11px; width:100%; padding:9px; border-radius:10px; background:var(--ink); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; }
+    .card-btn:active { transform:scale(0.97); }
+    .card-step { margin-top:11px; display:flex; align-items:center; justify-content:space-between; border:1px solid var(--line); border-radius:10px; padding:4px; }
+    .card-step-btn { width:34px; height:34px; border-radius:8px; background:#f4f4f4; display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--ink); }
+    .card-step-btn:active { background:#e8e8e8; }
+    .card-step-n { font-size:15px; font-weight:800; }
     .card-img { position:relative; width:100%; aspect-ratio:1.35/1; background:#efece8 center/cover no-repeat; display:flex; align-items:center; justify-content:center; color:#cfcac3; font-size:34px; }
     .card-cust { position:absolute; bottom:8px; right:8px; background:rgba(255,255,255,0.94); backdrop-filter:blur(4px); font-size:11px; font-weight:600; color:#333; padding:4px 10px; border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
     .card-body { padding:12px 14px 15px; }
@@ -176,6 +183,11 @@
     .opt-label { flex:1; font-size:14px; font-weight:500; }
     .opt-delta { font-size:13px; font-weight:700; color:var(--amber); }
     .modal-foot { padding:14px 20px 20px; border-top:1px solid var(--line2); }
+    .mfoot-row { display:flex; align-items:center; gap:12px; }
+    .mqty { display:flex; align-items:center; gap:4px; border:1px solid var(--line); border-radius:12px; padding:4px; flex-shrink:0; }
+    .mqty-btn { width:38px; height:38px; border-radius:9px; background:#f4f4f4; display:flex; align-items:center; justify-content:center; font-size:17px; color:var(--ink); }
+    .mqty-btn:active { background:#e8e8e8; }
+    .mqty-n { min-width:28px; text-align:center; font-size:16px; font-weight:800; }
 
     /* Confirmation */
     .confirm-wrap { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 24px; }
@@ -331,7 +343,14 @@
         </div>
         <div class="modal-body" id="mBody"></div>
         <div class="modal-foot">
-          <button class="cta dark" onclick="addFromModal()"><span id="mAddLabel">Add to Cart</span> • <span id="mAddTotal">$0.00</span></button>
+          <div class="mfoot-row">
+            <div class="mqty">
+              <button class="mqty-btn" onclick="mQtyChange(-1)"><i class="ti ti-minus"></i></button>
+              <span class="mqty-n" id="mQtyN">1</span>
+              <button class="mqty-btn" onclick="mQtyChange(1)"><i class="ti ti-plus"></i></button>
+            </div>
+            <button class="cta dark" style="flex:1;" onclick="addFromModal()"><span id="mAddLabel">Add to Cart</span> • <span id="mAddTotal">$0.00</span></button>
+          </div>
         </div>
       </div>
     </div>
@@ -432,6 +451,7 @@
     // modal working state
     let mProduct = null, mOpts = null, mSel = {};
     let editingUid = null;   // set when editing an existing cart line
+    let mQty = 1;            // quantity chosen in the customise modal
 
     function money(n) { return '$' + (Math.round(n * 100) / 100).toFixed(2); }
     function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -550,16 +570,29 @@
       const list = visibleProducts();
       if (!list.length) { el.innerHTML = '<div class="empty"><i class="ti ti-search-off"></i>No items found.</div>'; return; }
       el.innerHTML = list.map(p => {
-        const cust = '';
+        const isCustom = !!optionsFor(p.category);
         const img = p.image
-          ? `<div class="card-img" style="background-image:url('${esc(p.image)}')">${cust}</div>`
-          : `<div class="card-img"><i class="ti ti-cup"></i>${cust}</div>`;
-        return `<div class="card" onclick="openItem(${p.id})">
+          ? `<div class="card-img" style="background-image:url('${esc(p.image)}')"></div>`
+          : `<div class="card-img"><i class="ti ti-cup"></i></div>`;
+        let bottom = '';
+        if (!isCustom) {
+          const line = cart.find(c => c.key === (p.id + '|'));
+          const qty = line ? line.qty : 0;
+          bottom = qty > 0
+            ? `<div class="card-step" onclick="event.stopPropagation()">
+                 <button class="card-step-btn" onclick="menuStep(${p.id},-1)"><i class="ti ${qty === 1 ? 'ti-trash' : 'ti-minus'}"></i></button>
+                 <span class="card-step-n">${qty}</span>
+                 <button class="card-step-btn" onclick="menuStep(${p.id},1)"><i class="ti ti-plus"></i></button>
+               </div>`
+            : `<button class="card-btn" onclick="menuStep(${p.id},1)"><i class="ti ti-plus"></i> Add</button>`;
+        }
+        return `<div class="card${isCustom ? ' clickable' : ''}"${isCustom ? ` onclick="openItem(${p.id})"` : ''}>
           ${img}
           <div class="card-body">
             <div class="card-name">${esc(p.name)}</div>
             ${p.description ? `<div class="card-desc">${esc(p.description)}</div>` : ''}
             <div class="card-price">${money(p.price)}</div>
+            ${bottom}
           </div>
         </div>`;
       }).join('');
@@ -572,6 +605,7 @@
       const opts = optionsFor(p.category);
       if (!opts) { addToCart(p, [], p.price); toast('Added to cart'); return; }
       editingUid = null;
+      mQty = 1;
       mProduct = p; mOpts = opts; mSel = {};
       opts.groups.forEach(g => {
         if (g.type === 'multi') mSel[g.key] = new Set();
@@ -590,6 +624,7 @@
       const opts = p ? optionsFor(p.category) : null;
       if (!p || !opts) return;
       editingUid = uid;
+      mQty = c.qty || 1;
       mProduct = p; mOpts = opts; mSel = {};
       opts.groups.forEach(g => {
         if (g.type === 'multi') {
@@ -637,8 +672,10 @@
         </div>`;
       }).join('');
       document.getElementById('mBody').innerHTML = body;
-      document.getElementById('mAddTotal').textContent = money(modalUnit());
+      document.getElementById('mQtyN').textContent = mQty;
+      document.getElementById('mAddTotal').textContent = money(modalUnit() * mQty);
     }
+    function mQtyChange(delta) { mQty = Math.max(1, mQty + delta); renderModal(); }
 
     function pick(key, label, type) {
       if (type === 'multi') { const s = mSel[key]; if (s.has(label)) s.delete(label); else s.add(label); }
@@ -658,6 +695,7 @@
           c.options = options;
           c.optLabel = options.filter(o => o.choice).map(o => o.choice).join(' • ');
           c.unit = modalUnit();
+          c.qty = mQty;
           c.key = mProduct.id + '|' + options.map(o => o.group + ':' + o.choice).join(',');
         }
         editingUid = null;
@@ -667,18 +705,34 @@
         toast('Cart updated');
         return;
       }
-      addToCart(mProduct, options, modalUnit());
+      addToCart(mProduct, options, modalUnit(), mQty);
       closeCust();
       toast('Added to cart');
     }
 
-    function addToCart(p, options, unit) {
+    function addToCart(p, options, unit, qty) {
+      qty = qty || 1;
       const optLabel = options.filter(o => o.choice).map(o => o.choice).join(' • ');
       const key = p.id + '|' + options.map(o => o.group + ':' + o.choice).join(',');
       const existing = cart.find(c => c.key === key);
-      if (existing) existing.qty += 1;
-      else cart.push({ uid: Date.now() + Math.random(), key, name: p.name, base: p.price, unit, qty: 1, options, optLabel });
+      if (existing) existing.qty += qty;
+      else cart.push({ uid: Date.now() + Math.random(), key, name: p.name, base: p.price, unit, qty: qty, options, optLabel });
       updateCartBar();
+    }
+
+    // Add / adjust a non-customizable item straight from its menu card
+    function menuStep(id, delta) {
+      const p = PRODUCTS.find(x => x.id === id);
+      if (!p) return;
+      const key = p.id + '|';
+      const line = cart.find(c => c.key === key);
+      if (!line) { if (delta > 0) addToCart(p, [], p.price, 1); }
+      else {
+        line.qty += delta;
+        if (line.qty <= 0) cart = cart.filter(c => c.key !== key);
+        updateCartBar();
+      }
+      renderGrid();
     }
 
     function cartSubtotal() { return cart.reduce((s, c) => s + c.unit * c.qty, 0); }
