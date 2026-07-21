@@ -168,6 +168,19 @@
     .header-pill { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 20px; border: 0.5px solid var(--border); background: var(--bg-secondary); font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
     .header-pill-btn { cursor: pointer; transition: background 0.15s, border-color 0.15s; }
     .header-pill-btn:hover { background: var(--bg-tertiary); border-color: var(--border-hover); color: var(--text-primary); }
+    /* Sandbox toggle */
+    .sandbox-pill { display: flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 20px; border: 0.5px solid var(--border); background: var(--bg-secondary); font-size: 12px; color: var(--text-secondary); white-space: nowrap; cursor: pointer; transition: all 0.15s; user-select: none; }
+    .sandbox-pill.active { background: #fefce8; border-color: #fde68a; color: #92400e; }
+    [data-theme="dark"] .sandbox-pill.active { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.4); color: #fbbf24; }
+    .sandbox-toggle { width: 28px; height: 16px; border-radius: 8px; background: var(--border); position: relative; transition: background 0.2s; flex-shrink: 0; }
+    .sandbox-pill.active .sandbox-toggle { background: #eab308; }
+    .sandbox-toggle::after { content: ''; position: absolute; width: 12px; height: 12px; border-radius: 50%; background: white; top: 2px; left: 2px; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .sandbox-pill.active .sandbox-toggle::after { transform: translateX(12px); }
+    /* Sandbox banner */
+    .sandbox-banner { display: none; align-items: center; justify-content: center; gap: 8px; padding: 7px 16px; background: #fefce8; border-bottom: 1px solid #fde68a; font-size: 12px; font-weight: 600; color: #92400e; flex-shrink: 0; }
+    [data-theme="dark"] .sandbox-banner { background: rgba(234,179,8,0.12); border-color: rgba(234,179,8,0.3); color: #fbbf24; }
+    .sandbox-banner.show { display: flex; }
+    .sandbox-banner i { font-size: 14px; }
 
     /* CLOCK IN MODAL */
     .clockin-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -1645,11 +1658,20 @@
     </div>
   </div>
   <div class="header-right">
+    <div class="sandbox-pill" id="sandboxPill" onclick="toggleSandbox()" title="Sandbox mode — transactions won't be saved">
+      <div class="sandbox-toggle"></div>
+      <span>Sandbox</span>
+    </div>
     <div class="header-pill" id="adminPill" style="cursor:default;" onclick="openAdminPinModal()"><i class="ti ti-shield" style="font-size:13px;"></i><span id="headerRole">Staff</span></div>
     <div class="header-pill header-pill-btn" onclick="openClockIn()" id="staffPill"><i class="ti ti-user" style="font-size:13px;"></i><span id="headerStaffId">Not logged in</span></div>
     <div class="badge" id="headerBadge">0</div>
   </div>
 </header>
+
+<div class="sandbox-banner" id="sandboxBanner">
+  <i class="ti ti-flask"></i>
+  Sandbox Mode — Transactions, sales data and reports will not be saved
+</div>
 
 <div class="main no-lsb" id="mainGrid">
 
@@ -3731,8 +3753,7 @@
     if (typeof currentOutletId === 'number') outletId = currentOutletId;
     else if (/^\d+$/.test(String(currentOutletId))) outletId = parseInt(currentOutletId, 10);
 
-    if (db) {
-      const { data, error } = await db.from('orders').insert({
+    if (db && !sandboxMode) {
         order_number: soOrderNumber, status: 'placed', outlet_id: outletId,
         item_count: soOrderLines.length, items: itemsJson, routing: routingJson
       }).select().single();
@@ -4671,7 +4692,7 @@
   }
 
   async function saveProductToDb(p, category) {
-    if (!db) { if (!p.id) p.id = 'local_' + Date.now(); return; }
+    if (sandboxMode || !db) { if (!p.id) p.id = 'local_' + Date.now(); return; }
     const row = productToDbRow(p, category);
     if (p.id) {
       const { id: _id, ...updateRow } = row; // strip id from update payload
@@ -5978,11 +5999,11 @@
       outlet_id: currentOutletId,
       voided: false
     };
-    salesLog.push(newEntry);
+    if (!sandboxMode) salesLog.push(newEntry);
     saveSalesEntry(newEntry);
 
     // Award member points & purchase history
-    if (attachedCustomer) {
+    if (attachedCustomer && !sandboxMode) {
       const m = members.find(x => x.id === attachedCustomer.id);
       if (m) {
         const earned = Math.floor(discounted);
@@ -6092,13 +6113,13 @@
   }
 
   async function saveMember(member) {
-    if (!db) return;
+    if (sandboxMode || !db) return;
     const { error } = await db.from('members').upsert(member);
     if (error) { console.error('saveMember error:', error); showToast('Could not save member'); }
   }
 
   async function deleteMemberRemote(id) {
-    if (!db) return;
+    if (sandboxMode || !db) return;
     const { error } = await db.from('members').delete().eq('id', id);
     if (error) { console.error('deleteMember error:', error); showToast('Could not delete member'); }
   }
@@ -8118,6 +8139,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     renderRptEod();
   }
   async function saveSalesEntry(entry) {
+    if (sandboxMode) return; // sandbox — don't persist
     const row = {
       ref: entry.ref, method: entry.method, date: entry.date.toISOString(),
       hour: entry.hour, day: entry.day, gross: entry.gross,
@@ -8148,6 +8170,23 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     }
   }
   let salesLog = [];
+  let sandboxMode = false;
+
+  function toggleSandbox() {
+    sandboxMode = !sandboxMode;
+    document.getElementById('sandboxPill').classList.toggle('active', sandboxMode);
+    document.getElementById('sandboxBanner').classList.toggle('show', sandboxMode);
+    if (sandboxMode) {
+      // Clear current order so sandbox exploration starts fresh
+      order = {};
+      renderOrder();
+      showToast('🧪 Sandbox ON — transactions will not be saved');
+    } else {
+      order = {};
+      renderOrder();
+      showToast('Sandbox OFF — back to live mode');
+    }
+  }
   loadSalesLog();
   let rptMonthOffset = 0; // 0 = current month
   let boMonthOffset = 0; // same as above, but for the Back Office Overview tab's own Month view
@@ -8197,11 +8236,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
 
   function openOrdersModal() {
     document.getElementById('ordersOverlay').classList.add('show');
-    if (db) {
-      loadSalesLog().then(() => renderOrdersTab());
-    } else {
-      renderOrdersTab();
-    }
+    renderOrdersTab();
   }
 
   function closeOrdersModal() {
@@ -9164,9 +9199,9 @@ function exportBoMonthToExcel() {
   async function deleteWastageEntry(id) {
     console.log('deleteWastageEntry called with id:', id, 'db:', !!db);
     wastageLog = wastageLog.filter(e => String(e.id) !== String(id));
-    saveLocalMirror(LOCAL_MIRROR_KEYS.wastage, wastageLog);
+    if (!sandboxMode) saveLocalMirror(LOCAL_MIRROR_KEYS.wastage, wastageLog);
     renderRptWastage();
-    if (!db) { queueSyncOp('wastage_log', 'delete', null, { column: 'id', value: String(id) }); return; }
+    if (sandboxMode || !db) { if (!sandboxMode) queueSyncOp('wastage_log', 'delete', null, { column: 'id', value: String(id) }); return; }
     const { error, data } = await db.from('wastage_log').delete().eq('id', String(id)).select();
     console.log('delete result — error:', JSON.stringify(error), 'data:', JSON.stringify(data));
     if (error) {
@@ -9296,6 +9331,7 @@ function exportBoMonthToExcel() {
     return wastageLog;
   }
   async function saveWastageEntry(entry) {
+    if (sandboxMode) return; // sandbox — don't persist
     const row = {
       id: String(entry.id), item_name: entry.itemName,
       qty: entry.qty, reason: entry.reason, note: entry.note,
@@ -9513,7 +9549,6 @@ function exportBoMonthToExcel() {
     const oneDayMs = 24 * 60 * 60 * 1000;
 
     let entries = salesLog.filter(t => {
-      if (!t || !t.ref) return false;
       const tTime = t.date instanceof Date ? t.date.getTime() : new Date(t.date).getTime();
       // When searching by order #, show all DB records regardless of date
       if (search) {
@@ -9542,10 +9577,6 @@ function exportBoMonthToExcel() {
       const shortRef = t.ref.replace('#','');
       const isVoided = t.voided === true;
       const isRefunded = t.refunded === true;
-      const txDateKey = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
-      const todayKey2 = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
-      const isToday = txDateKey === todayKey2;
-      const within7Days = d.getTime() >= sevenDaysAgo;
 
       const cardClass = isVoided ? ' voided' : isRefunded ? ' refunded-original' : '';
       const badge = isVoided
@@ -9563,7 +9594,7 @@ function exportBoMonthToExcel() {
               ${isRefunded ? 'Refund' : 'Order'} #${shortRef}
               ${badge}
             </div>
-            <div class="rpt-order-meta">${timeStr} · ${(t.method || 'Unknown').toUpperCase()}${t.customer ? ' · ' + t.customer : ''}</div>
+            <div class="rpt-order-meta">${timeStr} · ${t.method.toUpperCase()}${t.customer ? ' · ' + t.customer : ''}</div>
           </div>
           <div class="rpt-order-right">
             <div class="${totalClass}">${totalPrefix}$${t.total.toFixed(2)}</div>
@@ -9588,7 +9619,16 @@ function exportBoMonthToExcel() {
                     <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:#ea580c;color:white;cursor:pointer;" onclick="refundOrder('${shortRef}')">Yes, Refund</button>
                     <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;" onclick="cancelRefund('${shortRef}')">Cancel</button>
                   </div>
-                  ${(!isToday && within7Days) ? '<button class="rpt-order-refund-btn" id="refundBtn_' + shortRef + '" onclick="showRefundConfirm(\'' + shortRef + '\')">Refund</button>' : ''}
+                  ${(() => {
+                    const txDateKey = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+                    const todayKey2 = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
+                    const isToday = txDateKey === todayKey2;
+                    const within7Days = d.getTime() >= sevenDaysAgo;
+                    if (!isToday && within7Days) {
+                      return '<button class="rpt-order-refund-btn" id="refundBtn_' + shortRef + '" onclick="showRefundConfirm(\'' + shortRef + '\')">Refund</button>';
+                    }
+                    return '';
+                  })()}
                   ${isToday ? '<button class="rpt-order-void-btn" id="voidBtn_' + shortRef + '" onclick="showVoidConfirm(\'' + shortRef + '\')">Void</button>' : ''}
                 </div>`
           }
