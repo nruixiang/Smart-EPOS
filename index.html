@@ -3892,6 +3892,7 @@
     await soPersistSent();
     soRenderRouting();
     document.getElementById('soRouteSheet').classList.add('show');
+    soLockHeaderForRouting();
     // keep Back Office Orders pane in sync if it's open
     const boPane = document.getElementById('payPane_orders');
     if (boPane && boPane.style.display !== 'none' && typeof renderBoOrders === 'function') renderBoOrders();
@@ -4035,9 +4036,28 @@
     }
   }
 
+  function soLockHeaderForRouting() {
+    const backBtn  = document.getElementById('soBackBtn');
+    const closeBtn = document.querySelector('#soOverlay .so-close');
+    const newBtn   = document.getElementById('soNewOrderBtn');
+    if (backBtn)  backBtn.onclick  = soCloseRouteToHistory;
+    if (closeBtn) closeBtn.onclick = soCloseRouteToHistory;
+    if (newBtn)   newBtn.onclick   = soCloseRouteToHistory;
+  }
+
+  function soUnlockHeader() {
+    const backBtn  = document.getElementById('soBackBtn');
+    const closeBtn = document.querySelector('#soOverlay .so-close');
+    const newBtn   = document.getElementById('soNewOrderBtn');
+    if (backBtn)  backBtn.onclick  = soBack;
+    if (closeBtn) closeBtn.onclick = closeSmartOrder;
+    if (newBtn)   newBtn.onclick   = soStartNewOrder;
+  }
+
   function soCloseRoute() {
     const s = document.getElementById('soRouteSheet');
     if (s) s.classList.remove('show');
+    soUnlockHeader();
   }
 
   // ── Smart Ordering System: Order History (landing view) ──
@@ -4085,7 +4105,7 @@
         </span>
         <span class="so-supp-line-name" style="flex:1;">${escapeHtml(it.name)}</span>
         <span class="so-supp-line-qty">${qty}</span>
-      </div>${noteText ? `<div class="item-receipt-note"><i class="ti ti-alert-circle"></i> ${noteText}</div>` : ''}
+      </div>${noteText ? `<div class="item-receipt-note" style="padding-left:6px;"><i class="ti ti-alert-circle"></i> ${noteText}</div>` : ''}
     </div>`;
   }
 
