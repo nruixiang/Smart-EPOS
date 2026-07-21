@@ -3961,7 +3961,7 @@
     const phone = String(g.supplier.phone || '').replace(/[^\d]/g, '');
     const contact = g.supplier.contact_person || g.supplier.name;
     let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
-    g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty) + ' (' + soPack(l.qty) + ')\n'; });
+    g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty) + (l.ing.unit ? ' ' + l.ing.unit : '') + '\n'; });
     msg += '\nOrder ref: ' + soOrderNumber + '\nThank you';
     openWaChat({
       name: g.supplier.name, phone: phone, message: msg,
@@ -4050,7 +4050,7 @@
         </span>
         <span class="so-supp-line-name" style="flex:1;">${escapeHtml(it.name)}</span>
         <span class="so-supp-line-qty">${qty}</span>
-      </div>${noteText ? `<div class="item-receipt-note"><i class="ti ti-alert-circle"></i> ${noteText}</div>` : ''}
+      </div>${noteText ? `<div class="item-receipt-note" style="padding-left:70px;"><i class="ti ti-alert-circle"></i> ${noteText}</div>` : ''}
     </div>`;
   }
 
