@@ -1488,11 +1488,11 @@
     .so-route-close { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:13px; font-weight:600; font-family:var(--font); }
     .so-route-close:hover { color:var(--text-primary); }
     .so-route-body { overflow-y:auto; padding:0 16px 18px; display:flex; flex-direction:column; gap:14px; }
-    .so-supp-card { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; }
-    .so-supp-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px; }
+    .so-supp-card { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+    .so-supp-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:0; padding:12px 14px; border-bottom:0.5px solid var(--border); }
     .so-supp-name { font-size:15px; font-weight:700; color:var(--text-primary); }
     .so-supp-count { font-size:12px; color:var(--text-tertiary); }
-    .so-supp-line { display:flex; align-items:center; justify-content:space-between; font-size:13px; padding:3px 0; }
+    .so-supp-line { display:flex; align-items:center; justify-content:space-between; font-size:13px; padding:9px 14px; border-top:0.5px solid var(--border); }
     .so-supp-line-name { color:var(--text-secondary); }
     .so-supp-line-qty { color:var(--green); font-weight:700; }
     .so-ai-btn { width:100%; margin-top:12px; padding:10px; border-radius:10px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--blue); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:7px; }
@@ -3829,7 +3829,7 @@
     });
     soRouting = Object.values(groups);
 
-    const itemsJson = soOrderLines.map(l => ({ ingredient_id: l.ing.id, name: l.ing.name, qty: l.qty, unit: '', pack: soPack(l.qty), supplier_id: l.ing.supplier_id || null }));
+    const itemsJson = soOrderLines.map(l => ({ ingredient_id: l.ing.id, name: l.ing.name, qty: l.qty, unit: l.ing.unit || '', pack: soPack(l.qty), supplier_id: l.ing.supplier_id || null }));
     const routingJson = soBuildRoutingJson();
     let outletId = null;
     if (typeof currentOutletId === 'number') outletId = currentOutletId;
@@ -3864,7 +3864,7 @@
     return soRouting.map(g => ({
       supplier_id: g.supplier ? g.supplier.id : null,
       supplier_name: g.supplier ? g.supplier.name : 'Unassigned',
-      items: g.items.map(l => ({ name: l.ing.name, qty: l.qty, unit: '', pack: soPack(l.qty) })),
+      items: g.items.map(l => ({ name: l.ing.name, qty: l.qty, unit: l.ing.unit || '', pack: soPack(l.qty) })),
       sent: !!g.sent
     }));
   }
