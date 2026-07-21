@@ -5520,10 +5520,20 @@
     const isAdmin = currentStaffId === '0000';
     grid.innerHTML = prods.map(p => {
       const safeName = p.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const safeNameJs = p.name.replace(/'/g, "\\'");
       const imgUrl = getProductImg(p.name);
       const imgHtml = imgUrl
         ? '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:cover;" alt="' + p.name + '" loading="lazy">'
         : p.name;
+      const cardQty = Object.values(order).filter(i => i.name === p.name).reduce((a,i) => a + i.qty, 0);
+      const priceRow = cardQty > 0
+        ? '<div class="card-price-row"><div class="product-price">$' + p.price.toFixed(2) + '</div>'
+          + '<div class="card-qty-stepper" onclick="event.stopPropagation();">'
+          + '<button class="card-qty-btn" onclick="cardChangeQty(\'' + safeNameJs + '\',-1);">−</button>'
+          + '<span class="card-qty-num">' + cardQty + '</span>'
+          + '<button class="card-qty-btn" onclick="cardChangeQty(\'' + safeNameJs + '\',1);">+</button>'
+          + '</div></div>'
+        : '<div class="product-price">$' + p.price.toFixed(2) + '</div>';
       return '<div class="product-card' + (isAdmin ? ' admin-mode' : '') + '" onclick="addItem(\'' + safeName + '\',' + p.price + ',\'' + safeName + '\')">'
         + '<div class="card-admin-btns">'
         + '<button class="card-admin-btn edit" onclick="event.stopPropagation();openEdit(\'' + safeName + '\')">Edit</button>'
@@ -5533,16 +5543,8 @@
         + (isAdmin ? '' : '<button class="card-info-btn" onclick="event.stopPropagation();openPinfo(\'' + safeName + '\')">i</button>')
         + '</div>'
         + '<div class="product-info">'
-        + '<div class="product-name-row"><div class="product-name">' + p.name + '</div>'
-        + '</div>'
-        + (order[p.name] && !Array.isArray(order[p.name].selectedOptions) && !Array.isArray(order[p.name].comboSelections)
-          ? '<div class="card-price-row"><div class="product-price">$' + p.price.toFixed(2) + '</div>'
-            + '<div class="card-qty-stepper" onclick="event.stopPropagation();">'
-            + '<button class="card-qty-btn" onclick="changeQty(\'' + p.name.replace(/'/g, "\\'") + '\',-1);renderProducts();">−</button>'
-            + '<span class="card-qty-num">' + order[p.name].qty + '</span>'
-            + '<button class="card-qty-btn" onclick="changeQty(\'' + p.name.replace(/'/g, "\\'") + '\',1);renderProducts();">+</button>'
-            + '</div></div>'
-          : '<div class="product-price">$' + p.price.toFixed(2) + '</div>')
+        + '<div class="product-name-row"><div class="product-name">' + p.name + '</div></div>'
+        + priceRow
         + '</div>'
         + '</div>';
     }).join('');
@@ -5702,10 +5704,10 @@
     };
     closeCustomizeModal();
     renderOrder();
+    renderProducts();
   }
 
   function editOrderItem(key) {
-    const item = order[key];
     if (!item) return;
     if (Array.isArray(item.comboSelections)) { editComboOrderItem(key); return; }
     // Reconstruct preset selections from the stored summary so the modal reopens with current choices
@@ -5930,10 +5932,10 @@
     };
     closeComboModal();
     renderOrder();
+    renderProducts();
   }
 
   function editComboOrderItem(key) {
-    const item = order[key];
     if (!item) return;
     const combo = getComboDefinition(item.name);
     if (!combo) return;
@@ -5971,6 +5973,27 @@
     if (!order[key]) return;
     order[key].qty += delta;
     if (order[key].qty <= 0) delete order[key];
+    renderOrder();
+    renderProducts();
+  }
+
+  function cardChangeQty(name, delta) {
+    // Find all order entries for this product name
+    const entries = Object.values(order).filter(i => i.name === name);
+    if (!entries.length) return;
+    if (entries.length === 1) {
+      // Single entry — adjust directly
+      const key = entries[0].key || entries[0].name;
+      order[key].qty += delta;
+      if (order[key].qty <= 0) delete order[key];
+    } else {
+      // Multiple variants — adjust the last added one (highest key value for line_ keys, or first found)
+      const entry = entries.slice().sort((a,b) => (b.key||'').localeCompare(a.key||'')).find(e => delta < 0 ? e.qty > 0 : true);
+      if (!entry) return;
+      const key = entry.key || entry.name;
+      order[key].qty += delta;
+      if (order[key].qty <= 0) delete order[key];
+    }
     renderOrder();
     renderProducts();
   }
