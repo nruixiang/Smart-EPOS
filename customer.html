@@ -816,7 +816,7 @@
       document.querySelectorAll('#pays .pay').forEach(p => p.classList.toggle('sel', p.dataset.pay === m));
       const ct = document.getElementById('cardTypes');
       if (m === 'Card') { ct.classList.remove('hidden'); }
-      else { ct.classList.add('hidden'); selectedCardType = null; document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel')); }
+      ct.classList.add('hidden'); selectedCardType = null; document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel'));
       updatePlaceBtn();
     }
     function selectCardType(name) {
@@ -826,7 +826,7 @@
     }
     function updatePlaceBtn() {
       const name = (document.getElementById('custName').value || '').trim();
-      const payOk = selectedPay && (selectedPay !== 'Card' || selectedCardType);
+      const payOk = !!selectedPay;
       document.getElementById('placeBtn').disabled = !(name && payOk && cart.length);
     }
 
@@ -858,7 +858,7 @@
       const name = (document.getElementById('custName').value || '').trim();
       if (!name) { toast('Please enter your name'); return; }
       if (!selectedPay) { toast('Please choose a payment method'); return; }
-      if (selectedPay === 'Card' && !selectedCardType) { toast('Please choose a card type'); return; }
+
       // PayNow: show the QR first — the order is only placed after the simulated payment
       if (selectedPay === 'PayNow') { openPayNow(); return; }
       document.getElementById('placeBtn').disabled = true;
@@ -868,7 +868,7 @@
     async function doPlaceOrder() {
       const name = (document.getElementById('custName').value || '').trim();
       const notes = (document.getElementById('custNotes').value || '').trim();
-      const payMethod = selectedPay === 'Card' ? selectedCardType : selectedPay;
+      const payMethod = selectedPay;
       const sub = cartSubtotal(), tax = sub * TAX_RATE, total = sub + tax;
       const items = cart.map(c => ({ name: c.name, qty: c.qty, unit_price: c.unit, line_total: c.unit * c.qty, options: c.options, options_label: c.optLabel }));
       const row = {
