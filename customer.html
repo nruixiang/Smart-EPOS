@@ -54,7 +54,8 @@
     .search-wrap i { position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--muted2); font-size:18px; }
     .search { width:100%; padding:14px 16px 14px 44px; border-radius:26px; border:1px solid var(--line); background:#fff; font-size:14px; font-family:var(--font); outline:none; }
     .search:focus { border-color:#ddd; }
-    .cats { display:flex; gap:9px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; }
+    .cats { display:flex; gap:9px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; cursor:grab; user-select:none; }
+    .cats.dragging { cursor:grabbing; }
     .cats::-webkit-scrollbar { display:none; }
     .cat { display:flex; align-items:center; gap:7px; padding:9px 17px; border-radius:22px; border:1px solid var(--line); background:#fff; font-size:13.5px; font-weight:600; color:#444; white-space:nowrap; }
     .cat.active { background:#247F48; color:#fff; border-color:#247F48; }
@@ -1027,6 +1028,35 @@
     }
 
     init();
+
+    // ── Category tab drag-to-scroll (desktop mouse) ──
+    (function() {
+      const el = document.querySelector('.cats');
+      if (!el) return;
+      let isDown = false, startX = 0, scrollLeft = 0;
+      el.addEventListener('mousedown', e => {
+        isDown = true;
+        el.classList.add('dragging');
+        startX = e.pageX - el.offsetLeft;
+        scrollLeft = el.scrollLeft;
+        e.preventDefault();
+      });
+      window.addEventListener('mouseup', () => {
+        isDown = false;
+        el.classList.remove('dragging');
+      });
+      window.addEventListener('mousemove', e => {
+        if (!isDown) return;
+        const x = e.pageX - el.offsetLeft;
+        el.scrollLeft = scrollLeft - (x - startX);
+      });
+      // Also allow trackpad/mouse wheel horizontal scroll
+      el.addEventListener('wheel', e => {
+        if (e.deltaX !== 0) return; // already horizontal — let it through
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }, { passive: false });
+    })();
   </script>
 </body>
 </html>
