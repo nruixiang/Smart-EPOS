@@ -137,10 +137,10 @@
     .card-info-btn:hover { background: rgba(0,0,0,0.7); border-color: white; }
     .product-name-row { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
     .card-price-row { display: flex; align-items: center; justify-content: space-between; }
-    .card-qty-stepper { display: flex; align-items: center; gap: 4px; }
-    .card-qty-btn { width: 20px; height: 20px; border: 0.5px solid var(--border); border-radius: 4px; background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text-primary); line-height: 1; font-family: var(--font); flex-shrink: 0; }
+    .card-qty-stepper { display: flex; align-items: center; gap: 5px; }
+    .card-qty-btn { width: 26px; height: 26px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 17px; color: var(--text-primary); line-height: 1; font-family: var(--font); flex-shrink: 0; }
     .card-qty-btn:active { background: var(--border); }
-    .card-qty-num { font-size: 12px; font-weight: 600; min-width: 14px; text-align: center; color: var(--text-primary); }
+    .card-qty-num { font-size: 14px; font-weight: 700; min-width: 18px; text-align: center; color: var(--text-primary); }
 
     /* PRODUCT INFO MODAL */
     .pinfo-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -344,7 +344,7 @@
     .product-card:hover { border-color: var(--border-hover); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .product-card:active { transform: scale(0.97); }
     .product-img { width: 100%; height: 100px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; background: var(--bg-secondary); border-radius: var(--radius-md) var(--radius-md) 0 0; overflow: hidden; }
-    .product-info { padding: 8px; flex-shrink: 0; }
+    .product-info { padding: 6px 8px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
     .product-name { font-size: 12px; font-weight: 500; color: var(--text-primary); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .product-price { font-size: 13px; font-weight: 600; color: var(--green); }    .mid-actions { border-top: 0.5px solid var(--border); padding: 10px 14px; display: flex; gap: 6px; justify-content: center; flex-shrink: 0; flex-wrap: wrap; }
     .mid-actions .action-btn { flex: 1; }
