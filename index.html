@@ -3976,10 +3976,9 @@
     let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
     g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty) + (l.ing.unit ? ' ' + l.ing.unit : '') + '\n'; });
     msg += '\nOrder ref: ' + soOrderNumber + '\nThank you';
-    openWaChat({
-      name: g.supplier.name, phone: phone, message: msg,
-      onSend: () => { g.sent = true; soPersistSent(); soRenderRouting(); }
-    });
+    if (!phone) { showToast('No phone number for this supplier'); return; }
+    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+    g.sent = true; soPersistSent(); soRenderRouting();
   }
 
   async function soPersistSent() {
@@ -4550,18 +4549,15 @@
     let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
     (r.items || []).forEach(it => { msg += '\u2022 ' + it.name + ': ' + String(it.pack != null ? it.pack : it.qty) + (it.unit ? ' ' + it.unit : '') + '\n'; });
     msg += '\nOrder ref: ' + (o.order_number || ('#' + o.id)) + '\nThank you';
-    openWaChat({
-      name: r.supplier_name, phone: phone, message: msg,
-      onSend: async () => {
-        r.sent = true;
-        if (db) {
-          const { error } = await db.from('orders').update({ routing: routing }).eq('id', o.id);
-          if (error) console.error('update order error:', JSON.stringify(error));
-        }
-        boRenderStats();
-        boRenderOrdersList();
-      }
-    });
+    if (!phone) { showToast('No phone number for this supplier'); return; }
+    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+    r.sent = true;
+    if (db) {
+      const { error } = await db.from('orders').update({ routing: routing }).eq('id', o.id);
+      if (error) console.error('update order error:', JSON.stringify(error));
+    }
+    boRenderStats();
+    boRenderOrdersList();
   }
 
   async function boDeleteOrder(id) {
