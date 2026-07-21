@@ -1523,9 +1523,11 @@
     .so-hist-pill.completed { color:#047857; border-color:#047857; background:rgba(4,120,87,0.08); }
     .so-hist-pill.issues { color:#b91c1c; border-color:#b91c1c; background:rgba(185,28,28,0.08); }
     /* per-item receipt marking (used in both the order-history detail sheet and Back Office) */
-    .item-receipt-btns { display:flex; gap:4px; flex-shrink:0; }
-    .item-receipt-btn { width:24px; height:24px; border-radius:6px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-tertiary); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; flex-shrink:0; font-family:var(--font); transition:all 0.15s; }
-    .item-receipt-btn:hover { color:var(--text-primary); border-color:var(--border-hover); }
+    .item-receipt-btns { display:flex; gap:6px; flex-shrink:0; margin-right:12px; }
+    .item-receipt-btn { width:26px; height:26px; border-radius:6px; border:1px solid #aaa; background:#e0e0e0; color:#555; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; flex-shrink:0; font-family:var(--font); transition:all 0.15s; }
+    .item-receipt-btn:hover { background:#ccc; border-color:#888; color:#222; }
+    [data-theme="dark"] .item-receipt-btn { border-color:#555; background:#3a3a3a; color:#bbb; }
+    [data-theme="dark"] .item-receipt-btn:hover { background:#4a4a4a; border-color:#777; color:#fff; }
     .item-receipt-btn.ok.active { background:#f0fdf4; border-color:#16a34a; color:#16a34a; }
     .item-receipt-btn.issue.active { background:#fef2f2; border-color:#dc2626; color:#dc2626; }
     [data-theme="dark"] .item-receipt-btn.ok.active { background:rgba(22,163,74,0.15); }
