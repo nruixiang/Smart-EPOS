@@ -5587,7 +5587,7 @@
   async function fetchPendingOrders() {
     if (!db) return null;
     try {
-      const { data, error } = await db.from('customer_orders').select('*').eq('status', 'pending').order('created_at', { ascending: false });
+      const { data, error } = await db.from('customer_orders').select('*').in('status', ['pending','preparing']).order('created_at', { ascending: false });
       if (error) { console.warn('customer_orders load:', error.message); return null; }
       return data || [];
     } catch (e) { return null; }
@@ -5617,14 +5617,20 @@
       return;
     }
     onlineOrders = list;
-    updateOoBadge(list.length);
+    updateOoBadge(list.filter(x => x.status === 'pending').length);
     renderOnlineOrders();
   }
 
   function renderOnlineOrders() {
     const body = document.getElementById('ooBody');
+    const nPending = onlineOrders.filter(x => x.status === 'pending').length;
+    const nPreparing = onlineOrders.filter(x => x.status === 'preparing').length;
     const n = onlineOrders.length;
-    document.getElementById('ooSub').textContent = n === 0 ? 'All caught up' : (n + (n === 1 ? ' order' : ' orders') + ' awaiting action');
+    let subText = 'All caught up';
+    if (nPending > 0 && nPreparing > 0) subText = nPending + ' pending · ' + nPreparing + ' preparing';
+    else if (nPending > 0) subText = nPending + (nPending === 1 ? ' order' : ' orders') + ' awaiting action';
+    else if (nPreparing > 0) subText = nPreparing + (nPreparing === 1 ? ' order' : ' orders') + ' being prepared';
+    document.getElementById('ooSub').textContent = subText;
     if (n === 0) { body.innerHTML = '<div class="oo-empty"><i class="ti ti-checks"></i>No new orders right now.</div>'; return; }
     body.innerHTML = onlineOrders.map(o => {
       const num = o.order_number || ('#' + (1000 + o.id));
@@ -5637,15 +5643,18 @@
       }).join('');
       return `<div class="oo-order">
         <div class="oo-order-top">
-          <div><span class="oo-num">${escapeHtml(num)}</span><span class="oo-online-badge"><i class="ti ti-world"></i> Online</span></div>
+          <div><span class="oo-num">${escapeHtml(num)}</span><span class="oo-online-badge"><i class="ti ti-world"></i> Online</span>${o.status === 'preparing' ? '<span class="oo-preparing-badge"><i class="ti ti-clock"></i> Preparing</span>' : ''}</div>
           <div class="oo-total">$${Number(o.total || 0).toFixed(2)}</div>
         </div>
         <div class="oo-order-cust"><span class="oo-name">${escapeHtml(o.customer_name || 'Guest')}</span><span class="oo-time"><i class="ti ti-clock"></i> ${ooTimeAgo(o.created_at)}</span></div>
         <div class="oo-items">${items}</div>
         ${o.special_instructions ? `<div class="oo-note"><b>Note:</b> ${escapeHtml(o.special_instructions)}</div>` : ''}
         <div class="oo-actions">
-          <button class="oo-reject" onclick="decideOrder(${o.id}, 'rejected')"><i class="ti ti-circle-x"></i> Reject</button>
-          <button class="oo-accept" onclick="decideOrder(${o.id}, 'accepted')"><i class="ti ti-circle-check"></i> Accept</button>
+          ${o.status === 'preparing'
+            ? `<button class="oo-complete" onclick="decideOrder(${o.id}, 'completed')"><i class="ti ti-checks"></i> Complete</button>`
+            : `<button class="oo-reject" onclick="decideOrder(${o.id}, 'rejected')"><i class="ti ti-circle-x"></i> Reject</button>
+               <button class="oo-accept" onclick="decideOrder(${o.id}, 'accepted')"><i class="ti ti-circle-check"></i> Accept</button>`
+          }
         </div>
       </div>`;
     }).join('');
@@ -5654,15 +5663,26 @@
   async function decideOrder(id, status) {
     if (!db) return;
     const o = onlineOrders.find(x => String(x.id) === String(id));
+    // 'accepted' → move to 'preparing'; 'completed' → log sale; 'rejected' → remove
+    const dbStatus = status === 'accepted' ? 'preparing' : status;
     try {
-      const { error } = await db.from('customer_orders').update({ status }).eq('id', id);
+      const { error } = await db.from('customer_orders').update({ status: dbStatus }).eq('id', id);
       if (error) { showToast('Failed: ' + (error.message || 'error')); return; }
     } catch (e) { showToast('Failed to update order'); return; }
-    if (status === 'accepted' && o) recordOnlineOrderAsSale(o);
-    onlineOrders = onlineOrders.filter(x => String(x.id) !== String(id));
-    updateOoBadge(onlineOrders.length);
+    if (status === 'completed' && o) {
+      recordOnlineOrderAsSale(o);
+      onlineOrders = onlineOrders.filter(x => String(x.id) !== String(id));
+      showToast('Order completed — added to sales ✓');
+    } else if (status === 'accepted' && o) {
+      // Update in-memory status to preparing so the card re-renders with Complete button
+      o.status = 'preparing';
+      showToast('Order accepted — now preparing');
+    } else if (status === 'rejected') {
+      onlineOrders = onlineOrders.filter(x => String(x.id) !== String(id));
+      showToast('Order rejected');
+    }
+    updateOoBadge(onlineOrders.filter(x => x.status === 'pending').length);
     renderOnlineOrders();
-    showToast(status === 'accepted' ? 'Order accepted — added to sales ✓' : 'Order rejected');
   }
 
   // Map customer payment choice to the POS method buckets (Cash / Card / Mobile).
