@@ -35,12 +35,14 @@
     .track-banner { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 16px; border-radius:14px; margin-bottom:16px; cursor:pointer; border:1px solid transparent; }
     .track-banner.hidden { display:none; }
     .track-banner.pending { background:#fff8e1; border-color:#fde68a; }
-    .track-banner.accepted { background:#ecfdf5; border-color:#a7f3d0; }
+    .track-banner.preparing { background:#f5f3ff; border-color:#ddd6fe; }
+    .track-banner.completed { background:#ecfdf5; border-color:#a7f3d0; }
     .track-banner.rejected { background:#fef2f2; border-color:#fecaca; }
     .track-left { display:flex; align-items:center; gap:12px; min-width:0; }
     .track-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
     .track-banner.pending .track-dot { background:#f59e0b; animation:pulse 1.4s ease-in-out infinite; }
-    .track-banner.accepted .track-dot { background:#10b981; }
+    .track-banner.preparing .track-dot { background:#7c3aed; animation:pulse 1.4s ease-in-out infinite; }
+    .track-banner.completed .track-dot { background:#10b981; }
     .track-banner.rejected .track-dot { background:#ef4444; }
     .track-title { font-size:13.5px; font-weight:800; color:var(--ink); }
     .track-sub { font-size:12px; color:var(--muted); margin-top:1px; }
@@ -199,10 +201,12 @@
     .confirm-num b { font-size:22px; color:var(--ink); display:block; margin-top:2px; font-weight:800; }
     .order-status { display:inline-flex; align-items:center; gap:9px; margin-top:20px; padding:11px 20px; border-radius:24px; font-size:13.5px; font-weight:700; }
     .order-status.pending { background:#fff8e1; color:#b45309; }
-    .order-status.accepted { background:#ecfdf5; color:#047857; }
+    .order-status.preparing { background:#f5f3ff; color:#6d28d9; }
+    .order-status.completed { background:#ecfdf5; color:#047857; }
     .order-status.rejected { background:#fef2f2; color:#b91c1c; }
     .status-dot { width:9px; height:9px; border-radius:50%; background:currentColor; }
     .order-status.pending .status-dot { animation:pulse 1.4s ease-in-out infinite; }
+    .order-status.preparing .status-dot { animation:pulse 1.4s ease-in-out infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
     .confirm-btn { margin-top:32px; padding:15px 34px; border-radius:14px; background:var(--ink); color:#fff; font-size:15px; font-weight:700; }
 
@@ -922,7 +926,7 @@
     function loadActiveOrder() {
       try { const raw = localStorage.getItem(LAST_ORDER_KEY); if (raw) activeOrder = JSON.parse(raw); } catch (e) { activeOrder = null; }
       renderTrackBanner();
-      if (activeOrder && activeOrder.status !== 'accepted' && activeOrder.status !== 'rejected') {
+      if (activeOrder && activeOrder.status !== 'completed' && activeOrder.status !== 'rejected') {
         placedOrderId = activeOrder.id;
         startStatusPoll();
       } else if (activeOrder) {
@@ -933,10 +937,10 @@
       const el = document.getElementById('trackBanner');
       if (!el) return;
       if (!activeOrder) { el.classList.add('hidden'); return; }
-      el.classList.remove('hidden', 'pending', 'accepted', 'rejected');
+      el.classList.remove('hidden', 'pending', 'preparing', 'completed', 'accepted', 'rejected');
       const st = activeOrder.status || 'pending';
       el.classList.add(st);
-      const label = st === 'accepted' ? 'Accepted' : st === 'rejected' ? 'Declined' : 'Pending';
+      const label = st === 'completed' ? 'Completed' : st === 'preparing' ? 'Preparing' : st === 'rejected' ? 'Declined' : st === 'accepted' ? 'Accepted' : 'Pending';
       document.getElementById('trackSub').textContent = activeOrder.number + ' · ' + label;
     }
     function openOrderStatus() {
@@ -951,12 +955,17 @@
       const txt = document.getElementById('statusText');
       const title = document.getElementById('confTitle');
       const icon = document.getElementById('confIcon');
-      box.classList.remove('pending', 'accepted', 'rejected');
-      if (status === 'accepted') {
-        box.classList.add('accepted');
-        txt.textContent = 'Accepted — your order is being prepared!';
-        title.textContent = 'Order accepted!';
-        icon.style.background = ''; icon.innerHTML = '<i class="ti ti-check"></i>';
+      box.classList.remove('pending', 'preparing', 'completed', 'accepted', 'rejected');
+      if (status === 'preparing') {
+        box.classList.add('preparing');
+        txt.textContent = 'Preparing — your order is being made!';
+        title.textContent = 'Order being prepared!';
+        icon.style.background = '#7c3aed'; icon.innerHTML = '<i class="ti ti-clock"></i>';
+      } else if (status === 'completed') {
+        box.classList.add('completed');
+        txt.textContent = 'Completed — thank you for your order!';
+        title.textContent = 'Order completed!';
+        icon.style.background = '#16a34a'; icon.innerHTML = '<i class="ti ti-checks"></i>';
       } else if (status === 'rejected') {
         box.classList.add('rejected');
         txt.textContent = 'Declined — please speak to our staff';
@@ -980,7 +989,7 @@
       try {
         const { data, error } = await db.from('customer_orders').select('status').eq('id', placedOrderId).single();
         if (error || !data) return;
-        const terminal = (data.status === 'accepted' || data.status === 'rejected');
+        const terminal = (data.status === 'completed' || data.status === 'rejected');
         if (activeOrder && String(activeOrder.id) === String(placedOrderId)) {
           activeOrder.status = data.status;
           if (terminal && !activeOrder.decidedAt) activeOrder.decidedAt = Date.now();
