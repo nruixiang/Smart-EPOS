@@ -55,7 +55,7 @@
     .cats { display:flex; gap:9px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; }
     .cats::-webkit-scrollbar { display:none; }
     .cat { display:flex; align-items:center; gap:7px; padding:9px 17px; border-radius:22px; border:1px solid var(--line); background:#fff; font-size:13.5px; font-weight:600; color:#444; white-space:nowrap; }
-    .cat.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+    .cat.active { background:#247F48; color:#fff; border-color:#247F48; }
     .menu-label { text-align:center; font-size:11px; font-weight:700; letter-spacing:0.14em; color:var(--muted2); margin:26px 0 16px; }
     .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:16px; }
     .card { background:var(--card); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); border:1px solid var(--line2); cursor:pointer; transition:transform 0.12s; }
@@ -94,6 +94,8 @@
     .citem-name { font-size:14.5px; font-weight:700; }
     .citem-opts { font-size:12.5px; color:var(--muted); margin-top:2px; }
     .citem-price { font-size:14px; font-weight:800; color:var(--amber); margin-top:6px; }
+    .citem-edit { margin-top:9px; display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; color:#555; background:#f4f4f4; border:1px solid var(--line); padding:5px 12px; border-radius:9px; }
+    .citem-edit:hover { background:#ececec; }
     .qty { display:flex; align-items:center; gap:6px; flex-shrink:0; }
     .qty-btn { width:32px; height:32px; border-radius:50%; background:#f4f4f4; display:flex; align-items:center; justify-content:center; font-size:17px; color:#333; }
     .qty-btn.del { color:var(--red); }
@@ -329,7 +331,7 @@
         </div>
         <div class="modal-body" id="mBody"></div>
         <div class="modal-foot">
-          <button class="cta dark" onclick="addFromModal()">Add to Cart • <span id="mAddTotal">$0.00</span></button>
+          <button class="cta dark" onclick="addFromModal()"><span id="mAddLabel">Add to Cart</span> • <span id="mAddTotal">$0.00</span></button>
         </div>
       </div>
     </div>
@@ -423,10 +425,13 @@
     let selectedCardType = null;
     let placedOrderId = null;
     let statusPollTimer = null;
-    let activeOrder = null;               // { id, number, name, status } persisted in localStorage
+    let activeOrder = null;               // { id, number, name, status, decidedAt } persisted in localStorage
     const LAST_ORDER_KEY = 'customer_active_order';
+    const STATUS_KEEP_MS = 15 * 60 * 1000; // keep a decided order's status for 15 min
+    let autoClearTimer = null;
     // modal working state
     let mProduct = null, mOpts = null, mSel = {};
+    let editingUid = null;   // set when editing an existing cart line
 
     function money(n) { return '$' + (Math.round(n * 100) / 100).toFixed(2); }
     function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -545,7 +550,7 @@
       const list = visibleProducts();
       if (!list.length) { el.innerHTML = '<div class="empty"><i class="ti ti-search-off"></i>No items found.</div>'; return; }
       el.innerHTML = list.map(p => {
-        const cust = optionsFor(p.category) ? '<div class="card-cust">Customise</div>' : '';
+        const cust = '';
         const img = p.image
           ? `<div class="card-img" style="background-image:url('${esc(p.image)}')">${cust}</div>`
           : `<div class="card-img"><i class="ti ti-cup"></i>${cust}</div>`;
@@ -566,16 +571,42 @@
       if (!p) return;
       const opts = optionsFor(p.category);
       if (!opts) { addToCart(p, [], p.price); toast('Added to cart'); return; }
+      editingUid = null;
       mProduct = p; mOpts = opts; mSel = {};
       opts.groups.forEach(g => {
         if (g.type === 'multi') mSel[g.key] = new Set();
         else mSel[g.key] = (g.choices.find(c => c.default) || g.choices[0] || {}).label;
       });
       document.getElementById('mName').textContent = p.name;
+      document.getElementById('mAddLabel').textContent = 'Add to Cart';
       renderModal();
       document.getElementById('custModal').classList.add('show');
     }
-    function closeCust() { document.getElementById('custModal').classList.remove('show'); }
+
+    function editCartItem(uid) {
+      const c = cart.find(x => String(x.uid) === String(uid));
+      if (!c) return;
+      const p = PRODUCTS.find(x => x.name === c.name);
+      const opts = p ? optionsFor(p.category) : null;
+      if (!p || !opts) return;
+      editingUid = uid;
+      mProduct = p; mOpts = opts; mSel = {};
+      opts.groups.forEach(g => {
+        if (g.type === 'multi') {
+          const set = new Set();
+          (c.options || []).filter(o => o.group === g.label).forEach(o => set.add(o.choice));
+          mSel[g.key] = set;
+        } else {
+          const found = (c.options || []).find(o => o.group === g.label);
+          mSel[g.key] = found ? found.choice : (g.choices.find(x => x.default) || g.choices[0] || {}).label;
+        }
+      });
+      document.getElementById('mName').textContent = p.name;
+      document.getElementById('mAddLabel').textContent = 'Update cart';
+      renderModal();
+      document.getElementById('custModal').classList.add('show');
+    }
+    function closeCust() { document.getElementById('custModal').classList.remove('show'); editingUid = null; }
 
     function modalUnit() {
       let sum = mProduct.price;
@@ -621,6 +652,21 @@
         if (g.type === 'multi') { mSel[g.key].forEach(lbl => { const c = g.choices.find(x => x.label === lbl); options.push({ group: g.label, choice: lbl, delta: c ? c.delta : 0 }); }); }
         else { const c = g.choices.find(x => x.label === mSel[g.key]); if (c) options.push({ group: g.label, choice: c.label, delta: c.delta }); }
       });
+      if (editingUid) {
+        const c = cart.find(x => String(x.uid) === String(editingUid));
+        if (c) {
+          c.options = options;
+          c.optLabel = options.filter(o => o.choice).map(o => o.choice).join(' • ');
+          c.unit = modalUnit();
+          c.key = mProduct.id + '|' + options.map(o => o.group + ':' + o.choice).join(',');
+        }
+        editingUid = null;
+        closeCust();
+        updateCartBar();
+        renderCart();
+        toast('Cart updated');
+        return;
+      }
       addToCart(mProduct, options, modalUnit());
       closeCust();
       toast('Added to cart');
@@ -664,6 +710,7 @@
             <div class="citem-name">${esc(c.name)}</div>
             ${c.optLabel ? `<div class="citem-opts">${esc(c.optLabel)}</div>` : ''}
             <div class="citem-price">${money(c.unit * c.qty)}</div>
+            ${(c.options && c.options.length) ? `<button class="citem-edit" onclick="editCartItem('${c.uid}')"><i class="ti ti-pencil"></i> Edit</button>` : ''}
           </div>
           <div class="qty">
             <button class="qty-btn ${c.qty === 1 ? 'del' : ''}" onclick="changeQty('${c.uid}',-1)"><i class="ti ${c.qty === 1 ? 'ti-trash' : 'ti-minus'}"></i></button>
@@ -812,6 +859,7 @@
       activeOrder = null;
       try { localStorage.removeItem(LAST_ORDER_KEY); } catch (e) {}
       stopStatusPoll(); placedOrderId = null;
+      if (autoClearTimer) { clearTimeout(autoClearTimer); autoClearTimer = null; }
       renderTrackBanner();
     }
     function loadActiveOrder() {
@@ -820,6 +868,8 @@
       if (activeOrder && activeOrder.status !== 'accepted' && activeOrder.status !== 'rejected') {
         placedOrderId = activeOrder.id;
         startStatusPoll();
+      } else if (activeOrder) {
+        scheduleAutoClear();
       }
     }
     function renderTrackBanner() {
@@ -873,16 +923,25 @@
       try {
         const { data, error } = await db.from('customer_orders').select('status').eq('id', placedOrderId).single();
         if (error || !data) return;
+        const terminal = (data.status === 'accepted' || data.status === 'rejected');
         if (activeOrder && String(activeOrder.id) === String(placedOrderId)) {
           activeOrder.status = data.status;
+          if (terminal && !activeOrder.decidedAt) activeOrder.decidedAt = Date.now();
           try { localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(activeOrder)); } catch (e) {}
         }
         updateStatusUI(data.status);
         renderTrackBanner();
-        if (data.status === 'accepted' || data.status === 'rejected') stopStatusPoll();
+        if (terminal) { stopStatusPoll(); scheduleAutoClear(); }
       } catch (e) {}
     }
     function stopStatusPoll() { if (statusPollTimer) { clearInterval(statusPollTimer); statusPollTimer = null; } }
+    function scheduleAutoClear() {
+      if (autoClearTimer) { clearTimeout(autoClearTimer); autoClearTimer = null; }
+      if (!activeOrder || !activeOrder.decidedAt) return;
+      const remain = STATUS_KEEP_MS - (Date.now() - activeOrder.decidedAt);
+      if (remain <= 0) { clearActiveOrder(); return; }
+      autoClearTimer = setTimeout(() => clearActiveOrder(), remain);
+    }
 
     function backToMenu() {
       cart = []; selectedPay = null; selectedCardType = null; searchQ = ''; activeCat = 'All Items';
