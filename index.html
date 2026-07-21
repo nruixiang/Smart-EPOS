@@ -3616,6 +3616,16 @@
     else { closeSmartOrder(); }
   }
 
+  function soOverlayBgClick(e) {
+    if (e.target !== document.getElementById('soOverlay')) return;
+    const routeSheet = document.getElementById('soRouteSheet');
+    if (routeSheet && routeSheet.classList.contains('show')) {
+      soCloseRouteToHistory();
+    } else {
+      closeSmartOrder();
+    }
+  }
+
   function soCloseRouteToHistory() {
     soCloseRoute();
     soShowStep(0);
@@ -11243,7 +11253,7 @@ function exportBoMonthToExcel() {
 </div>
 
 <!-- Smart Ordering System Modal -->
-<div class="so-overlay" id="soOverlay">
+<div class="so-overlay" id="soOverlay" onclick="soOverlayBgClick(event)">
   <div class="so-modal">
     <div class="so-header">
       <div class="so-header-title"><i class="ti ti-shopping-cart"></i> Smart Ordering System</div>
