@@ -1544,7 +1544,7 @@
     .item-receipt-btn.issue.active { background:#fef2f2; border-color:#dc2626; color:#dc2626; }
     [data-theme="dark"] .item-receipt-btn.ok.active { background:rgba(22,163,74,0.15); }
     [data-theme="dark"] .item-receipt-btn.issue.active { background:rgba(220,38,38,0.15); }
-    .item-receipt-note { font-size:11.5px; color:var(--red); padding:4px 14px 8px 12px; display:flex; align-items:center; gap:5px; }
+    .item-receipt-note { font-size:11.5px; color:var(--red); padding:4px; display:flex; align-items:center; gap:5px; }
     .so-supp-line-wrap { border-top:0.5px solid var(--border); }
 
     /* SO Issue Picker Modal */
@@ -4494,9 +4494,35 @@
   }
 
   function boNewOrder() {
-    document.getElementById('soOverlay').classList.add('show');
+    // Move the so-modal out of soOverlay and into the BO pane inline
+    const modal = document.querySelector('#soOverlay .so-modal');
+    const wrap  = document.getElementById('boNewOrderWrap');
+    if (!modal || !wrap) return;
+    wrap.appendChild(modal);
+    modal.style.cssText = 'width:100%;max-height:none;border-radius:12px;box-shadow:none;border:0.5px solid var(--border);display:flex;flex-direction:column;';
+    document.getElementById('boOrdMain').style.display = 'none';
+    wrap.style.display = 'block';
+    // Patch cancel/close buttons to restore BO view instead of closing overlay
+    document.getElementById('soOverlay').classList.remove('show');
+    const origClose = window._soCloseSmartOrder || closeSmartOrder;
+    window._soOrigClose = origClose;
+    window.closeSmartOrder = boExitNewOrder;
     soCloseRoute();
     soStartNewOrder();
+  }
+
+  function boExitNewOrder() {
+    // Restore so-modal back into soOverlay
+    const modal = document.querySelector('#boNewOrderWrap .so-modal');
+    const overlay = document.getElementById('soOverlay');
+    if (modal && overlay) {
+      overlay.appendChild(modal);
+      modal.style.cssText = '';
+    }
+    document.getElementById('boOrdMain').style.display = '';
+    document.getElementById('boNewOrderWrap').style.display = 'none';
+    if (window._soOrigClose) { window.closeSmartOrder = window._soOrigClose; delete window._soOrigClose; }
+    renderBoOrders();
   }
 
   async function boSendOrderSupplier(orderId, idx) {
@@ -11774,20 +11800,23 @@ function exportBoMonthToExcel() {
 
     <!-- ORDERS PANE -->
     <div class="pay-dash-body" id="payPane_orders" style="display:none;">
-      <div class="bo-ord-toolbar">
-        <div class="bo-ord-filters" id="boOrdFilters">
-          <button class="bo-ord-filter active" id="boOrdFilter_all" onclick="boSetOrdersFilter('all')">All</button>
-          <button class="bo-ord-filter" id="boOrdFilter_created" onclick="boSetOrdersFilter('created')">Created</button>
-          <button class="bo-ord-filter" id="boOrdFilter_completed" onclick="boSetOrdersFilter('completed')">Completed</button>
-          <button class="bo-ord-filter" id="boOrdFilter_issues" onclick="boSetOrdersFilter('issues')">Issues</button>
+      <div id="boOrdMain">
+        <div class="bo-ord-toolbar">
+          <div class="bo-ord-filters" id="boOrdFilters">
+            <button class="bo-ord-filter active" id="boOrdFilter_all" onclick="boSetOrdersFilter('all')">All</button>
+            <button class="bo-ord-filter" id="boOrdFilter_created" onclick="boSetOrdersFilter('created')">Created</button>
+            <button class="bo-ord-filter" id="boOrdFilter_completed" onclick="boSetOrdersFilter('completed')">Completed</button>
+            <button class="bo-ord-filter" id="boOrdFilter_issues" onclick="boSetOrdersFilter('issues')">Issues</button>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="bo-ord-refresh" onclick="renderBoOrders()"><i class="ti ti-refresh"></i> Refresh</button>
+            <button class="bo-ord-new-btn" onclick="boNewOrder()"><i class="ti ti-plus"></i> New Order</button>
+          </div>
         </div>
-        <div style="display:flex;gap:10px;">
-          <button class="bo-ord-refresh" onclick="renderBoOrders()"><i class="ti ti-refresh"></i> Refresh</button>
-          <button class="bo-ord-new-btn" onclick="boNewOrder()"><i class="ti ti-plus"></i> New Order</button>
-        </div>
+        <div class="bo-ord-stats" id="boOrdStats"></div>
+        <div id="boOrdList"></div>
       </div>
-      <div class="bo-ord-stats" id="boOrdStats"></div>
-      <div id="boOrdList"></div>
+      <div id="boNewOrderWrap" style="display:none;"></div>
     </div>
 
     <!-- REPORTS PANE -->
