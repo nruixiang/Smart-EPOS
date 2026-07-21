@@ -1482,6 +1482,8 @@
     /* routing bottom sheet */
     .so-route-sheet { position:absolute; left:0; right:0; bottom:0; max-height:78%; background:#ecfdf5; border-top-left-radius:18px; border-top-right-radius:18px; box-shadow:0 -8px 30px rgba(0,0,0,0.18); transform:translateY(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; z-index:5; }
     [data-theme="dark"] .so-route-sheet { background:#0f2e20; }
+    .so-route-block { position:absolute; inset:0; background:rgba(0,0,0,0.18); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); border-radius:inherit; z-index:4; display:none; cursor:pointer; }
+    .so-route-block.show { display:block; }
     .so-route-sheet.show { transform:translateY(0); }
     .so-route-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; flex-shrink:0; }
     .so-route-title { font-size:13px; font-weight:700; color:var(--green); }
@@ -3892,7 +3894,7 @@
     await soPersistSent();
     soRenderRouting();
     document.getElementById('soRouteSheet').classList.add('show');
-    soLockHeaderForRouting();
+    document.getElementById('soRouteBlock').classList.add('show');
     // keep Back Office Orders pane in sync if it's open
     const boPane = document.getElementById('payPane_orders');
     if (boPane && boPane.style.display !== 'none' && typeof renderBoOrders === 'function') renderBoOrders();
@@ -4036,28 +4038,11 @@
     }
   }
 
-  function soLockHeaderForRouting() {
-    const backBtn  = document.getElementById('soBackBtn');
-    const closeBtn = document.querySelector('#soOverlay .so-close');
-    const newBtn   = document.getElementById('soNewOrderBtn');
-    if (backBtn)  backBtn.onclick  = soCloseRouteToHistory;
-    if (closeBtn) closeBtn.onclick = soCloseRouteToHistory;
-    if (newBtn)   newBtn.onclick   = soCloseRouteToHistory;
-  }
-
-  function soUnlockHeader() {
-    const backBtn  = document.getElementById('soBackBtn');
-    const closeBtn = document.querySelector('#soOverlay .so-close');
-    const newBtn   = document.getElementById('soNewOrderBtn');
-    if (backBtn)  backBtn.onclick  = soBack;
-    if (closeBtn) closeBtn.onclick = closeSmartOrder;
-    if (newBtn)   newBtn.onclick   = soStartNewOrder;
-  }
-
   function soCloseRoute() {
     const s = document.getElementById('soRouteSheet');
     if (s) s.classList.remove('show');
-    soUnlockHeader();
+    const b = document.getElementById('soRouteBlock');
+    if (b) b.classList.remove('show');
   }
 
   // ── Smart Ordering System: Order History (landing view) ──
@@ -11317,6 +11302,9 @@ function exportBoMonthToExcel() {
       <button class="so-btn-wa-issue" id="soWaIssueBtn" onclick="soSendIssueWa()" style="display:none;"><i class="ti ti-brand-whatsapp"></i> Message Supplier About Issues</button>
       <button class="so-btn-complete" id="soCompleteBtn" onclick="soCompleteOrder()" style="margin-left:auto;"><i class="ti ti-circle-check"></i> Complete Order</button>
     </div>
+
+    <!-- Blur block over top half when route sheet is active -->
+    <div class="so-route-block" id="soRouteBlock" onclick="soCloseRouteToHistory()"></div>
 
     <!-- STEP 3: routing bottom sheet (for new order send flow only) -->
     <div class="so-route-sheet" id="soRouteSheet">
