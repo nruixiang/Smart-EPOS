@@ -4297,7 +4297,7 @@
     const isOk = it.receipt === 'ok';
     const isIssues = it.receipt === 'issues';
     const qty = escapeHtml(String(it.pack != null ? it.pack : it.qty) + (it.unit ? ' ' + it.unit : ''));
-    const note = isIssues && it.issue_note ? `<div class="item-receipt-note" style="padding-left:12px;"><i class="ti ti-alert-circle"></i> ${escapeHtml(it.issue_note)}</div>` : '';
+    const note = isIssues && it.issue_note ? `<div class="item-receipt-note" style="padding-left:6px;"><i class="ti ti-alert-circle"></i> ${escapeHtml(it.issue_note)}</div>` : '';
     return `<div class="bo-ord-supp-line">
         <span style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
           <span class="item-receipt-btns">
@@ -4314,27 +4314,80 @@
 
   function boRenderOrderDetail(o) {
     const routing = Array.isArray(o.routing) ? o.routing : [];
+    const isCompleted = o.status === 'completed';
+
     if (!routing.length) {
       const items = Array.isArray(o.items) ? o.items : [];
       const lines = items.map((it, i) => renderItemReceiptLine(o.id, null, i, it)).join('');
-      return `<div class="bo-ord-detail"><div class="bo-ord-supp">${lines || 'No items.'}</div></div>`;
+      const allOk = items.length > 0 && items.every(it => it.receipt === 'ok');
+      const hasIssues = items.some(it => it.receipt === 'issues');
+      const completeBtn = isCompleted
+        ? `<button class="bo-ord-send sent"><i class="ti ti-circle-check"></i> Order Completed</button>`
+        : `<button class="bo-ord-send${allOk ? '' : ' disabled'}" onclick="boCompleteOrderFromBo('${o.id}')" ${allOk ? '' : 'disabled'}><i class="ti ti-circle-check"></i> Complete Order</button>`;
+      const issueBtn = hasIssues
+        ? `<button class="bo-ord-send" style="background:var(--orange,#ea580c);" onclick="boSendIssueFromBo('${o.id}', null)"><i class="ti ti-brand-whatsapp"></i> Message Supplier About Issues</button>`
+        : '';
+      return `<div class="bo-ord-detail"><div class="bo-ord-supp">${lines || 'No items.'}${issueBtn}${completeBtn}</div></div>`;
     }
+
     const groups = routing.map((r, idx) => {
       const lines = (r.items || []).map((it, i) => renderItemReceiptLine(o.id, idx, i, it)).join('');
       const supObj = r.supplier_id != null ? suppliers.find(s => String(s.id) === String(r.supplier_id)) : null;
       const hasPhone = supObj && supObj.phone && String(supObj.phone).replace(/[^\d]/g, '');
-      let sendBtn;
-      if (r.sent) sendBtn = `<button class="bo-ord-send sent"><i class="ti ti-check"></i> Sent to ${escapeHtml(r.supplier_name)}</button>`;
-      else if (!hasPhone) sendBtn = `<button class="bo-ord-send disabled"><i class="ti ti-alert-triangle"></i> ${r.supplier_id == null ? 'No supplier assigned' : 'No phone on file'}</button>`;
-      else sendBtn = `<button class="bo-ord-send" onclick="boSendOrderSupplier('${o.id}', ${idx})"><i class="ti ti-brand-whatsapp"></i> Send to ${escapeHtml(r.supplier_name)}</button>`;
+      const hasIssues = (r.items || []).some(it => it.receipt === 'issues');
+      const allOk = (r.items || []).length > 0 && (r.items || []).every(it => it.receipt === 'ok');
+
+      const issueBtn = hasIssues && hasPhone
+        ? `<button class="bo-ord-send" style="background:var(--orange,#ea580c);" onclick="boSendIssueFromBo('${o.id}', ${idx})"><i class="ti ti-brand-whatsapp"></i> Message About Issues</button>`
+        : '';
+      const completeBtn = isCompleted
+        ? `<button class="bo-ord-send sent"><i class="ti ti-circle-check"></i> Order Completed</button>`
+        : `<button class="bo-ord-send${allOk ? '' : ' disabled'}" onclick="boCompleteOrderFromBo('${o.id}')" ${allOk ? '' : 'disabled'}><i class="ti ti-circle-check"></i> Complete Order</button>`;
 
       return `<div class="bo-ord-supp">
         <div class="bo-ord-supp-head"><span class="bo-ord-supp-name">${escapeHtml(r.supplier_name || 'Unassigned')}</span></div>
-        ${lines}
-        ${sendBtn}
+        ${lines}${issueBtn}${completeBtn}
       </div>`;
     }).join('');
     return `<div class="bo-ord-detail">${groups}</div>`;
+  }
+
+  async function boCompleteOrderFromBo(orderId) {
+    const o = boOrders.find(x => String(x.id) === String(orderId));
+    if (!o) return;
+    o.status = 'completed';
+    if (db) {
+      const { error } = await db.from('orders').update({ status: 'completed' }).eq('id', orderId);
+      if (error) { showToast('Could not update order'); return; }
+    }
+    showToast('Order marked as completed ✓');
+    boRenderStats();
+    boRenderOrdersList();
+  }
+
+  function boSendIssueFromBo(orderId, groupIdx) {
+    const o = boOrders.find(x => String(x.id) === String(orderId));
+    if (!o) return;
+    const routing = Array.isArray(o.routing) ? o.routing : [];
+
+    let contact = 'Supplier', phone = '', issueItems = [];
+
+    if (groupIdx !== null && routing[groupIdx]) {
+      const r = routing[groupIdx];
+      const supObj = r.supplier_id != null ? suppliers.find(s => String(s.id) === String(r.supplier_id)) : null;
+      phone = supObj ? String(supObj.phone || '').replace(/[^\d]/g, '') : '';
+      contact = (supObj && supObj.contact_person) || r.supplier_name || 'Supplier';
+      issueItems = (r.items || []).filter(it => it.receipt === 'issues');
+    } else {
+      issueItems = (Array.isArray(o.items) ? o.items : []).filter(it => it.receipt === 'issues');
+    }
+
+    if (!issueItems.length) return;
+    const lines = issueItems.map(it =>
+      `• ${it.name} (${String(it.pack != null ? it.pack : it.qty)}${it.unit ? ' ' + it.unit : ''}): ${it.issue_note || 'Issue reported'}`
+    ).join('\n');
+    const msg = `Hi ${contact}, we received order ${o.order_number || ('#' + o.id)} but have the following issues:\n\n${lines}\n\nCould you please advise? Thank you.`;
+    openWaChat({ name: contact, phone, message: msg });
   }
 
   // Marks a single item as received OK or flagged with an issue (with an optional short note).
