@@ -2896,7 +2896,6 @@
               : '<div class="supp-supplies-empty">No ingredients assigned — edit to add some</div>'}
           </div>
           <div class="supp-actions">
-            <a class="supp-wa-btn ${wa ? '' : 'disabled'}" ${wa ? `onclick="suppWaChat('${s.id}')"` : ''} title="Message on WhatsApp"><i class="ti ti-brand-whatsapp"></i></a>
             <button class="supp-icon-btn" onclick="editSupplier('${s.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
             <button class="supp-icon-btn del" onclick="deleteSupplier('${s.id}')" title="Delete"><i class="ti ti-trash"></i></button>
           </div>
@@ -2909,7 +2908,7 @@
     el.innerHTML = `
       <div id="supplierPanelMain" style="display:flex;flex-direction:column;gap:0;">
         <div class="supp-dir-head">Supplier Directory</div>
-        <div class="supp-dir-sub">${n} supplier${n === 1 ? '' : 's'} · tap WhatsApp to send orders directly</div>
+        <div class="supp-dir-sub">${n} supplier${n === 1 ? '' : 's'}</div>
         <div>${listItems}</div>
         <div style="margin-top:12px;">
           <button class="outlet-add-btn" onclick="showSupplierForm()">
