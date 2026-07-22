@@ -9692,8 +9692,10 @@ function exportBoMonthToExcel() {
     const daysInMonth = new Date(yr, mo + 1, 0).getDate();
     const isCurrentMonth = yr === now.getFullYear() && mo === now.getMonth();
 
-    // Month sales
-    const monthTxs = salesLog.filter(t => t.date.getFullYear() === yr && t.date.getMonth() === mo);
+    // Month sales — filtered to current outlet only, excluding voided and refunded
+    const monthTxs = salesLog.filter(t => !t.voided && !t.refund && !t.refunded
+      && t.date.getFullYear() === yr && t.date.getMonth() === mo
+      && matchesCurrentOutlet(t.outlet_id, t.outlet));
     const monthTotal = monthTxs.reduce((a, t) => a + t.total, 0);
     const monthOrders = monthTxs.length;
 
