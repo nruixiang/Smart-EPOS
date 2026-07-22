@@ -5000,12 +5000,27 @@
     productOptionsLoaded = true;
   }
 
-  function getProductOptions(category) {
+  // Per-product overrides: restricts which option groups (by key) show up for specific
+  // products, even though they share a customizable category with other drinks.
+  // e.g. Lemonade/Sparkling Water are in "Cold Drinks" but shouldn't offer a Milk choice.
+  const PRODUCT_OPTION_OVERRIDES = {
+    'Lemonade': ['size', 'sugar'],
+    'Sparkling Water': ['size'],
+  };
+
+  function applyProductOptionOverride(opts, productName) {
+    if (!opts || !productName) return opts;
+    const allowedKeys = PRODUCT_OPTION_OVERRIDES[productName];
+    if (!allowedKeys) return opts;
+    return { ...opts, groups: opts.groups.filter(g => allowedKeys.includes(g.key)) };
+  }
+
+  function getProductOptions(category, productName) {
     if (!CUSTOMIZABLE_CATEGORIES.includes(category)) return null;
-    if (productOptionsLoaded && PRODUCT_OPTIONS_BY_CATEGORY[category]) {
-      return PRODUCT_OPTIONS_BY_CATEGORY[category];
-    }
-    return DEFAULT_DRINK_OPTIONS; // offline / DB unreachable / tables not migrated yet
+    const opts = (productOptionsLoaded && PRODUCT_OPTIONS_BY_CATEGORY[category])
+      ? PRODUCT_OPTIONS_BY_CATEGORY[category]
+      : DEFAULT_DRINK_OPTIONS; // offline / DB unreachable / tables not migrated yet
+    return applyProductOptionOverride(opts, productName);
   }
 
   // Resolves the default choice for every group (e.g. Regular/Whole/Regular, no Extras).
@@ -5583,7 +5598,7 @@
   let customizeSelections = {}; // { [groupKey]: choiceLabel } for single, { [groupKey]: Set(choiceLabel) } for multi
 
   function openCustomizeModal(name, basePrice, emoji, editingKey, presetSelections) {
-    const opts = getProductOptions(currentCat) || getProductOptions(findProductCategory(name));
+    const opts = getProductOptions(currentCat, name) || getProductOptions(findProductCategory(name), name);
     if (!opts) return;
     customizeTarget = { name, basePrice, emoji, editingKey: editingKey || null };
     customizeSelections = {};
@@ -5643,7 +5658,7 @@
 
   function selectCustomizeSingle(groupKey, choiceLabel) {
     customizeSelections[groupKey] = choiceLabel;
-    const opts = getProductOptions(currentCat) || getProductOptions(findProductCategory(customizeTarget.name));
+    const opts = getProductOptions(currentCat, customizeTarget.name) || getProductOptions(findProductCategory(customizeTarget.name), customizeTarget.name);
     renderCustomizeBody(opts);
     updateCustomizeTotal();
   }
@@ -5651,13 +5666,13 @@
   function toggleCustomizeMulti(groupKey, choiceLabel) {
     const set = customizeSelections[groupKey];
     if (set.has(choiceLabel)) set.delete(choiceLabel); else set.add(choiceLabel);
-    const opts = getProductOptions(currentCat) || getProductOptions(findProductCategory(customizeTarget.name));
+    const opts = getProductOptions(currentCat, customizeTarget.name) || getProductOptions(findProductCategory(customizeTarget.name), customizeTarget.name);
     renderCustomizeBody(opts);
     updateCustomizeTotal();
   }
 
   function getCustomizeDelta() {
-    const opts = getProductOptions(currentCat) || getProductOptions(findProductCategory(customizeTarget.name));
+    const opts = getProductOptions(currentCat, customizeTarget.name) || getProductOptions(findProductCategory(customizeTarget.name), customizeTarget.name);
     let delta = 0;
     opts.groups.forEach(g => {
       if (g.type === 'multi') {
@@ -5675,7 +5690,7 @@
 
   function getCustomizeSummary() {
     // Flat list of { group, choice, delta } for receipt/cart display and DB storage
-    const opts = getProductOptions(currentCat) || getProductOptions(findProductCategory(customizeTarget.name));
+    const opts = getProductOptions(currentCat, customizeTarget.name) || getProductOptions(findProductCategory(customizeTarget.name), customizeTarget.name);
     const summary = [];
     opts.groups.forEach(g => {
       if (g.type === 'multi') {
@@ -5725,7 +5740,7 @@
     if (Array.isArray(item.comboSelections)) { editComboOrderItem(key); return; }
     // Reconstruct preset selections from the stored summary so the modal reopens with current choices
     const preset = {};
-    const opts = getProductOptions(findProductCategory(item.name));
+    const opts = getProductOptions(findProductCategory(item.name), item.name);
     if (opts && item.selectedOptions) {
       opts.groups.forEach(g => {
         const matches = item.selectedOptions.filter(s => s.group === g.label).map(s => s.choice);
@@ -5800,7 +5815,7 @@
       let customizeHtml = '';
       if (picked) {
         const pickedProduct = findProduct(picked);
-        const drinkOpts = pickedProduct ? getProductOptions(findProductCategory(picked)) : null;
+        const drinkOpts = pickedProduct ? getProductOptions(findProductCategory(picked), picked) : null;
         if (drinkOpts) {
           if (!comboSlotSelections[i].selections) comboSlotSelections[i].selections = getDefaultSelections(drinkOpts);
           customizeHtml = `<div class="combo-slot-customize">
@@ -5882,7 +5897,7 @@
     if (!p) return null;
     let price = p.price;
     if (slotSelection.selections) {
-      const opts = getProductOptions(findProductCategory(slotSelection.productName));
+      const opts = getProductOptions(findProductCategory(slotSelection.productName), slotSelection.productName);
       if (opts) price += summarizeSelections(opts, slotSelection.selections).reduce((a, s) => a + s.delta, 0);
     }
     return price;
@@ -5925,7 +5940,7 @@
       const price = getComboSlotPrice(slot, sel);
       let selectedOptions = null;
       if (sel.selections) {
-        const opts = getProductOptions(findProductCategory(sel.productName));
+        const opts = getProductOptions(findProductCategory(sel.productName), sel.productName);
         if (opts) selectedOptions = summarizeSelections(opts, sel.selections);
       }
       return { slotLabel: slot.label, productName: sel.productName, price, selectedOptions };
@@ -5955,7 +5970,7 @@
     const presetSlots = (item.comboSelections || []).map(s => {
       let selections = null;
       if (s.selectedOptions) {
-        const opts = getProductOptions(findProductCategory(s.productName));
+        const opts = getProductOptions(findProductCategory(s.productName), s.productName);
         if (opts) {
           selections = {};
           opts.groups.forEach(g => {
@@ -5972,7 +5987,7 @@
   function addItem(name, price, emoji) {
     const combo = getComboDefinition(name);
     if (combo) { openComboModal(name, price, emoji); return; }
-    const opts = getProductOptions(currentCat);
+    const opts = getProductOptions(currentCat, name);
     if (opts) {
       openCustomizeModal(name, price, emoji);
       return;
@@ -6113,7 +6128,7 @@
       const safeKey = key.replace(/'/g, "\\'");
       const isCombo = Array.isArray(item.comboSelections);
       const isCustomizable = !isCombo && Array.isArray(item.selectedOptions);
-      const opts = isCustomizable ? getProductOptions(findProductCategory(item.name)) : null;
+      const opts = isCustomizable ? getProductOptions(findProductCategory(item.name), item.name) : null;
       const isEdited = isCustomizable && opts && !isAtDefaultSelections(opts, item.selectedOptions);
       let optionsSummary = '';
       if (isCombo) {
@@ -6598,7 +6613,7 @@
         }).join(' + ');
         optsLine = `<tr><td colspan="2" style="font-size:11px;color:var(--text-tertiary);padding-top:0;padding-bottom:6px;">${comboText}</td></tr>`;
       } else {
-        const opts = Array.isArray(item.selectedOptions) ? getProductOptions(findProductCategory(item.name)) : null;
+        const opts = Array.isArray(item.selectedOptions) ? getProductOptions(findProductCategory(item.name), item.name) : null;
         const isEdited = Array.isArray(item.selectedOptions) && opts && !isAtDefaultSelections(opts, item.selectedOptions);
         optsLine = isEdited
           ? `<tr><td colspan="2" style="font-size:11px;color:var(--text-tertiary);padding-top:0;padding-bottom:6px;">${item.selectedOptions.map(o => o.choice).join(', ')}</td></tr>`
