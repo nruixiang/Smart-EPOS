@@ -6100,6 +6100,7 @@
     });
     order = {};
     renderOrder();
+    renderProducts();
     updateRecallBadge();
     showToast(`Order #${heldOrderCounter} held`);
   }
@@ -8144,7 +8145,7 @@
     const daySummary = {};
     const hourSummary = {};
     salesLog.forEach(t => {
-      if (t.voided || t.refund) return;
+      if (t.voided || t.refund || t.refunded) return;
       const d = t.date;
       const dow = dayNames[d.getDay()];
       const h = d.getHours();
@@ -8154,7 +8155,7 @@
 
     const dayLines = Object.entries(daySummary).map(([d,c]) => `${d}: ${c} orders`).join(', ') || 'No historical data yet';
     const hourLines = Object.entries(hourSummary).sort((a,b)=>+a[0]-+b[0]).map(([h,c]) => `${h}:00-${+h+1}:00: ${c} orders`).join(', ') || 'No historical data yet';
-    const totalOrders = salesLog.filter(t => !t.voided && !t.refund).length;
+    const totalOrders = salesLog.filter(t => !t.voided && !t.refund && !t.refunded).length;
 
     return `You are a retail traffic forecasting assistant for a small business POS system called Smart EPOS.
 
@@ -8576,7 +8577,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
   }
 
   function getFilteredTxs() {
-    return salesLog.filter(t => !t.voided && !t.refund && (() => {
+    return salesLog.filter(t => !t.voided && !t.refund && !t.refunded && (() => {
       if (payOutletFilter === 'All') return true;
       // Find the outlet object for the selected filter name
       const targetOutlet = outlets.find(o => o.name === payOutletFilter);
@@ -8939,7 +8940,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const tk = todayKey();
     return salesLog.filter(t => {
       const d = t.date;
-      return !t.voided && !t.refund && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === tk;
+      return !t.voided && !t.refund && !t.refunded && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === tk;
     });
   }
 
@@ -8968,7 +8969,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const key = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
     return salesLog.filter(t => {
       const d = t.date;
-      const matchesDate = !t.voided && !t.refund && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === key;
+      const matchesDate = !t.voided && !t.refund && !t.refunded && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === key;
       return matchesDate && matchesCurrentOutlet(t.outlet_id, t.outlet);
     });
   }
@@ -8977,7 +8978,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const key = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
     return salesLog.filter(t => {
       const d = t.date;
-      const matchesDate = !t.voided && !t.refund && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === key;
+      const matchesDate = !t.voided && !t.refund && !t.refunded && d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate() === key;
       return matchesDate && matchesPayOutletFilter(t.outlet_id, t.outlet);
     });
   }
@@ -9469,7 +9470,7 @@ function renderBoMonth() {
     const isCurrentMonth = yr === now.getFullYear() && mo === now.getMonth();
 
     // Month sales
-    const monthTxs = salesLog.filter(t => !t.voided && !t.refund && t.date.getFullYear() === yr && t.date.getMonth() === mo && matchesPayOutletFilter(t.outlet_id, t.outlet));
+    const monthTxs = salesLog.filter(t => !t.voided && !t.refund && !t.refunded && t.date.getFullYear() === yr && t.date.getMonth() === mo && matchesPayOutletFilter(t.outlet_id, t.outlet));
     const monthTotal = monthTxs.reduce((a, t) => a + t.total, 0);
     const monthOrders = monthTxs.length;
 
