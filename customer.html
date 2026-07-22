@@ -306,10 +306,6 @@
             <div class="pay" data-pay="Card" onclick="selectPay('Card')"><i class="ti ti-credit-card"></i> Card</div>
             <div class="pay" data-pay="PayNow" onclick="selectPay('PayNow')"><i class="ti ti-qrcode"></i> PayNow</div>
           </div>
-          <div class="cardtypes hidden" id="cardTypes">
-            <div class="cardtypes-label">Card type <span class="req">*</span></div>
-            <div class="cardtypes-grid" id="cardTypesGrid"></div>
-          </div>
           <div class="card-details hidden" id="cardDetails">
             <div class="field">
               <label class="flabel">Card number <span class="req">*</span></label>
@@ -840,16 +836,11 @@
     function selectPay(m) {
       selectedPay = m;
       document.querySelectorAll('#pays .pay').forEach(p => p.classList.toggle('sel', p.dataset.pay === m));
-      const ct = document.getElementById('cardTypes');
       const cd = document.getElementById('cardDetails');
       if (m === 'Card') {
-        ct.classList.remove('hidden');
         cd.classList.remove('hidden');
       } else {
-        ct.classList.add('hidden');
         cd.classList.add('hidden');
-        selectedCardType = null;
-        document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel'));
       }
       updatePlaceBtn();
     }
@@ -1068,8 +1059,6 @@
       document.getElementById('custNotes').value = '';
       document.getElementById('searchInput').value = '';
       document.querySelectorAll('#pays .pay').forEach(p => p.classList.remove('sel'));
-      document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel'));
-      document.getElementById('cardTypes').classList.add('hidden');
       document.getElementById('cardDetails').classList.add('hidden');
       ['cdNumber','cdExpiry','cdCvc','cdName','cdNickname'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
       closePayNow();
