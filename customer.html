@@ -139,7 +139,9 @@
     .ctype { display:flex; align-items:center; justify-content:center; gap:7px; padding:11px 8px; border:1.5px solid var(--line); border-radius:11px; font-size:12.5px; font-weight:700; color:#555; cursor:pointer; text-align:center; }
     .ctype .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
     .ctype.sel { border-color:var(--amber); background:var(--amber-soft); color:var(--ink); }
-    .paynow-box { margin-top:16px; text-align:center; padding:18px; border:1px solid var(--line); border-radius:14px; background:#fafafa; }
+    .card-details { margin-top:16px; display:flex; flex-direction:column; gap:12px; }
+    .card-details.hidden { display:none; }
+    .card-details-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .paynow-box.hidden { display:none; }
     .paynow-qr { width:174px; height:174px; margin:0 auto 12px; border-radius:12px; background:#fff; border:1px solid var(--line); padding:9px; box-sizing:border-box; }
     .paynow-qr img { width:100%; height:100%; display:block; }
@@ -307,6 +309,30 @@
           <div class="cardtypes hidden" id="cardTypes">
             <div class="cardtypes-label">Card type <span class="req">*</span></div>
             <div class="cardtypes-grid" id="cardTypesGrid"></div>
+          </div>
+          <div class="card-details hidden" id="cardDetails">
+            <div class="field">
+              <label class="flabel">Card number <span class="req">*</span></label>
+              <input class="finput" id="cdNumber" type="text" inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456" oninput="fmtCardNumber(this);updatePlaceBtn();" />
+            </div>
+            <div class="card-details-row">
+              <div class="field" style="margin-bottom:0;">
+                <label class="flabel">Expiry date <span class="req">*</span></label>
+                <input class="finput" id="cdExpiry" type="text" inputmode="numeric" maxlength="5" placeholder="MM/YY" oninput="fmtExpiry(this);updatePlaceBtn();" />
+              </div>
+              <div class="field" style="margin-bottom:0;">
+                <label class="flabel">CVC / CVV <span class="req">*</span></label>
+                <input class="finput" id="cdCvc" type="text" inputmode="numeric" maxlength="4" placeholder="123" oninput="updatePlaceBtn();" />
+              </div>
+            </div>
+            <div class="field">
+              <label class="flabel">Name on card <span class="req">*</span></label>
+              <input class="finput" id="cdName" type="text" placeholder="e.g. John Smith" oninput="updatePlaceBtn();" />
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label class="flabel">Card nickname <span class="req">*</span></label>
+              <input class="finput" id="cdNickname" type="text" placeholder="e.g. My Visa, Work card…" oninput="updatePlaceBtn();" />
+            </div>
           </div>
         </div>
         <div class="panel">
@@ -815,8 +841,16 @@
       selectedPay = m;
       document.querySelectorAll('#pays .pay').forEach(p => p.classList.toggle('sel', p.dataset.pay === m));
       const ct = document.getElementById('cardTypes');
-      if (m === 'Card') { ct.classList.remove('hidden'); }
-      ct.classList.add('hidden'); selectedCardType = null; document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel'));
+      const cd = document.getElementById('cardDetails');
+      if (m === 'Card') {
+        ct.classList.remove('hidden');
+        cd.classList.remove('hidden');
+      } else {
+        ct.classList.add('hidden');
+        cd.classList.add('hidden');
+        selectedCardType = null;
+        document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel'));
+      }
       updatePlaceBtn();
     }
     function selectCardType(name) {
@@ -827,7 +861,25 @@
     function updatePlaceBtn() {
       const name = (document.getElementById('custName').value || '').trim();
       const payOk = !!selectedPay;
-      document.getElementById('placeBtn').disabled = !(name && payOk && cart.length);
+      let cardOk = true;
+      if (selectedPay === 'Card') {
+        const num    = (document.getElementById('cdNumber').value   || '').trim();
+        const expiry = (document.getElementById('cdExpiry').value   || '').trim();
+        const cvc    = (document.getElementById('cdCvc').value      || '').trim();
+        const cdName = (document.getElementById('cdName').value     || '').trim();
+        const nick   = (document.getElementById('cdNickname').value || '').trim();
+        cardOk = num.length > 0 && expiry.length > 0 && cvc.length > 0 && cdName.length > 0 && nick.length > 0;
+      }
+      document.getElementById('placeBtn').disabled = !(name && payOk && cardOk && cart.length);
+    }
+    function fmtCardNumber(el) {
+      let v = el.value.replace(/\D/g, '').slice(0, 16);
+      el.value = v.replace(/(.{4})/g, '$1 ').trim();
+    }
+    function fmtExpiry(el) {
+      let v = el.value.replace(/\D/g, '').slice(0, 4);
+      if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+      el.value = v;
     }
 
     // ── PayNow QR (shown after Place Order) ──
@@ -1018,6 +1070,8 @@
       document.querySelectorAll('#pays .pay').forEach(p => p.classList.remove('sel'));
       document.querySelectorAll('#cardTypesGrid .ctype').forEach(x => x.classList.remove('sel'));
       document.getElementById('cardTypes').classList.add('hidden');
+      document.getElementById('cardDetails').classList.add('hidden');
+      ['cdNumber','cdExpiry','cdCvc','cdName','cdNickname'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
       closePayNow();
       updateCartBar();
       document.getElementById('confirmView').classList.add('hidden');
