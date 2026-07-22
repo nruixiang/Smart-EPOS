@@ -5805,6 +5805,7 @@
   function removeOrderItem(key) {
     delete order[key];
     renderOrder();
+    renderProducts();
   }
 
   function isAtDefaultSelections(opts, selectedOptions) {
@@ -6078,7 +6079,7 @@
     renderProducts();
   }
 
-  function clearOrder() { order = {}; activeDiscount = null; attachedCustomer = null; renderOrder(); updateDiscountBadge(); updateCustomerRowDisplay(); }
+  function clearOrder() { order = {}; activeDiscount = null; attachedCustomer = null; renderOrder(); renderProducts(); updateDiscountBadge(); updateCustomerRowDisplay(); }
 
   // ── Hold / Recall ──
   let heldOrders = [];
@@ -6162,6 +6163,7 @@
     held.items.forEach(i => { order[i.key || i.name] = {...i}; });
     heldOrders.splice(idx, 1);
     renderOrder();
+    renderProducts();
     updateRecallBadge();
     closeRecall();
     showToast(`Order #${id} recalled`);
@@ -8838,13 +8840,14 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     document.getElementById('sandboxPill').classList.toggle('active', sandboxMode);
     document.getElementById('sandboxBanner').classList.toggle('show', sandboxMode);
     if (sandboxMode) {
-      // Clear current order so sandbox exploration starts fresh
       order = {};
       renderOrder();
+      renderProducts();
       showToast('🧪 Sandbox ON — transactions will not be saved');
     } else {
       order = {};
       renderOrder();
+      renderProducts();
       showToast('Sandbox OFF — back to live mode');
     }
   }
