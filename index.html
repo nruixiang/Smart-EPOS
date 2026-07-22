@@ -343,7 +343,7 @@
     .products-grid .product-card { height: 155px; }
     .product-card { position: relative; border: 0.5px solid var(--border); border-radius: var(--radius-md); overflow: visible; cursor: pointer; transition: all 0.15s; background: var(--bg-primary); display: flex; flex-direction: column; }
     .product-card:hover { border-color: var(--border-hover); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .product-card:active { transform: scale(0.97); }
+    .product-card.pressing { transform: scale(0.97); }
     .product-img { width: 100%; height: 100px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; background: var(--bg-secondary); border-radius: var(--radius-md) var(--radius-md) 0 0; overflow: hidden; }
     .product-info { padding: 8px; flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; gap: 2px; }
     .product-name { font-size: 12px; font-weight: 500; color: var(--text-primary); margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -5549,6 +5549,21 @@
         + '</div>'
         + '</div>';
     }).join('');
+
+    // Add press animation only when NOT clicking stepper buttons
+    document.querySelectorAll('.product-card').forEach(card => {
+      card.addEventListener('mousedown', function(e) {
+        if (e.target.closest('.card-qty-stepper')) return;
+        card.classList.add('pressing');
+      });
+      card.addEventListener('touchstart', function(e) {
+        if (e.target.closest('.card-qty-stepper')) return;
+        card.classList.add('pressing');
+      }, { passive: true });
+      card.addEventListener('mouseleave', () => card.classList.remove('pressing'));
+      card.addEventListener('mouseup', () => card.classList.remove('pressing'));
+      card.addEventListener('touchend', () => card.classList.remove('pressing'));
+    });
   }
 
   function selectCat(btn) {
