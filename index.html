@@ -1246,9 +1246,10 @@
     .setup-logo {
       width: 64px; height: 64px; border-radius: 18px;
       background: #111; display: flex; align-items: center; justify-content: center;
-      margin-bottom: 24px; flex-shrink: 0;
+      margin-bottom: 24px; flex-shrink: 0; overflow: hidden;
     }
     .setup-logo i { font-size: 30px; color: white; }
+    .setup-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .setup-heading {
       font-size: 26px; font-weight: 800; color: var(--text-primary);
       text-align: center; margin-bottom: 6px; letter-spacing: -0.5px;
@@ -2396,6 +2397,7 @@
     typeSelect.value = localStorage.getItem(BUSINESS_TYPE_KEY) || '';
     phoneInput.value = localStorage.getItem(BUSINESS_PHONE_KEY) || '';
     updateSetupBtn();
+    applySetupLogo();
     el.classList.remove('hidden', 'fade-out');
     setTimeout(() => input.focus(), 100);
   }
@@ -2457,12 +2459,23 @@
 
   function applyBusinessLogo(url) {
     const icon = document.getElementById('brandIcon');
-    if (!icon) return;
-    if (url) {
-      icon.innerHTML = `<img src="${url}" alt="logo" />`;
-    } else {
-      icon.innerHTML = BUSINESS_NAME ? BUSINESS_NAME.charAt(0).toUpperCase() : 'E';
+    if (icon) {
+      if (url) {
+        icon.innerHTML = `<img src="${url}" alt="logo" />`;
+      } else {
+        icon.innerHTML = BUSINESS_NAME ? BUSINESS_NAME.charAt(0).toUpperCase() : 'E';
+      }
     }
+    applySetupLogo(url);
+  }
+
+  // Shows the currently set business logo in the (first-run / re-run) Setup screen,
+  // falling back to the generic device icon if no logo has been uploaded yet.
+  function applySetupLogo(url) {
+    const box = document.getElementById('setupLogoBox');
+    if (!box) return;
+    const logoUrl = url !== undefined ? url : (businessInfoCache && businessInfoCache.logo_url);
+    box.innerHTML = logoUrl ? `<img src="${logoUrl}" alt="logo" />` : '<i class="ti ti-device-desktop"></i>';
   }
 
   // ── Business Info (Supabase) ──
@@ -11415,7 +11428,7 @@ function exportBoMonthToExcel() {
 <!-- Setup Screen -->
 <div class="setup-overlay hidden" id="setupOverlay">
   <div class="setup-card">
-    <div class="setup-logo"><i class="ti ti-device-desktop"></i></div>
+    <div class="setup-logo" id="setupLogoBox"><i class="ti ti-device-desktop"></i></div>
     <div class="setup-heading">Welcome to Smart EPOS</div>
     <div class="setup-sub">Let's get your point of sale ready.<br>Fill in your business details to get started.</div>
     <div class="setup-field-label">Business Name</div>
