@@ -5530,9 +5530,9 @@
       const priceRow = cardQty > 0
         ? '<div class="card-price-row"><div class="product-price">$' + p.price.toFixed(2) + '</div>'
           + '<div class="card-qty-stepper" onclick="event.stopPropagation();">'
-          + '<button class="card-qty-btn" onclick="cardChangeQty(\'' + safeNameJs + '\',-1);">−</button>'
+          + '<button class="card-qty-btn" onclick="event.stopPropagation();cardChangeQty(\'' + safeNameJs + '\',-1);">−</button>'
           + '<span class="card-qty-num">' + cardQty + '</span>'
-          + '<button class="card-qty-btn" onclick="cardChangeQty(\'' + safeNameJs + '\',1);">+</button>'
+          + '<button class="card-qty-btn" onclick="event.stopPropagation();cardChangeQty(\'' + safeNameJs + '\',1);">+</button>'
           + '</div></div>'
         : '<div class="card-price-row"><div class="product-price">$' + p.price.toFixed(2) + '</div></div>';
       return '<div class="product-card' + (isAdmin ? ' admin-mode' : '') + '" onclick="addItem(\'' + safeName + '\',' + p.price + ',\'' + safeName + '\')">'
