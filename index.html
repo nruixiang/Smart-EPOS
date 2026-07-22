@@ -5775,6 +5775,7 @@
   }
 
   function editOrderItem(key) {
+    const item = order[key];
     if (!item) return;
     if (Array.isArray(item.comboSelections)) { editComboOrderItem(key); return; }
     // Reconstruct preset selections from the stored summary so the modal reopens with current choices
