@@ -1233,22 +1233,23 @@
     .setup-overlay {
       position: fixed; inset: 0; z-index: 10000;
       background: var(--bg-primary);
-      display: flex; align-items: center; justify-content: center;
+      display: flex; align-items: flex-start; justify-content: center;
       opacity: 1; transition: opacity 0.4s ease;
+      overflow-y: auto; padding: 40px 16px;
     }
     .setup-overlay.fade-out { opacity: 0; pointer-events: none; }
     .setup-overlay.hidden { display: none; }
     .setup-card {
-      width: 440px; max-width: 92vw;
+      width: 440px; max-width: 100%;
       display: flex; flex-direction: column; align-items: center;
-      gap: 0;
+      gap: 0; padding-bottom: 24px;
     }
     .setup-logo {
-      width: 64px; height: 64px; border-radius: 18px;
+      width: 80px; height: 80px; border-radius: 22px;
       background: #111; display: flex; align-items: center; justify-content: center;
       margin-bottom: 24px; flex-shrink: 0; overflow: hidden;
     }
-    .setup-logo i { font-size: 30px; color: white; }
+    .setup-logo i { font-size: 36px; color: white; }
     .setup-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .setup-heading {
       font-size: 26px; font-weight: 800; color: var(--text-primary);
@@ -1261,7 +1262,7 @@
     .setup-field-label {
       font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
       text-transform: uppercase; color: var(--text-tertiary);
-      align-self: flex-start; margin-bottom: 8px; width: 100%;
+      align-self: flex-start; margin-bottom: 8px; margin-top: 20px; width: 100%;
     }
     .setup-input {
       width: 100%; padding: 14px 16px; border-radius: 12px;
@@ -11452,12 +11453,12 @@ function exportBoMonthToExcel() {
     <div class="setup-logo" id="setupLogoBox"><i class="ti ti-device-desktop"></i></div>
     <div class="setup-heading">Welcome to Smart EPOS</div>
     <div class="setup-sub">Let's get your point of sale ready.<br>Fill in your business details to get started.</div>
-    <div class="setup-field-label">Business Name</div>
+    <div class="setup-field-label" style="margin-top:0;">Business Name</div>
     <input class="setup-input" id="setupBusinessName" type="text"
       placeholder="e.g. The Corner Café"
       oninput="updateSetupBtn();"
       onkeydown="if(event.key==='Enter') tryFinishSetup();" />
-    <div class="setup-field-label" style="margin-top:20px;">Business Type</div>
+    <div class="setup-field-label">Business Type</div>
     <select class="setup-select" id="setupBusinessType" onchange="updateSetupBtn();">
       <option value="" disabled selected>Select a business type</option>
       <option value="fnb">Food &amp; Beverage</option>
@@ -11465,12 +11466,12 @@ function exportBoMonthToExcel() {
       <option value="services">Salon &amp; Services</option>
       <option value="other">Other</option>
     </select>
-    <div class="setup-field-label" style="margin-top:20px;">Business WhatsApp Number</div>
+    <div class="setup-field-label">Business WhatsApp Number</div>
     <input class="setup-input" id="setupPhone" type="tel"
       placeholder="e.g. +6591234567"
       oninput="updateSetupBtn();"
       onkeydown="if(event.key==='Enter') tryFinishSetup();" />
-    <div class="setup-hint" style="margin-bottom:12px;">A verification code will be sent to this number.</div>
+    <div class="setup-hint" style="margin-top:8px; margin-bottom:4px; text-align:left;">A verification code will be sent to this number.</div>
     <button class="setup-btn" id="setupContinueBtn" onclick="tryFinishSetup()" disabled>
       Verify &amp; Continue
     </button>
