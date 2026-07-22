@@ -5114,7 +5114,10 @@
     let min = Infinity;
     slot.categories.forEach(cat => {
       const all = (PRODUCTS[cat] || {}).All || [];
-      all.forEach(p => { if (p.price < min) min = p.price; });
+      all.forEach(p => {
+        const inOutlet = Array.isArray(p.outlet_ids) && p.outlet_ids.includes(String(currentOutletId));
+        if (inOutlet && p.price < min) min = p.price;
+      });
     });
     return min === Infinity ? 0 : min;
   }
@@ -5123,7 +5126,10 @@
     const items = [];
     slot.categories.forEach(cat => {
       const all = (PRODUCTS[cat] || {}).All || [];
-      all.forEach(p => items.push({ ...p, category: cat }));
+      all.forEach(p => {
+        const inOutlet = Array.isArray(p.outlet_ids) && p.outlet_ids.includes(String(currentOutletId));
+        if (inOutlet) items.push({ ...p, category: cat });
+      });
     });
     return items;
   }
