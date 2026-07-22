@@ -2434,7 +2434,7 @@
     }
   }
 
-  function finishSetup() {
+  async function finishSetup() {
     const { name, type, phone } = otpPendingMember;
     localStorage.setItem(BUSINESS_NAME_KEY, name);
     localStorage.setItem(BUSINESS_TYPE_KEY, type);
@@ -2445,6 +2445,27 @@
     otpPendingMember = null;
     // Auto-open checklist after first-time setup
     setTimeout(() => openChecklist(), 500);
+
+    // Persist into business_info too, so the Back Office's Business Information
+    // tab shows the same name/type/phone right away, not just localStorage/header.
+    if (db) {
+      const row = {
+        business_name: name, business_type: type || null, phone: phone || null,
+        logo_url: businessInfoCache?.logo_url || null,
+        tagline: businessInfoCache?.tagline || null, address: businessInfoCache?.address || null,
+        gst_reg_no: businessInfoCache?.gst_reg_no || null, receipt_footer: businessInfoCache?.receipt_footer || null
+      };
+      let error;
+      if (businessInfoCache?.id) {
+        ({ error } = await db.from('business_info').update(row).eq('id', businessInfoCache.id));
+      } else {
+        const { data, error: insertErr } = await db.from('business_info').insert(row).select().single();
+        error = insertErr;
+        if (data) businessInfoCache = data;
+      }
+      if (error) console.error('finishSetup business_info save error:', JSON.stringify(error));
+      else businessInfoCache = { ...businessInfoCache, ...row };
+    }
   }
 
   function applyBusinessName(name) {
