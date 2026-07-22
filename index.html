@@ -5774,7 +5774,17 @@
     renderProducts();
   }
 
-  function editOrderItem(key) {
+  // Event delegation for order item buttons (avoids inline onclick key-escaping issues)
+  document.getElementById('orderItems').addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const key = decodeURIComponent(btn.dataset.key);
+    const action = btn.dataset.action;
+    if (action === 'edit') editOrderItem(key);
+    else if (action === 'remove') removeOrderItem(key);
+    else if (action === 'inc') changeQty(key, 1);
+    else if (action === 'dec') changeQty(key, -1);
+  });
     const item = order[key];
     if (!item) return;
     if (Array.isArray(item.comboSelections)) { editComboOrderItem(key); return; }
@@ -6165,7 +6175,7 @@
     }
     container.innerHTML = items.map(item => {
       const key = item.key || item.name;
-      const safeKey = key.replace(/'/g, "\\'");
+      const safeKey = encodeURIComponent(key);
       const isCombo = Array.isArray(item.comboSelections);
       const isCustomizable = !isCombo && Array.isArray(item.selectedOptions);
       const opts = isCustomizable ? getProductOptions(findProductCategory(item.name), item.name) : null;
@@ -6181,8 +6191,8 @@
       }
       const extraRow = (isCustomizable || isCombo) ? `
         <div class="order-item-extra">
-          <button class="order-item-edit-btn" onclick="editOrderItem('${safeKey}')"><i class="ti ti-adjustments"></i> Edit</button>
-          <button class="order-item-remove-btn" onclick="removeOrderItem('${safeKey}')"><i class="ti ti-circle-x"></i></button>
+          <button class="order-item-edit-btn" data-key="${safeKey}" data-action="edit"><i class="ti ti-adjustments"></i> Edit</button>
+          <button class="order-item-remove-btn" data-key="${safeKey}" data-action="remove"><i class="ti ti-circle-x"></i></button>
         </div>` : '';
       return `
       <div class="order-item">
@@ -6192,9 +6202,9 @@
             <div class="item-price">$${item.price.toFixed(2)} each${optionsSummary ? ' · ' + optionsSummary : ''}</div>
           </div>
           <div class="item-qty">
-            <button class="qty-btn" onclick="changeQty('${safeKey}', -1)">−</button>
+            <button class="qty-btn" data-key="${safeKey}" data-action="dec">−</button>
             <span class="qty-num">${item.qty}</span>
-            <button class="qty-btn" onclick="changeQty('${safeKey}', 1)">+</button>
+            <button class="qty-btn" data-key="${safeKey}" data-action="inc">+</button>
           </div>
         </div>
         ${extraRow}
