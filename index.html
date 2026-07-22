@@ -10216,6 +10216,8 @@ function exportBoMonthToExcel() {
 
     let entries = salesLog.filter(t => {
       const tTime = t.date instanceof Date ? t.date.getTime() : new Date(t.date).getTime();
+      // Always filter by current outlet
+      if (!matchesCurrentOutlet(t.outlet_id, t.outlet)) return false;
       // When searching by order #, show all DB records regardless of date
       if (search) {
         return t.ref.toLowerCase().includes(search);
