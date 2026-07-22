@@ -10230,28 +10230,36 @@ function exportBoMonthToExcel() {
     }).join('');
   }
 
+  // Void/Refund buttons are mutually exclusive per transaction (Void only shows for
+  // today's orders, Refund only for older ones), so one of the two elements below
+  // will always be missing from the DOM — setDisplay guards against that safely.
+  function setDisplay(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = value;
+  }
+
   function showVoidConfirm(shortRef) {
-    document.getElementById('voidBtn_' + shortRef).style.display = 'none';
-    document.getElementById('refundBtn_' + shortRef).style.display = 'none';
-    document.getElementById('voidConfirm_' + shortRef).style.display = 'flex';
+    setDisplay('voidBtn_' + shortRef, 'none');
+    setDisplay('refundBtn_' + shortRef, 'none');
+    setDisplay('voidConfirm_' + shortRef, 'flex');
   }
 
   function cancelVoid(shortRef) {
-    document.getElementById('voidBtn_' + shortRef).style.display = '';
-    document.getElementById('refundBtn_' + shortRef).style.display = '';
-    document.getElementById('voidConfirm_' + shortRef).style.display = 'none';
+    setDisplay('voidBtn_' + shortRef, '');
+    setDisplay('refundBtn_' + shortRef, '');
+    setDisplay('voidConfirm_' + shortRef, 'none');
   }
 
   function showRefundConfirm(shortRef) {
-    document.getElementById('voidBtn_' + shortRef).style.display = 'none';
-    document.getElementById('refundBtn_' + shortRef).style.display = 'none';
-    document.getElementById('refundConfirm_' + shortRef).style.display = 'flex';
+    setDisplay('voidBtn_' + shortRef, 'none');
+    setDisplay('refundBtn_' + shortRef, 'none');
+    setDisplay('refundConfirm_' + shortRef, 'flex');
   }
 
   function cancelRefund(shortRef) {
-    document.getElementById('voidBtn_' + shortRef).style.display = '';
-    document.getElementById('refundBtn_' + shortRef).style.display = '';
-    document.getElementById('refundConfirm_' + shortRef).style.display = 'none';
+    setDisplay('voidBtn_' + shortRef, '');
+    setDisplay('refundBtn_' + shortRef, '');
+    setDisplay('refundConfirm_' + shortRef, 'none');
   }
 
   // Reverses the points and spend that were awarded to a member at the time of
