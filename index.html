@@ -7,9 +7,10 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    button, input, select, textarea { font-family: inherit; }
     /* Ensure every scrollable container supports click-and-drag / touch-swipe scrolling,
        including momentum scrolling on older iOS Safari (-webkit-overflow-scrolling). */
     .admin-body, .pinfo-body, .products-grid, .order-items, .cash-panel, .cardtype-modal-body,
@@ -26,17 +27,18 @@
       --bg-primary: #ffffff;
       --bg-secondary: #f9f8f6;
       --bg-tertiary: #f1efe8;
-      --text-primary: #1a1a1a;
+      --text-primary: #111111;
       --text-secondary: #6b7280;
       --text-tertiary: #9ca3af;
       --border: rgba(0,0,0,0.12);
       --border-hover: rgba(0,0,0,0.22);
-      --green: #16a34a;
+      --green: #247F48;
       --blue: #2563eb;
-      --red: #dc2626;
+      --red: #C81E1E;
+      --orange: #AE5109;
       --radius-md: 8px;
       --radius-lg: 12px;
-      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --font: 'Lato', 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme]) {
@@ -64,7 +66,7 @@
       --bg-primary: #ffffff;
       --bg-secondary: #f9f8f6;
       --bg-tertiary: #f1efe8;
-      --text-primary: #1a1a1a;
+      --text-primary: #111111;
       --text-secondary: #6b7280;
       --text-tertiary: #9ca3af;
       --border: rgba(0,0,0,0.12);
@@ -75,17 +77,17 @@
     .pin-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .pin-overlay.show { opacity: 1; pointer-events: all; }
     .pin-modal { background: var(--bg-primary); border-radius: 20px; width: 340px; overflow: hidden; }
-    .pin-modal-top { background: #1a1a1a; padding: 28px 24px 22px; text-align: center; }
+    .pin-modal-top { background: #111111; padding: 28px 24px 22px; text-align: center; }
     .pin-shield { width: 44px; height: 44px; border-radius: 50%; background: rgba(239,68,68,0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
-    .pin-shield i { font-size: 22px; color: #ef4444; }
+    .pin-shield i { font-size: 22px; color: #e03535; }
     .pin-modal-title { font-size: 18px; font-weight: 700; color: white; margin-bottom: 4px; }
     .pin-modal-sub { font-size: 13px; color: rgba(255,255,255,0.5); }
     .pin-modal-body { background: var(--bg-primary); padding: 24px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
     .pin-dots { display: flex; gap: 12px; }
     .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; transition: background 0.15s, border-color 0.15s; }
-    .pin-dot.filled { background: #1a1a1a; border-color: #1a1a1a; }
+    .pin-dot.filled { background: #111111; border-color: #111111; }
     [data-theme="dark"] .pin-dot.filled { background: #f2f2f7; border-color: #f2f2f7; }
-    .pin-error { font-size: 0.857rem; color: #ef4444; min-height: 16px; text-align: center; }
+    .pin-error { font-size: 0.857rem; color: #e03535; min-height: 16px; text-align: center; }
     .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
     .pin-key { padding: 16px 0; border-radius: 12px; border: none; background: var(--bg-secondary); font-size: 1.571rem; font-weight: 500; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.1s; }
     .pin-key:active { background: var(--bg-tertiary); transform: scale(0.95); }
@@ -118,10 +120,10 @@
     .seg-btn { padding: 6px 14px; font-size: 0.857rem; font-weight: 500; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-family: var(--font); display: flex; align-items: center; gap: 5px; transition: all 0.15s; white-space: nowrap; }
     .seg-btn.active { background: var(--bg-primary); color: var(--text-primary); border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .cashier-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-md); border: 0.5px solid var(--border); }
-    .cashier-avatar { width: 36px; height: 36px; border-radius: 50%; background: #fef3c7; display: flex; align-items: center; justify-content: center; font-size: 0.929rem; font-weight: 700; color: #d97706; flex-shrink: 0; }
+    .cashier-avatar { width: 36px; height: 36px; border-radius: 50%; background: #FEF3C7; display: flex; align-items: center; justify-content: center; font-size: 0.929rem; font-weight: 700; color: #AE5109; flex-shrink: 0; }
     .cashier-name { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
-    .cashier-badge { font-size: 0.786rem; color: #d97706; display: flex; align-items: center; gap: 3px; margin-top: 2px; }
-    .revoke-btn { margin-left: auto; padding: 6px 14px; border-radius: 20px; border: none; background: #fef3c7; color: #d97706; font-size: 0.857rem; font-weight: 600; cursor: pointer; font-family: var(--font); }
+    .cashier-badge { font-size: 0.786rem; color: #AE5109; display: flex; align-items: center; gap: 3px; margin-top: 2px; }
+    .revoke-btn { margin-left: auto; padding: 6px 14px; border-radius: 20px; border: none; background: #FEF3C7; color: #AE5109; font-size: 0.857rem; font-weight: 600; cursor: pointer; font-family: var(--font); }
     .revoke-btn:hover { background: #fde68a; }
     .admin-section-note { font-size: 0.857rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 12px; }
 
@@ -131,11 +133,16 @@
     .card-admin-btn { padding: 3px 9px; border-radius: 5px; border: none; font-size: 10px; font-weight: 600; cursor: pointer; font-family: var(--font); line-height: 1.6; transition: opacity 0.15s; }
     .card-admin-btn.edit { background: #2563eb; color: white; }
     .card-admin-btn.edit:hover { opacity: 0.85; }
-    .card-admin-btn.delete { background: #dc2626; color: white; }
+    .card-admin-btn.delete { background: #C81E1E; color: white; }
     .card-admin-btn.delete:hover { opacity: 0.85; }
     .card-info-btn { position: absolute; bottom: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.7); background: rgba(0,0,0,0.45); color: white; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, border-color 0.15s; font-family: var(--font); backdrop-filter: blur(3px); z-index: 5; line-height: 1; }
     .card-info-btn:hover { background: rgba(0,0,0,0.7); border-color: white; }
-    .product-name-row { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+    .product-name-row { display: flex; align-items: center; gap: 5px; margin-bottom: 2px; }
+    .card-price-row { position: static; display: flex; align-items: center; height: 20px; }
+    .card-qty-stepper { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 5px; }
+    .card-qty-btn { width: 26px; height: 26px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 17px; color: var(--text-primary); line-height: 1; font-family: var(--font); flex-shrink: 0; }
+    .card-qty-btn:active { background: var(--border); }
+    .card-qty-num { font-size: 14px; font-weight: 700; min-width: 18px; text-align: center; color: var(--text-primary); }
 
     /* PRODUCT INFO MODAL */
     .pinfo-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -152,7 +159,7 @@
     .pinfo-section-label { font-size: 10.5px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 5px; margin-bottom: 7px; }
     .pinfo-section-label i { font-size: 13px; }
     .pinfo-desc { font-size: 14px; color: var(--text-primary); line-height: 1.6; }
-    .pinfo-allergen-pill { display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 10px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; font-size: 13px; font-weight: 600; width: 100%; }
+    .pinfo-allergen-pill { display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 10px; background: #edf7f1; border: 1px solid #a3d9b8; color: #247F48; font-size: 13px; font-weight: 600; width: 100%; }
     .pinfo-allergen-pill i { font-size: 15px; }
     [data-theme="dark"] .pinfo-allergen-pill { background: rgba(22,163,74,0.15); border-color: rgba(22,163,74,0.3); }
     .pinfo-ingredients { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
@@ -170,14 +177,14 @@
     .header-pill-btn:hover { background: var(--bg-tertiary); border-color: var(--border-hover); color: var(--text-primary); }
     /* Sandbox toggle */
     .sandbox-pill { display: flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 20px; border: 0.5px solid var(--border); background: var(--bg-secondary); font-size: 12px; color: var(--text-secondary); white-space: nowrap; cursor: pointer; transition: all 0.15s; user-select: none; }
-    .sandbox-pill.active { background: #fefce8; border-color: #fde68a; color: #92400e; }
+    .sandbox-pill.active { background: #fefce8; border-color: #fde68a; color: #7a3607; }
     [data-theme="dark"] .sandbox-pill.active { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.4); color: #fbbf24; }
     .sandbox-toggle { width: 28px; height: 16px; border-radius: 8px; background: var(--border); position: relative; transition: background 0.2s; flex-shrink: 0; }
     .sandbox-pill.active .sandbox-toggle { background: #eab308; }
     .sandbox-toggle::after { content: ''; position: absolute; width: 12px; height: 12px; border-radius: 50%; background: white; top: 2px; left: 2px; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
     .sandbox-pill.active .sandbox-toggle::after { transform: translateX(12px); }
     /* Sandbox banner */
-    .sandbox-banner { display: none; align-items: center; justify-content: center; gap: 8px; padding: 7px 16px; background: #fefce8; border-bottom: 1px solid #fde68a; font-size: 12px; font-weight: 600; color: #92400e; flex-shrink: 0; }
+    .sandbox-banner { display: none; align-items: center; justify-content: center; gap: 8px; padding: 7px 16px; background: #fefce8; border-bottom: 1px solid #fde68a; font-size: 12px; font-weight: 600; color: #7a3607; flex-shrink: 0; }
     [data-theme="dark"] .sandbox-banner { background: rgba(234,179,8,0.12); border-color: rgba(234,179,8,0.3); color: #fbbf24; }
     .sandbox-banner.show { display: flex; }
     .sandbox-banner i { font-size: 14px; }
@@ -197,7 +204,7 @@
     .clockin-field-box.active { border-color: var(--blue); background: var(--bg-primary); }
     .clockin-field-box .placeholder { color: var(--text-tertiary); font-weight: 400; }
     .clockin-field-box .value { color: var(--text-primary); letter-spacing: 3px; }
-    .clockin-btn { width: 100%; padding: 14px; border-radius: var(--radius-md); border: none; font-size: 15px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: opacity 0.15s; background: #374151; color: white; }
+    .clockin-btn { width: 100%; padding: 14px; border-radius: var(--radius-md); border: none; font-size: 15px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: opacity 0.15s; background: #384152; color: white; }
     .clockin-btn.ready { background: #111; }
     .clockin-btn:hover { opacity: 0.85; }
 
@@ -283,10 +290,10 @@
     [data-theme="dark"] .online-orders-btn { color:#60a5fa; }
     [data-theme="dark"] .online-orders-btn:hover { background:rgba(37,99,235,0.14); border-color:#1e40af; }
     .online-orders-btn i { font-size:16px; }
-    .oo-badge { background:#ef4444; color:#fff; min-width:18px; height:18px; padding:0 5px; border-radius:9px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; position:absolute; top:-6px; right:-6px; box-shadow:0 0 0 2px var(--bg-primary); }
+    .oo-badge { background:#e03535; color:#fff; min-width:18px; height:18px; padding:0 5px; border-radius:9px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; position:absolute; top:-6px; right:-6px; box-shadow:0 0 0 2px var(--bg-primary); }
     /* ── Online Orders drawer ── */
     .oo-overlay { position:fixed; inset:0; display:flex; justify-content:flex-end; z-index:640; pointer-events:none; }
-    .oo-card { width:420px; max-width:100vw; height:100vh; height:100dvh; background:var(--bg-secondary); border-left:0.5px solid var(--border); display:flex; flex-direction:column; pointer-events:auto; transform:translateX(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); }
+    .oo-card { width:420px; max-width:100vw; height:100vh; background:var(--bg-secondary); border-left:0.5px solid var(--border); display:flex; flex-direction:column; pointer-events:auto; transform:translateX(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); }
     .oo-overlay.show .oo-card { transform:translateX(0); box-shadow:-10px 0 40px rgba(0,0,0,0.22); }
     @media (max-width:520px) { .oo-card { width:100vw; } }
     .oo-header { display:flex; align-items:center; gap:12px; padding:16px 18px; background:var(--bg-primary); border-bottom:0.5px solid var(--border); flex-shrink:0; }
@@ -316,8 +323,8 @@
     [data-theme="dark"] .oo-note { background:rgba(234,179,8,0.1); border-color:rgba(234,179,8,0.3); }
     .oo-actions { display:flex; gap:10px; margin-top:12px; }
     .oo-reject, .oo-accept { flex:1; padding:11px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:6px; }
-    .oo-reject { background:var(--bg-primary); color:#dc2626; border:1px solid #fecaca; }
-    .oo-reject:hover { background:#fef2f2; }
+    .oo-reject { background:var(--bg-primary); color:#C81E1E; border:1px solid #f5c0c0; }
+    .oo-reject:hover { background:#faf0f0; }
     .oo-accept { background:#1e9e57; color:#fff; border:none; }
     .oo-accept:hover { filter:brightness(0.95); }
     .oo-empty { text-align:center; color:var(--text-tertiary); font-size:13.5px; padding:50px 20px; }
@@ -337,10 +344,10 @@
     .products-grid .product-card { height: 155px; }
     .product-card { position: relative; border: 0.5px solid var(--border); border-radius: var(--radius-md); overflow: visible; cursor: pointer; transition: all 0.15s; background: var(--bg-primary); display: flex; flex-direction: column; }
     .product-card:hover { border-color: var(--border-hover); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .product-card:active { transform: scale(0.97); }
+    .product-card.pressing { transform: scale(0.97); }
     .product-img { width: 100%; height: 100px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; background: var(--bg-secondary); border-radius: var(--radius-md) var(--radius-md) 0 0; overflow: hidden; }
-    .product-info { padding: 8px; flex-shrink: 0; }
-    .product-name { font-size: 12px; font-weight: 500; color: var(--text-primary); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .product-info { padding: 8px; flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; gap: 2px; }
+    .product-name { font-size: 12px; font-weight: 500; color: var(--text-primary); margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .product-price { font-size: 13px; font-weight: 600; color: var(--green); }    .mid-actions { border-top: 0.5px solid var(--border); padding: 10px 14px; display: flex; gap: 6px; justify-content: center; flex-shrink: 0; flex-wrap: wrap; }
     .mid-actions .action-btn { flex: 1; }
     .action-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 10px; border: 0.5px solid var(--border); border-radius: var(--radius-md); background: transparent; cursor: pointer; transition: background 0.15s; min-width: 52px; font-family: var(--font); }
@@ -373,24 +380,24 @@
     .order-item-remove-btn { display: flex; align-items: center; color: var(--red); background: none; border: none; cursor: pointer; padding: 2px; font-size: 15px; }
     .order-item-remove-btn:hover { opacity: 0.75; }
     .customer-row { padding: 8px 10px; border-top: 0.5px solid var(--border); display: flex; gap: 6px; flex-shrink: 0; }
-    .attached-customer-chip { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #f0fdf4; border: 0.5px solid #bbf7d0; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .attached-customer-chip { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #edf7f1; border: 0.5px solid #a3d9b8; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     [data-theme="dark"] .attached-customer-chip { background: rgba(22,163,74,0.15); border-color: rgba(22,163,74,0.35); }
-    .acc-avatar { width: 32px; height: 32px; border-radius: 50%; background: #16a34a; color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .acc-avatar { width: 32px; height: 32px; border-radius: 50%; background: #247F48; color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .acc-info { flex: 1; min-width: 0; }
     .acc-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-    .acc-meta { font-size: 11px; color: #16a34a; margin-top: 1px; }
+    .acc-meta { font-size: 11px; color: #247F48; margin-top: 1px; }
     .acc-close { color: var(--text-tertiary); cursor: pointer; font-size: 14px; flex-shrink: 0; padding: 2px; display: flex; align-items: center; }
     .acc-close:hover { color: var(--text-primary); }
     .suggest-today { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #fffbeb; border: 0.5px solid #fde68a; flex-shrink: 0; }
     [data-theme="dark"] .suggest-today { background: rgba(161,124,0,0.12); border-color: rgba(234,179,8,0.3); }
     [data-theme="dark"] .suggest-today-label { color: #fcd34d; }
-    .suggest-today-label { font-size: 10px; font-weight: 700; color: #d97706; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+    .suggest-today-label { font-size: 10px; font-weight: 700; color: #AE5109; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
     .suggest-today-items { display: flex; gap: 6px; flex-wrap: wrap; }
     .suggest-today-chip { padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: 14px; background: var(--bg-primary); border: 0.5px solid #fde68a; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.15s; }
-    .suggest-today-chip:hover { background: #fef3c7; }
+    .suggest-today-chip:hover { background: #FEF3C7; }
     [data-theme="dark"] .suggest-today-chip { border-color: rgba(234,179,8,0.4); }
     [data-theme="dark"] .suggest-today-chip:hover { background: rgba(234,179,8,0.15); }
-    .customer-match-card { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #f0fdf4; border: 0.5px solid #bbf7d0; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .customer-match-card { margin: 8px 10px 0; padding: 10px 12px; border-radius: var(--radius-md); background: #edf7f1; border: 0.5px solid #a3d9b8; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .match-attach-btn { padding: 7px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--font); flex-shrink: 0; transition: opacity 0.15s; }
     .match-attach-btn:hover { opacity: 0.85; }
     .match-attach-btn.attached { background: var(--text-tertiary); }
@@ -408,7 +415,7 @@
     .pay-btn span { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
     .pay-btn.cash { background: var(--green); border-color: var(--green); }
     .pay-btn.cash i, .pay-btn.cash span { color: white; }
-    .pay-btn.card { background: #374151; border-color: #374151; }
+    .pay-btn.card { background: #384152; border-color: #384152; }
     .pay-btn.card i, .pay-btn.card span { color: white; }
 
     /* CASH KEYPAD PANEL */
@@ -587,7 +594,7 @@
     .receipt-ref { font-size: 11px; background: var(--bg-secondary); color: var(--text-secondary); padding: 3px 8px; border-radius: 4px; border: 0.5px solid var(--border); }
     .receipt-close { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 20px; display: flex; align-items: center; }
     .receipt-body { overflow-y: auto; padding: 20px 24px; flex: 1; }
-    .receipt-shop-name { text-align: center; font-size: 22px; font-weight: 700; font-style: italic; letter-spacing: 0.08em; color: var(--text-primary); margin-bottom: 2px; font-family: 'Playfair Display', Georgia, serif; }
+    .receipt-shop-name { text-align: center; font-size: 22px; font-weight: 700; font-style: italic; letter-spacing: 0.08em; color: var(--text-primary); margin-bottom: 2px; font-family: var(--font); }
     .receipt-shop-sub { text-align: center; font-size: 12px; color: var(--text-secondary); margin-bottom: 18px; }
     .receipt-shop-sub.tight { margin-bottom: 2px; }
     .receipt-meta { width: 100%; font-size: 12px; margin-bottom: 16px; }
@@ -610,13 +617,13 @@
     .btn-print { background: #111; color: white; border-color: #111 !important; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
     /* Applied Discount Banner */
-    .disc-applied-banner { display: none; align-items: center; justify-content: space-between; margin: 0 20px 14px; padding: 11px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); flex-shrink: 0; }
+    .disc-applied-banner { display: none; align-items: center; justify-content: space-between; margin: 0 20px 14px; padding: 11px 14px; background: #edf7f1; border: 1px solid #a3d9b8; border-radius: var(--radius-md); flex-shrink: 0; }
     [data-theme="dark"] .disc-applied-banner { background: rgba(22,163,74,0.12); border-color: rgba(22,163,74,0.3); }
     .disc-applied-banner.show { display: flex; }
     .disc-applied-left { display: flex; align-items: center; gap: 8px; }
-    .disc-applied-check { color: #16a34a; font-size: 16px; }
-    .disc-applied-text { font-size: 13px; font-weight: 600; color: #16a34a; }
-    .disc-applied-remove { display: flex; align-items: center; gap: 4px; background: none; border: none; color: #dc2626; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font); padding: 0; }
+    .disc-applied-check { color: #247F48; font-size: 16px; }
+    .disc-applied-text { font-size: 13px; font-weight: 600; color: #247F48; }
+    .disc-applied-remove { display: flex; align-items: center; gap: 4px; background: none; border: none; color: #C81E1E; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font); padding: 0; }
     .disc-applied-remove:hover { opacity: 0.75; }
     .disc-applied-remove i { font-size: 13px; }
 
@@ -667,7 +674,7 @@
     .disc-code-row { display: flex; gap: 8px; }
     .disc-code-input { flex: 1; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; background: var(--bg-secondary); color: var(--text-tertiary); font-family: var(--font); outline: none; cursor: pointer; }
     .disc-code-input:focus { border-color: var(--blue); color: var(--text-primary); }
-    .disc-apply-btn { padding: 11px 20px; background: #374151; color: white; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+    .disc-apply-btn { padding: 11px 20px; background: #384152; color: white; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
     .disc-apply-btn:hover { opacity: 0.85; }
     /* Keyboard sheet */
     .disc-kb-sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: flex-end; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -684,8 +691,8 @@
     .disc-kb-key { flex: 1; padding: 13px 0; border-radius: 9px; border: none; background: var(--bg-secondary); font-size: 15px; font-weight: 500; color: var(--text-primary); cursor: pointer; font-family: var(--font); transition: background 0.1s; text-align: center; }
     .disc-kb-key:active { background: var(--bg-tertiary); transform: scale(0.95); }
     .disc-kb-key.wide { flex: 2; }
-    .disc-kb-key.action { background: #374151; color: white; font-size: 13px; font-weight: 600; }
-    .disc-kb-key.done { background: #d97706; color: white; font-size: 13px; font-weight: 600; flex: 2; }
+    .disc-kb-key.action { background: #384152; color: white; font-size: 13px; font-weight: 600; }
+    .disc-kb-key.done { background: #AE5109; color: white; font-size: 13px; font-weight: 600; flex: 2; }
     .disc-kb-key.del { background: var(--bg-tertiary); }
 
     /* MEMBERS */
@@ -711,13 +718,13 @@
     .mem-row-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
     .mem-row-phone { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
     .mem-row-right { text-align: right; flex-shrink: 0; }
-    .mem-tier { font-size: 11px; font-weight: 700; color: #d97706; }
+    .mem-tier { font-size: 11px; font-weight: 700; color: #AE5109; }
     .mem-pts { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-top: 2px; }
     .mem-spent { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
     .mem-empty { text-align: center; padding: 40px 20px; color: var(--text-tertiary); font-size: 13px; }
     /* Form */
     .mem-field-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
-    .mem-field-label .req { color: #dc2626; }
+    .mem-field-label .req { color: #C81E1E; }
     .mem-field-input { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-primary); color: var(--text-primary); font-family: var(--font); outline: none; margin-bottom: 14px; }
     .mem-field-input:focus { border-color: var(--blue); }
     .mem-field-input.field-error { border-color: var(--red); }
@@ -728,13 +735,13 @@
     .mem-btn-save:hover { opacity: 0.88; }
     /* Profile */
     .mem-profile-head { display: flex; align-items: center; gap: 14px; }
-    .mem-profile-avatar { width: 50px; height: 50px; border-radius: 50%; background: #fef3e8; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #d97706; flex-shrink: 0; }
+    .mem-profile-avatar { width: 50px; height: 50px; border-radius: 50%; background: #fef3e8; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #AE5109; flex-shrink: 0; }
     .mem-profile-name-row { display: flex; align-items: center; gap: 8px; }
     .mem-profile-name { font-size: 16px; font-weight: 800; color: var(--text-primary); }
-    .mem-profile-tier { font-size: 11px; font-weight: 700; color: #d97706; background: #fef3e8; padding: 2px 8px; border-radius: 5px; display: inline-flex; align-items: center; gap: 4px; }
+    .mem-profile-tier { font-size: 11px; font-weight: 700; color: #AE5109; background: #fef3e8; padding: 2px 8px; border-radius: 5px; display: inline-flex; align-items: center; gap: 4px; }
     .mem-profile-contact { font-size: 12px; color: var(--text-secondary); margin-top: 4px; display: flex; flex-direction: column; gap: 2px; }
     .mem-profile-contact span { display: flex; align-items: center; gap: 6px; }
-    .mem-points-card { background: linear-gradient(135deg, #16a34a, #15803d); border-radius: var(--radius-md); padding: 16px; color: white; }
+    .mem-points-card { background: linear-gradient(135deg, #247F48, #1a6338); border-radius: var(--radius-md); padding: 16px; color: white; }
     .mem-points-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
     .mem-points-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; opacity: 0.85; }
     .mem-points-val { font-size: 28px; font-weight: 800; line-height: 1; margin-top: 4px; }
@@ -750,15 +757,15 @@
     .mem-no-purchases { font-size: 12px; color: var(--text-tertiary); text-align: center; padding: 14px; background: var(--bg-secondary); border-radius: var(--radius-md); }
     .mem-purchase-row { font-size: 12px; color: var(--text-primary); padding: 8px 10px; background: var(--bg-secondary); border-radius: var(--radius-md); display: flex; justify-content: space-between; }
     .mem-recommend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .mem-recommend-chip { padding: 10px 12px; background: #f0fdf4; color: #16a34a; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; text-align: center; cursor: pointer; border: none; font-family: var(--font); transition: opacity 0.15s; }
+    .mem-recommend-chip { padding: 10px 12px; background: #edf7f1; color: #247F48; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; text-align: center; cursor: pointer; border: none; font-family: var(--font); transition: opacity 0.15s; }
     [data-theme="dark"] .mem-recommend-chip { background: rgba(22,163,74,0.15); }
     [data-theme="dark"] .mem-profile-avatar, [data-theme="dark"] .mem-profile-tier { background: rgba(217,119,6,0.18); }
     .mem-recommend-chip:hover { opacity: 0.8; }
     .mem-profile-footer { display: flex; gap: 8px; padding: 14px 18px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
     .mem-btn-edit { flex: 1; padding: 11px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background 0.15s; }
     .mem-btn-edit:hover { background: var(--bg-secondary); }
-    .mem-btn-delete { width: 44px; border-radius: var(--radius-md); border: 1px solid #fecaca; background: #fef2f2; color: #dc2626; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
-    .mem-btn-delete:hover { background: #fee2e2; }
+    .mem-btn-delete { width: 44px; border-radius: var(--radius-md); border: 1px solid #f5c0c0; background: #faf0f0; color: #C81E1E; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    .mem-btn-delete:hover { background: #fae8e8; }
     [data-theme="dark"] .mem-btn-delete { background: rgba(220,38,38,0.12); border-color: rgba(220,38,38,0.3); }
     .mem-back-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 18px; display: flex; align-items: center; padding: 0; }
 
@@ -817,7 +824,7 @@
     .rpt-hour-label { width: 44px; color: var(--text-tertiary); font-size: 12px; flex-shrink: 0; text-align: right; }
     .rpt-hour-bar-wrap { flex: 1; background: var(--bg-secondary); border-radius: 6px; height: 28px; overflow: hidden; }
     .rpt-hour-bar { height: 100%; background: var(--bg-tertiary); border-radius: 6px; transition: width 0.4s ease; min-width: 0; }
-    .rpt-hour-bar.has-sales { background: #16a34a22; }
+    .rpt-hour-bar.has-sales { background: #247F4822; }
     .rpt-hour-val { width: 52px; text-align: right; font-size: 12px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
     /* Month to date */
     .rpt-month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
@@ -837,7 +844,7 @@
     .rpt-target-stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-tertiary); margin-bottom: 4px; }
     .rpt-target-stat-val { font-size: 16px; font-weight: 800; color: var(--text-primary); }
     .rpt-target-stat-val.red { color: var(--red); }
-    .rpt-alert { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #fef2f2; border: 0.5px solid #fecaca; border-radius: 8px; font-size: 12px; color: var(--red); }
+    .rpt-alert { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #faf0f0; border: 0.5px solid #f5c0c0; border-radius: 8px; font-size: 12px; color: var(--red); }
     [data-theme="dark"] .rpt-alert { background: rgba(220,38,38,0.1); border-color: rgba(220,38,38,0.25); }
     .rpt-total-banner { background: #111; border-radius: var(--radius-lg); padding: 20px; color: white; }
     [data-theme="dark"] .rpt-total-banner { background: #2c2c2e; }
@@ -853,22 +860,22 @@
     .rpt-cal-day.clickable:hover { box-shadow: 0 0 0 1.5px var(--text-primary) inset; }
     .rpt-cal-day.clickable:active { transform: scale(0.97); }
     .rpt-cal-day.today { border-color: var(--green); }
-    .rpt-cal-day.has-sales { background: #d1fae5; border-color: #6ee7b7; }
+    .rpt-cal-day.has-sales { background: #c2e8d0; border-color: #7dcca0; }
     [data-theme="dark"] .rpt-cal-day.has-sales { background: rgba(22,163,74,0.18); border-color: rgba(22,163,74,0.4); }    .rpt-cal-day-num { font-weight: 600; color: var(--text-primary); }
-    .rpt-cal-day-sal { font-size: 11px; font-weight: 700; color: #16a34a; margin-top: 2px; }
+    .rpt-cal-day-sal { font-size: 11px; font-weight: 700; color: #247F48; margin-top: 2px; }
     .rpt-cal-day-ord { font-size: 10px; color: var(--text-tertiary); }
     .rpt-cal-legend { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
     .rpt-cal-dot { width: 12px; height: 12px; border-radius: 3px; }
     /* Wastage */
     .rpt-wastage-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .rpt-wastage-stat { border-radius: var(--radius-lg); padding: 14px 16px; border: 0.5px solid var(--border); }
-    .rpt-wastage-stat.red { background: #fef2f2; border-color: #fecaca; }
+    .rpt-wastage-stat.red { background: #faf0f0; border-color: #f5c0c0; }
     [data-theme="dark"] .rpt-wastage-stat.red { background: rgba(220,38,38,0.08); border-color: rgba(220,38,38,0.2); }
     .rpt-wastage-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); margin-bottom: 6px; }
     .rpt-wastage-stat-val { font-size: 28px; font-weight: 800; color: var(--red); }
     .rpt-wastage-stat-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-    .rpt-wastage-hint { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; background: #fefce8; border: 0.5px solid #fde68a; border-radius: 8px; font-size: 12px; color: #92400e; }
-    [data-theme="dark"] .rpt-wastage-hint { background: rgba(217,119,6,0.1); border-color: rgba(217,119,6,0.3); color: #d97706; }
+    .rpt-wastage-hint { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; background: #fefce8; border: 0.5px solid #fde68a; border-radius: 8px; font-size: 12px; color: #7a3607; }
+    [data-theme="dark"] .rpt-wastage-hint { background: rgba(217,119,6,0.1); border-color: rgba(217,119,6,0.3); color: #AE5109; }
 
     /* ORDERS TAB */
     .rpt-orders-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; }
@@ -891,14 +898,14 @@
     .rpt-order-card.refunded-original .rpt-order-total,
     .rpt-order-card.refunded-original .rpt-order-items-count,
     .rpt-order-card.refunded-original .rpt-order-items-list { text-decoration: line-through; color: var(--text-tertiary); }
-    .rpt-order-card.refunded { opacity: 0.75; border-color: #fed7aa; }
-    .rpt-order-refund-card { border: 0.5px solid #fed7aa; border-radius: var(--radius-lg); background: #fff7ed; overflow: hidden; }
+    .rpt-order-card.refunded { opacity: 0.75; border-color: #f5d0a0; }
+    .rpt-order-refund-card { border: 0.5px solid #f5d0a0; border-radius: var(--radius-lg); background: #fdf4eb; overflow: hidden; }
     [data-theme="dark"] .rpt-order-refund-card { background: rgba(234,88,12,0.08); border-color: rgba(234,88,12,0.3); }
-    .rpt-order-refund-btn { font-size: 13px; font-weight: 600; color: #ea580c; background: rgba(234,88,12,0.08); border: 1px solid rgba(234,88,12,0.3); border-radius: 8px; cursor: pointer; font-family: var(--font); padding: 8px 14px; transition: background 0.15s; }
+    .rpt-order-refund-btn { font-size: 13px; font-weight: 600; color: #AE5109; background: rgba(234,88,12,0.08); border: 1px solid rgba(234,88,12,0.3); border-radius: 8px; cursor: pointer; font-family: var(--font); padding: 8px 14px; transition: background 0.15s; }
     .rpt-order-refund-btn:hover { background: rgba(234,88,12,0.15); }
     .rpt-order-card-top { padding: 12px 14px 10px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
     .rpt-order-id { font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
-    .rpt-order-voided-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; background: #fef2f2; border: 1px solid #fecaca; font-size: 11px; font-weight: 700; color: var(--red); letter-spacing: 0.04em; }
+    .rpt-order-voided-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; background: #faf0f0; border: 1px solid #f5c0c0; font-size: 11px; font-weight: 700; color: var(--red); letter-spacing: 0.04em; }
     .rpt-order-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 3px; }
     .rpt-order-right { text-align: right; flex-shrink: 0; }
     .rpt-order-total { font-size: 15px; font-weight: 700; color: var(--text-primary); }
@@ -914,7 +921,7 @@
     .rpt-empty i { font-size: 36px; }
 
     /* LOG WASTAGE BUTTON */
-    .rpt-log-wastage-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px 16px; border-radius: var(--radius-md); border: none; background: #dc2626; color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; margin-bottom: 4px; }
+    .rpt-log-wastage-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px 16px; border-radius: var(--radius-md); border: none; background: #C81E1E; color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; margin-bottom: 4px; }
     .rpt-log-wastage-btn:hover { opacity: 0.88; }
     .rpt-log-wastage-btn i { font-size: 18px; }
 
@@ -980,12 +987,12 @@
     .wastage-step-pane.hidden { display: none; }
     /* Selected items chips at top of step 2 */
     .wastage-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .wastage-chip { display: flex; align-items: center; gap: 6px; padding: 5px 10px 5px 6px; border-radius: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 12px; font-weight: 600; color: #15803d; cursor: pointer; }
+    .wastage-chip { display: flex; align-items: center; gap: 6px; padding: 5px 10px 5px 6px; border-radius: 20px; background: #edf7f1; border: 1px solid #a3d9b8; font-size: 12px; font-weight: 600; color: #1a6338; cursor: pointer; }
     [data-theme="dark"] .wastage-chip { background: rgba(22,163,74,0.15); border-color: rgba(22,163,74,0.4); color: #4ade80; }
     .wastage-chip-img { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; background: var(--bg-secondary); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; }
     .wastage-chip-img img { width: 100%; height: 100%; object-fit: cover; }
-    .wastage-chip-qty { background: #15803d; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; margin-left: 2px; }
-    [data-theme="dark"] .wastage-chip-qty { background: #16a34a; }
+    .wastage-chip-qty { background: #1a6338; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; margin-left: 2px; }
+    [data-theme="dark"] .wastage-chip-qty { background: #247F48; }
     .wastage-search { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 24px; border: 1px solid var(--border); background: var(--bg-secondary); flex-shrink: 0; }
     .wastage-search input { flex: 1; border: none; background: transparent; font-size: 14px; color: var(--text-primary); outline: none; font-family: var(--font); }
     .wastage-search input::placeholder { color: var(--text-tertiary); }
@@ -993,7 +1000,7 @@
     .wastage-section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: -6px; }
     .wastage-item-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--bg-primary); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
     .wastage-item-row:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
-    .wastage-item-row.selected { border-color: #16a34a; background: #f0fdf4; }
+    .wastage-item-row.selected { border-color: #247F48; background: #edf7f1; }
     [data-theme="dark"] .wastage-item-row.selected { background: rgba(22,163,74,0.12); border-color: rgba(22,163,74,0.5); }
     .wastage-item-img { width: 40px; height: 40px; border-radius: 10px; background: var(--bg-secondary); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
     .wastage-item-img img { width: 100%; height: 100%; object-fit: cover; }
@@ -1004,13 +1011,13 @@
     .wastage-qty-btn:hover { background: var(--bg-secondary); }
     .wastage-qty-num { font-size: 15px; font-weight: 700; color: var(--text-primary); min-width: 20px; text-align: center; }
     .wastage-item-cost { font-size: 12px; font-weight: 600; color: var(--red); white-space: nowrap; }
-    .wastage-item-check { width: 22px; height: 22px; border-radius: 50%; background: #16a34a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .wastage-item-check { width: 22px; height: 22px; border-radius: 50%; background: #247F48; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .wastage-item-check i { font-size: 13px; color: white; }
     .wastage-reasons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .wastage-reason-btn { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 8px; border-radius: var(--radius-md); border: 1.5px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
     .wastage-reason-btn:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
-    .wastage-reason-btn.active { border-color: #d97706; background: #fffbeb; color: #92400e; }
-    [data-theme="dark"] .wastage-reason-btn.active { background: rgba(217,119,6,0.12); border-color: rgba(217,119,6,0.5); color: #d97706; }
+    .wastage-reason-btn.active { border-color: #AE5109; background: #fffbeb; color: #7a3607; }
+    [data-theme="dark"] .wastage-reason-btn.active { background: rgba(217,119,6,0.12); border-color: rgba(217,119,6,0.5); color: #AE5109; }
     .wastage-note-input { width: 100%; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 13px; font-family: var(--font); outline: none; resize: none; transition: border-color 0.15s; }
     .wastage-note-input:focus { border-color: var(--blue); }
     .wastage-summary { border-top: 0.5px solid var(--border); padding-top: 12px; display: flex; flex-direction: column; gap: 6px; }
@@ -1027,7 +1034,7 @@
     .wastage-next-btn:disabled { background: var(--bg-tertiary); color: var(--text-tertiary); cursor: not-allowed; opacity: 1; }
     .wastage-back-btn { border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary); flex: 0 0 auto; width: 48px; padding: 13px 0; }
     .wastage-back-btn:hover { opacity: 0.75; }
-    .wastage-confirm-btn { border: none; background: #dc2626; color: white; }
+    .wastage-confirm-btn { border: none; background: #C81E1E; color: white; }
     .wastage-confirm-btn:hover { opacity: 0.88; }
     .wastage-confirm-btn:disabled { background: var(--bg-tertiary); color: var(--text-tertiary); cursor: not-allowed; opacity: 1; }
 
@@ -1058,10 +1065,10 @@
     .toast.show { opacity: 1; }
 
     /* SYNC QUEUE INDICATOR */
-    .sync-queue-indicator { position: fixed; top: 20px; right: 20px; display: none; align-items: center; gap: 7px; background: #fff7ed; border: 1px solid #fed7aa; color: #ea580c; padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; z-index: 998; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .sync-queue-indicator { position: fixed; top: 20px; right: 20px; display: none; align-items: center; gap: 7px; background: #fdf4eb; border: 1px solid #f5d0a0; color: #AE5109; padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; z-index: 998; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     [data-theme="dark"] .sync-queue-indicator { background: rgba(234,88,12,0.12); border-color: rgba(234,88,12,0.35); }
     .sync-queue-indicator i { font-size: 14px; }
-    .sync-queue-indicator .sync-queue-count { background: #ea580c; color: white; border-radius: 10px; padding: 1px 6px; font-size: 11px; }
+    .sync-queue-indicator .sync-queue-count { background: #AE5109; color: white; border-radius: 10px; padding: 1px 6px; font-size: 11px; }
 
     /* PAYMENTS DASHBOARD */
     /* ── Payments Dashboard ── */
@@ -1164,7 +1171,7 @@
     .pay-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
     .pay-stat-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 12px; padding: 18px 20px; }
     .pay-stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
-    .pay-stat-val { font-size: 24px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; font-family: 'Courier New', monospace; }
+    .pay-stat-val { font-size: 24px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; font-family: var(--font); }
     .pay-stat-val.green { color: var(--green); }
 
     /* Two-col grid for bottom sections */
@@ -1198,7 +1205,7 @@
     .pay-table-cell.green { color: var(--green); font-weight: 600; }
     .pay-table-empty { padding: 40px 20px; text-align: center; color: var(--text-tertiary); font-size: 13px; }
     .pay-method-badge { display: inline-flex; align-items: center; font-size: 11px; padding: 3px 9px; border-radius: 12px; font-weight: 600; }
-    .pay-method-badge.cash { background: #f0fdf4; color: #16a34a; }
+    .pay-method-badge.cash { background: #edf7f1; color: #247F48; }
     .pay-method-badge.card { background: #eff6ff; color: #2563eb; }
     .pay-method-badge.mobile { background: #faf5ff; color: #7c3aed; }
     [data-theme="dark"] .pay-method-badge.cash { background: rgba(22,163,74,0.15); }
@@ -1336,8 +1343,6 @@
     .supp-icon-btn { width:30px; height:30px; border-radius:8px; border:0.5px solid var(--border); background:var(--bg-secondary); color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:var(--font); }
     .supp-icon-btn:hover { color:var(--text-primary); border-color:var(--border-hover); }
     .supp-icon-btn.del:hover { color:var(--red); border-color:var(--red); }
-    .supp-wa-btn { width:30px; height:30px; border-radius:8px; border:none; background:#25D366; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; text-decoration:none; }
-    .supp-wa-btn.disabled { background:var(--bg-tertiary); color:var(--text-tertiary); cursor:not-allowed; pointer-events:none; }
     .supp-empty { padding:36px 20px; text-align:center; color:var(--text-tertiary); font-size:13px; }
     .supp-empty i { font-size:30px; display:block; margin-bottom:10px; }
     /* New Supplier form card */
@@ -1388,9 +1393,11 @@
     .supp-unit-pill:hover { border-color:var(--green); color:var(--green); }
     .supp-unit-pill.active { background:var(--green); border-color:var(--green); color:#fff; font-weight:600; }
     .supp-ing-suggestions { position:absolute; top:100%; left:0; right:0; background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-md); box-shadow:0 4px 16px rgba(0,0,0,0.10); z-index:200; max-height:180px; overflow-y:auto; margin-top:3px; }
-    .supp-ing-suggestion { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; font-size:13px; color:var(--text-primary); cursor:pointer; }
+    .supp-ing-suggestion { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; font-size:13px; color:var(--text-primary); cursor:pointer; gap:10px; }
     .supp-ing-suggestion:hover { background:var(--bg-secondary); }
-    .supp-ing-suggestion .sig-new { font-size:11px; color:var(--green); font-weight:600; }
+    .supp-ing-add-new { justify-content:flex-start; gap:10px; }
+    .supp-ing-suggestion .sig-new { font-size:11px; font-weight:700; color:var(--green); background:rgba(22,163,74,0.1); border:1px solid rgba(22,163,74,0.25); border-radius:6px; padding:2px 8px; white-space:nowrap; transition:background 0.15s; }
+    .supp-ing-suggestion:hover .sig-new { background:rgba(22,163,74,0.18); }
     .supp-ing-empty { padding:16px; text-align:center; color:var(--text-tertiary); font-size:12.5px; }
     @media (max-width:560px) { .supp-row2 { grid-template-columns:1fr; } }
     /* ── SMART ORDERING SYSTEM ── */
@@ -1425,13 +1432,13 @@
     .so-tab.active { background:var(--blue); border-color:var(--blue); color:#fff; }
     /* product grid */
     .so-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:14px; }
-    .so-card { border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; background:var(--bg-primary); }
+    .so-card { border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:10px 12px 12px; background:var(--bg-primary); }
     .so-card-tag { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:12px; margin-bottom:10px; }
-    .so-tag-coffee { background:#fef3c7; color:#b45309; }
-    .so-tag-baking { background:#ffedd5; color:#c2410c; }
+    .so-tag-coffee { background:#FEF3C7; color:#924408; }
+    .so-tag-baking { background:#ffedd5; color:#924408; }
     .so-tag-general { background:var(--bg-tertiary); color:var(--text-secondary); }
     .so-tag-default { background:var(--bg-tertiary); color:var(--text-secondary); }
-    .so-card-name { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:3px; }
+    .so-card-name { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:8px; }
     .so-card-sug { font-size:12px; color:var(--text-tertiary); margin-bottom:12px; }
     .so-stepper { display:flex; align-items:center; gap:8px; }
     .so-step-btn { width:36px; height:36px; border-radius:50%; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--blue); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:var(--font); }
@@ -1454,13 +1461,13 @@
     .so-btn-place { width:100%; padding:15px; border-radius:14px; border:none; background:var(--green); color:#fff; font-size:15px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:9px; }
     .so-btn-place:hover { opacity:0.94; }
     .so-btn-place:disabled { opacity:0.4; cursor:not-allowed; }
-    .so-btn-complete { padding:12px 20px; border-radius:12px; border:none; background:#16a34a; color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; gap:8px; transition:opacity 0.15s; }
+    .so-btn-complete { padding:12px 20px; border-radius:12px; border:none; background:#247F48; color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; gap:8px; transition:opacity 0.15s; }
     .so-btn-complete:hover { opacity:0.88; }
     .so-btn-complete:disabled { opacity:0.4; cursor:not-allowed; }
-    .so-btn-wa-issue { padding:12px 16px; border-radius:12px; border:1.5px solid #25d366; background:transparent; color:#16a34a; font-size:14px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; gap:8px; transition:all 0.15s; }
-    .so-btn-wa-issue:hover { background:#f0fdf4; }
-    [data-theme="dark"] .so-btn-wa-issue { color:#4ade80; border-color:#4ade80; }
-    [data-theme="dark"] .so-btn-wa-issue:hover { background:rgba(74,222,128,0.08); }
+    .so-btn-wa-issue { padding:12px 16px; border-radius:12px; border:1.5px solid var(--orange,#AE5109); background:var(--orange,#AE5109); color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:var(--font); display:flex; align-items:center; gap:8px; transition:all 0.15s; }
+    .so-btn-wa-issue:hover { background:#924408; border-color:#924408; }
+    [data-theme="dark"] .so-btn-wa-issue { color:#fff; border-color:var(--orange,#AE5109); }
+    [data-theme="dark"] .so-btn-wa-issue:hover { background:#924408; border-color:#924408; }
     .so-check-section-label { font-size:11px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-tertiary); padding:14px 0 8px; }
     .so-check-supplier-card { border:0.5px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:12px; }
     .so-check-supplier-head { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; background:var(--bg-secondary); border-bottom:0.5px solid var(--border); }
@@ -1471,7 +1478,7 @@
     .so-item-emoji { width:44px; height:44px; border-radius:50%; background:var(--bg-tertiary); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
     .so-item-main { flex:1; min-width:0; }
     .so-item-name { font-size:15px; font-weight:700; color:var(--text-primary); }
-    .so-item-meta { font-size:13px; color:var(--text-secondary); margin-top:3px; }
+    .so-item-meta { font-size:13px; color:var(--green); margin-top:3px; }
     .so-item-meta b { color:var(--green); }
     .so-item-actions { display:flex; gap:8px; }
     .so-item-btn { width:34px; height:34px; border-radius:50%; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:var(--font); }
@@ -1482,6 +1489,8 @@
     /* routing bottom sheet */
     .so-route-sheet { position:absolute; left:0; right:0; bottom:0; max-height:78%; background:#ecfdf5; border-top-left-radius:18px; border-top-right-radius:18px; box-shadow:0 -8px 30px rgba(0,0,0,0.18); transform:translateY(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; z-index:5; }
     [data-theme="dark"] .so-route-sheet { background:#0f2e20; }
+    .so-route-block { position:absolute; inset:0; background:rgba(0,0,0,0.18); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); border-radius:inherit; z-index:4; display:none; cursor:pointer; }
+    .so-route-block.show { display:block; }
     .so-route-sheet.show { transform:translateY(0); }
     .so-route-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; flex-shrink:0; }
     .so-route-title { font-size:13px; font-weight:700; color:var(--green); }
@@ -1514,8 +1523,9 @@
     .so-card { position:relative; cursor:pointer; transition:border-color 0.15s, opacity 0.15s, box-shadow 0.15s; }
     .so-card.selected { border-color:var(--blue); box-shadow:0 0 0 1px var(--blue) inset; }
     .so-card.deselected { opacity:0.5; }
-    .so-card-toprow { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-    .so-checkbox-input { width:19px; height:19px; flex-shrink:0; accent-color:var(--blue); cursor:pointer; }
+    .so-card-toprow { display:flex; justify-content:flex-end; margin-bottom:2px; }
+    .so-circle-check { width:22px; height:22px; border-radius:50%; border:2px solid var(--border); background:var(--bg-secondary); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all 0.15s; color:white; font-size:12px; }
+    .so-circle-check.checked { background:var(--blue); border-color:var(--blue); }
     .so-empty-filter { grid-column:1 / -1; text-align:center; color:var(--text-tertiary); font-size:13px; padding:34px 20px; }
     /* ── Order History (landing view of Smart Ordering System) ── */
     .so-hist-toolbar { display:flex; align-items:center; justify-content:space-between; padding:2px 0 16px; }
@@ -1532,16 +1542,16 @@
     .so-hist-sub { font-size:11.5px; color:var(--text-tertiary); margin-top:2px; }
     .so-hist-pill { display:inline-flex; align-items:center; font-size:11px; font-weight:700; padding:4px 12px; border-radius:14px; border:1px solid; white-space:nowrap; }
     .so-hist-pill.placed { color:var(--blue); border-color:var(--blue); background:rgba(37,99,235,0.07); }
-    .so-hist-pill.completed { color:#047857; border-color:#047857; background:rgba(4,120,87,0.08); }
-    .so-hist-pill.issues { color:#b91c1c; border-color:#b91c1c; background:rgba(185,28,28,0.08); }
+    .so-hist-pill.completed { color:#247F48; border-color:#247F48; background:rgba(4,120,87,0.08); }
+    .so-hist-pill.issues { color:#a61919; border-color:#a61919; background:rgba(185,28,28,0.08); }
     /* per-item receipt marking (used in both the order-history detail sheet and Back Office) */
     .item-receipt-btns { display:flex; gap:6px; flex-shrink:0; margin-right:12px; }
     .item-receipt-btn { width:26px; height:26px; border-radius:6px; border:1px solid #aaa; background:#e0e0e0; color:#555; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; flex-shrink:0; font-family:var(--font); transition:all 0.15s; }
     .item-receipt-btn:hover { background:#ccc; border-color:#888; color:#222; }
     [data-theme="dark"] .item-receipt-btn { border-color:#555; background:#3a3a3a; color:#bbb; }
     [data-theme="dark"] .item-receipt-btn:hover { background:#4a4a4a; border-color:#777; color:#fff; }
-    .item-receipt-btn.ok.active { background:#f0fdf4; border-color:#16a34a; color:#16a34a; }
-    .item-receipt-btn.issue.active { background:#fef2f2; border-color:#dc2626; color:#dc2626; }
+    .item-receipt-btn.ok.active { background:#edf7f1; border-color:#247F48; color:#247F48; }
+    .item-receipt-btn.issue.active { background:#faf0f0; border-color:#C81E1E; color:#C81E1E; }
     [data-theme="dark"] .item-receipt-btn.ok.active { background:rgba(22,163,74,0.15); }
     [data-theme="dark"] .item-receipt-btn.issue.active { background:rgba(220,38,38,0.15); }
     .item-receipt-note { font-size:11.5px; color:var(--red); padding:4px; display:flex; align-items:center; gap:5px; }
@@ -1556,9 +1566,9 @@
     .so-issue-sub { font-size:12px; color:var(--text-tertiary); margin-top:3px; }
     .so-issue-options { padding:12px 18px; display:flex; flex-direction:column; gap:8px; }
     .so-issue-option { display:flex; align-items:center; gap:10px; padding:12px 14px; border:1px solid var(--border); border-radius:10px; cursor:pointer; font-size:13px; font-weight:500; color:var(--text-primary); background:var(--bg-secondary); font-family:var(--font); text-align:left; transition:all 0.15s; }
-    .so-issue-option:hover { border-color:#dc2626; background:#fef2f2; color:#dc2626; }
+    .so-issue-option:hover { border-color:#C81E1E; background:#faf0f0; color:#C81E1E; }
     [data-theme="dark"] .so-issue-option:hover { background:rgba(220,38,38,0.1); }
-    .so-issue-option i { font-size:16px; color:#dc2626; width:20px; text-align:center; flex-shrink:0; }
+    .so-issue-option i { font-size:16px; color:#C81E1E; width:20px; text-align:center; flex-shrink:0; }
     .so-issue-footer { padding:12px 18px; border-top:0.5px solid var(--border); }
     .so-issue-cancel { width:100%; padding:11px; border-radius:var(--radius-md); border:0.5px solid var(--border); background:var(--bg-secondary); font-size:13px; font-weight:600; color:var(--text-secondary); font-family:var(--font); cursor:pointer; transition:background 0.15s; }
     .so-issue-cancel:hover { background:var(--bg-tertiary); }
@@ -1568,7 +1578,7 @@
     .so-hist-empty i { font-size:34px; display:block; margin-bottom:12px; }
     /* ── In-page WhatsApp chat panel (right-docked side drawer) ── */
     .wa-overlay { position:fixed; inset:0; display:flex; justify-content:flex-end; z-index:600; pointer-events:none; }
-    .wa-card { width:400px; max-width:100vw; height:100vh; height:100dvh; background:var(--bg-primary); border-left:0.5px solid var(--border); overflow:hidden; display:flex; flex-direction:column; pointer-events:auto; transform:translateX(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); }
+    .wa-card { width:400px; max-width:100vw; height:100vh; background:var(--bg-primary); border-left:0.5px solid var(--border); overflow:hidden; display:flex; flex-direction:column; pointer-events:auto; transform:translateX(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); }
     .wa-overlay.show .wa-card { transform:translateX(0); box-shadow:-10px 0 40px rgba(0,0,0,0.22); }
     @media (max-width:560px) { .wa-card { width:100vw; } }
     /* Message Sent confirmation popup */
@@ -1585,7 +1595,7 @@
     .confirm-box { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:16px; padding:24px 24px 20px; width:370px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,0.3); transform:scale(0.94); transition:transform 0.15s; text-align:center; }
     .confirm-overlay.show .confirm-box { transform:scale(1); }
     .confirm-icon { width:50px; height:50px; border-radius:50%; background:var(--bg-tertiary); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 14px; }
-    .confirm-icon.danger { background:#fef2f2; color:#dc2626; }
+    .confirm-icon.danger { background:#faf0f0; color:#C81E1E; }
     [data-theme="dark"] .confirm-icon.danger { background:rgba(220,38,38,0.14); }
     .confirm-title { font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
     .confirm-msg { font-size:13.5px; color:var(--text-secondary); line-height:1.5; white-space:pre-line; margin-bottom:20px; }
@@ -1595,7 +1605,7 @@
     .confirm-cancel:hover { border-color:var(--border-hover); }
     .confirm-ok { background:#111; color:#fff; border:none; }
     [data-theme="dark"] .confirm-ok { background:#f2f2f7; color:#1c1c1e; }
-    .confirm-ok.danger { background:#dc2626; color:#fff; }
+    .confirm-ok.danger { background:#C81E1E; color:#fff; }
     .confirm-ok:hover { opacity:0.9; }
     .wa-header { background:#075E54; color:#fff; display:flex; align-items:center; gap:12px; padding:12px 16px; flex-shrink:0; }
     [data-theme="dark"] .wa-header { background:#1f2c34; }
@@ -1642,9 +1652,9 @@
     .bo-ord-sub { font-size:12px; color:var(--text-tertiary); margin-top:3px; }
     .bo-ord-mid { flex:1; min-width:0; }
     .bo-ord-badge { font-size:11px; font-weight:700; padding:4px 10px; border-radius:12px; white-space:nowrap; }
-    .bo-ord-badge.placed { background:#fef3c7; color:#b45309; }
-    .bo-ord-badge.completed { background:#d1fae5; color:#047857; }
-    .bo-ord-badge.issues { background:#fee2e2; color:#b91c1c; }
+    .bo-ord-badge.placed { background:#FEF3C7; color:#924408; }
+    .bo-ord-badge.completed { background:#c2e8d0; color:#247F48; }
+    .bo-ord-badge.issues { background:#fae8e8; color:#a61919; }
     .bo-ord-del { width:32px; height:32px; border-radius:8px; border:0.5px solid var(--border); background:var(--bg-primary); color:var(--text-tertiary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:var(--font); }
     .bo-ord-del:hover { color:var(--red); border-color:var(--red); }
     .bo-ord-detail { border-top:0.5px solid var(--border); padding:16px 18px; background:var(--bg-secondary); display:flex; flex-direction:column; gap:12px; }
@@ -1674,14 +1684,14 @@
     .checklist-close:hover { background: var(--bg-tertiary); color: var(--text-primary); }
     .checklist-progress-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 12px; color: var(--text-tertiary); font-weight: 500; }
     .checklist-progress-bar { height: 5px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden; }
-    .checklist-progress-fill { height: 100%; background: #16a34a; border-radius: 3px; transition: width 0.4s ease; }
+    .checklist-progress-fill { height: 100%; background: #247F48; border-radius: 3px; transition: width 0.4s ease; }
     .checklist-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
     .checklist-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-primary); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
-    .checklist-item:hover { border-color: #16a34a; background: var(--bg-secondary); }
-    .checklist-item.done { background: #f0fdf4; border-color: #bbf7d0; }
+    .checklist-item:hover { border-color: #247F48; background: var(--bg-secondary); }
+    .checklist-item.done { background: #edf7f1; border-color: #a3d9b8; }
     [data-theme="dark"] .checklist-item.done { background: rgba(22,163,74,0.08); border-color: rgba(22,163,74,0.3); }
     .checklist-radio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: all 0.15s; }
-    .checklist-item.done .checklist-radio { background: #16a34a; border-color: #16a34a; }
+    .checklist-item.done .checklist-radio { background: #247F48; border-color: #247F48; }
     .checklist-radio i { font-size: 12px; color: white; display: none; }
     .checklist-item.done .checklist-radio i { display: block; }
     .checklist-item-content { flex: 1; min-width: 0; }
@@ -1693,7 +1703,7 @@
     .checklist-footer { padding: 14px 16px; border-top: 0.5px solid var(--border); display: flex; gap: 10px; flex-shrink: 0; }
     .checklist-skip-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
     .checklist-skip-btn:hover { opacity: 0.7; }
-    .checklist-action-btn { flex: 2; padding: 12px; border-radius: 10px; border: none; background: #16a34a; color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+    .checklist-action-btn { flex: 2; padding: 12px; border-radius: 10px; border: none; background: #247F48; color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
     .checklist-action-btn:hover { opacity: 0.88; }
     /* Sidebar checklist button badge */
     .lsb-checklist-badge { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; border: 1.5px solid var(--bg-primary); }
@@ -1766,9 +1776,9 @@
     </div>
     <div class="sub-tabs" id="subTabs">
       <button class="sub-tab active" onclick="selectSub(this,'All')">All</button>
-      <button class="sub-tab" onclick="selectSub(this,'Coffee')">Coffee</button>
-      <button class="sub-tab" onclick="selectSub(this,'Tea')">Tea</button>
-      <button class="sub-tab" onclick="selectSub(this,'Special Edition')">Special Edition</button>
+      <button class="sub-tab sub-tab-extra" onclick="selectSub(this,'Coffee')">Coffee</button>
+      <button class="sub-tab sub-tab-extra" onclick="selectSub(this,'Tea')">Tea</button>
+      <button class="sub-tab sub-tab-extra" onclick="selectSub(this,'Special Edition')">Special Edition</button>
     </div>
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="🔍  Search products..." readonly onclick="openFieldKb('searchInput','text','SEARCH PRODUCTS:')" />
@@ -1921,7 +1931,7 @@
           <i class="ti ti-credit-card"></i>
           <div><div class="cardtype-card-label">Visa</div><div class="cardtype-card-sub">Credit card</div></div>
         </button>
-        <button class="cardtype-card" style="background:#ea580c;" onclick="selectCardType('Mastercard')">
+        <button class="cardtype-card" style="background:#AE5109;" onclick="selectCardType('Mastercard')">
           <i class="ti ti-credit-card"></i>
           <div><div class="cardtype-card-label">Mastercard</div><div class="cardtype-card-sub">Credit card</div></div>
         </button>
@@ -1929,11 +1939,11 @@
           <i class="ti ti-credit-card"></i>
           <div><div class="cardtype-card-label">Amex</div><div class="cardtype-card-sub">Credit card</div></div>
         </button>
-        <button class="cardtype-card" style="background:#dc2626;" onclick="selectCardType('UnionPay')">
+        <button class="cardtype-card" style="background:#C81E1E;" onclick="selectCardType('UnionPay')">
           <i class="ti ti-credit-card"></i>
           <div><div class="cardtype-card-label">UnionPay</div><div class="cardtype-card-sub">Credit / debit</div></div>
         </button>
-        <button class="cardtype-card" style="background:#16a34a;" onclick="selectCardType('JCB')">
+        <button class="cardtype-card" style="background:#247F48;" onclick="selectCardType('JCB')">
           <i class="ti ti-credit-card"></i>
           <div><div class="cardtype-card-label">JCB</div><div class="cardtype-card-sub">Credit card</div></div>
         </button>
@@ -2279,8 +2289,8 @@
       actionBtn.textContent = '🎉 All done!';
       actionBtn.style.background = '#7c3aed';
     } else {
-      actionBtn.textContent = checklistFocusedAction === 'reports' ? 'Open Reports' : 'Open Admin Panel';
-      actionBtn.style.background = '#16a34a';
+      actionBtn.textContent = checklistFocusedAction === 'reports' ? 'Open Reports' : 'Open Back Office';
+      actionBtn.style.background = '#247F48';
     }
 
     document.getElementById('checklistBody').innerHTML = CHECKLIST_ITEMS.map(function(item) {
@@ -2324,7 +2334,7 @@
     if (checklistFocusedAction === 'reports') {
       openReports();
     } else {
-      openAdminPanel();
+      openPayments();
     }
   }
 
@@ -2834,20 +2844,6 @@
   let suppFormDates = [];
   let supplierHost = 'boSuppliersContent';
 
-  function suppWaLink(phone) {
-    const digits = String(phone || '').replace(/[^\d]/g, '');
-    return digits ? ('https://wa.me/' + digits) : '';
-  }
-
-  function suppWaChat(id) {
-    const s = suppliers.find(x => String(x.id) === String(id));
-    if (!s) return;
-    const phone = String(s.phone || '').replace(/[^\d]/g, '');
-    const contact = s.contact_person || s.name;
-    const msg = 'Hi ' + contact + ', I would like to place an order.\n\n';
-    openWaChat({ name: s.name, phone: phone, message: msg });
-  }
-
   function renderSuppliersTab(hostId) {
     if (hostId) supplierHost = hostId;
     // keep only the active host populated so form/panel IDs stay unique
@@ -2870,7 +2866,6 @@
     const n = suppliers.length;
     const listItems = n
       ? suppliers.map(s => {
-          const wa = suppWaLink(s.phone);
           const metaBits = [];
           if (s.lead_time_days != null && s.lead_time_days !== '') metaBits.push('<span><i class="ti ti-clock-hour-4"></i> ' + escapeHtml(s.lead_time_days) + 'd lead</span>');
           if (s.delivery_from || s.delivery_by) metaBits.push('<span><i class="ti ti-truck"></i> ' + escapeHtml(s.delivery_from || '?') + '–' + escapeHtml(s.delivery_by || '?') + '</span>');
@@ -3106,7 +3101,7 @@
     if (!exactMatch && val.trim()) {
       rows.push(`<div class="supp-ing-suggestion supp-ing-add-new" data-name="${escapeHtml(val.trim())}" data-id="">
         <span>${escapeHtml(val.trim())}</span>
-        <span class="sig-new">+ Add new</span>
+        <span class="sig-new">+ Add New</span>
       </div>`);
     }
     if (rows.length === 0) { hideSuppIngSuggestions(); return; }
@@ -3615,6 +3610,16 @@
     else { closeSmartOrder(); }
   }
 
+  function soOverlayBgClick(e) {
+    if (e.target !== document.getElementById('soOverlay')) return;
+    const routeSheet = document.getElementById('soRouteSheet');
+    if (routeSheet && routeSheet.classList.contains('show')) {
+      soCloseRouteToHistory();
+    } else {
+      closeSmartOrder();
+    }
+  }
+
   function soCloseRouteToHistory() {
     soCloseRoute();
     soShowStep(0);
@@ -3681,8 +3686,9 @@
       const selected = Number(qty) > 0;
       return `<div class="so-card ${selected ? 'selected' : 'deselected'}" data-name="${escapeHtml((i.name || '').toLowerCase())}" onclick="soToggleSelect('${i.id}')">
         <div class="so-card-toprow">
-          <input type="checkbox" class="so-checkbox-input" ${selected ? 'checked' : ''} onclick="event.stopPropagation(); soToggleSelect('${i.id}')" onchange="event.stopPropagation()" />
-          <span class="so-card-tag ${soCatClass(i.category)}">${escapeHtml(i.category || 'Item')}</span>
+          <div class="so-circle-check ${selected ? 'checked' : ''}" onclick="event.stopPropagation(); soToggleSelect('${i.id}')">
+            ${selected ? '<i class="ti ti-check"></i>' : ''}
+          </div>
         </div>
         <div class="so-card-name">${escapeHtml(i.name)}</div>
         <div class="so-stepper" onclick="event.stopPropagation()">
@@ -3795,7 +3801,6 @@
           <div class="so-item-meta">${soFmtQty(l.qty)} <b>${escapeHtml(l.ing.unit || '')}</b></div>
         </div>
         <div class="so-item-actions">
-          <button class="so-item-btn" onclick="soEditLine(${idx})"><i class="ti ti-pencil"></i></button>
           <button class="so-item-btn del" onclick="soDeleteLine(${idx})"><i class="ti ti-trash"></i></button>
         </div>
       </div>`).join('');
@@ -3866,8 +3871,22 @@
       showToast('Order ' + soOrderNumber + ' (offline)');
     }
     btn.disabled = false;
+    // Open WhatsApp for each routed supplier immediately, then mark all as sent
+    soRouting.forEach((g, idx) => {
+      if (!g.supplier) return;
+      const phone = String(g.supplier.phone || '').replace(/[^\d]/g, '');
+      if (!phone) return;
+      const contact = g.supplier.contact_person || g.supplier.name;
+      let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
+      g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty) + (l.ing.unit ? ' ' + l.ing.unit : '') + '\n'; });
+      msg += '\nOrder ref: ' + soOrderNumber + '\nThank you';
+      setTimeout(() => window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank'), idx * 300);
+      g.sent = true;
+    });
+    await soPersistSent();
     soRenderRouting();
     document.getElementById('soRouteSheet').classList.add('show');
+    document.getElementById('soRouteBlock').classList.add('show');
     // keep Back Office Orders pane in sync if it's open
     const boPane = document.getElementById('payPane_orders');
     if (boPane && boPane.style.display !== 'none' && typeof renderBoOrders === 'function') renderBoOrders();
@@ -3889,7 +3908,7 @@
     body.innerHTML = soRouting.map((g, idx) => {
       const name = g.supplier ? g.supplier.name : 'Unassigned';
       const lines = g.items.map(l =>
-        `<div class="so-supp-line"><span class="so-supp-line-name">${escapeHtml(l.ing.name)}</span><span class="so-supp-line-qty">${soPack(l.qty)}</span></div>`
+        `<div class="so-supp-line"><span class="so-supp-line-name">${escapeHtml(l.ing.name)}</span><span class="so-supp-line-qty">${soFmtQty(l.qty)}${l.ing.unit ? ' ' + escapeHtml(l.ing.unit) : ''}</span></div>`
       ).join('');
       let sendBtn;
       if (!g.supplier) sendBtn = `<button class="so-send-btn disabled"><i class="ti ti-alert-triangle"></i> No supplier assigned</button>`;
@@ -3975,10 +3994,9 @@
     let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
     g.items.forEach(l => { msg += '\u2022 ' + l.ing.name + ': ' + soFmtQty(l.qty) + (l.ing.unit ? ' ' + l.ing.unit : '') + '\n'; });
     msg += '\nOrder ref: ' + soOrderNumber + '\nThank you';
-    openWaChat({
-      name: g.supplier.name, phone: phone, message: msg,
-      onSend: () => { g.sent = true; soPersistSent(); soRenderRouting(); }
-    });
+    if (!phone) { showToast('No phone number for this supplier'); return; }
+    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+    g.sent = true; soPersistSent(); soRenderRouting();
   }
 
   async function soPersistSent() {
@@ -4015,6 +4033,8 @@
   function soCloseRoute() {
     const s = document.getElementById('soRouteSheet');
     if (s) s.classList.remove('show');
+    const b = document.getElementById('soRouteBlock');
+    if (b) b.classList.remove('show');
   }
 
   // ── Smart Ordering System: Order History (landing view) ──
@@ -4062,7 +4082,7 @@
         </span>
         <span class="so-supp-line-name" style="flex:1;">${escapeHtml(it.name)}</span>
         <span class="so-supp-line-qty">${qty}</span>
-      </div>${noteText ? `<div class="item-receipt-note"><i class="ti ti-alert-circle"></i> ${noteText}</div>` : ''}
+      </div>${noteText ? `<div class="item-receipt-note" style="padding-left:6px;"><i class="ti ti-alert-circle"></i> ${noteText}</div>` : ''}
     </div>`;
   }
 
@@ -4242,7 +4262,7 @@
     const issues = boOrders.filter(o => boOrderStatusInfo(o).cls === 'issues').length;
     el.innerHTML =
       `<div class="bo-ord-stat"><div class="bo-ord-stat-num">${total}</div><div class="bo-ord-stat-label">Total orders</div></div>` +
-      `<div class="bo-ord-stat"><div class="bo-ord-stat-num" style="color:#047857;">${completed}</div><div class="bo-ord-stat-label">Completed</div></div>` +
+      `<div class="bo-ord-stat"><div class="bo-ord-stat-num" style="color:#247F48;">${completed}</div><div class="bo-ord-stat-label">Completed</div></div>` +
       `<div class="bo-ord-stat"><div class="bo-ord-stat-num" style="color:var(--red);">${issues}</div><div class="bo-ord-stat-label">With issues</div></div>`;
   }
 
@@ -4337,7 +4357,7 @@
         ? `<button class="bo-ord-send sent"><i class="ti ti-circle-check"></i> Order Completed</button>`
         : `<button class="bo-ord-send${allOk ? '' : ' disabled'}" onclick="boCompleteOrderFromBo('${o.id}')" ${allOk ? '' : 'disabled'}><i class="ti ti-circle-check"></i> Complete Order</button>`;
       const issueBtn = hasIssues
-        ? `<button class="bo-ord-send" style="background:var(--orange,#ea580c);" onclick="boSendIssueFromBo('${o.id}', null)"><i class="ti ti-brand-whatsapp"></i> Message Supplier About Issues</button>`
+        ? `<button class="bo-ord-send" style="background:var(--orange,#AE5109);" onclick="boSendIssueFromBo('${o.id}', null)"><i class="ti ti-brand-whatsapp"></i> Message Supplier About Issues</button>`
         : '';
       return `<div class="bo-ord-detail"><div class="bo-ord-supp">${lines || 'No items.'}${issueBtn}${completeBtn}</div></div>`;
     }
@@ -4350,7 +4370,7 @@
       const allOk = (r.items || []).length > 0 && (r.items || []).every(it => it.receipt === 'ok');
 
       const issueBtn = hasIssues && hasPhone
-        ? `<button class="bo-ord-send" style="background:var(--orange,#ea580c);" onclick="boSendIssueFromBo('${o.id}', ${idx})"><i class="ti ti-brand-whatsapp"></i> Message About Issues</button>`
+        ? `<button class="bo-ord-send" style="background:var(--orange,#AE5109);" onclick="boSendIssueFromBo('${o.id}', ${idx})"><i class="ti ti-brand-whatsapp"></i> Message Supplier About Issues</button>`
         : '';
       const completeBtn = isCompleted
         ? `<button class="bo-ord-send sent"><i class="ti ti-circle-check"></i> Order Completed</button>`
@@ -4549,18 +4569,15 @@
     let msg = 'Hi ' + contact + ', I would like to place an order:\n\n';
     (r.items || []).forEach(it => { msg += '\u2022 ' + it.name + ': ' + String(it.pack != null ? it.pack : it.qty) + (it.unit ? ' ' + it.unit : '') + '\n'; });
     msg += '\nOrder ref: ' + (o.order_number || ('#' + o.id)) + '\nThank you';
-    openWaChat({
-      name: r.supplier_name, phone: phone, message: msg,
-      onSend: async () => {
-        r.sent = true;
-        if (db) {
-          const { error } = await db.from('orders').update({ routing: routing }).eq('id', o.id);
-          if (error) console.error('update order error:', JSON.stringify(error));
-        }
-        boRenderStats();
-        boRenderOrdersList();
-      }
-    });
+    if (!phone) { showToast('No phone number for this supplier'); return; }
+    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+    r.sent = true;
+    if (db) {
+      const { error } = await db.from('orders').update({ routing: routing }).eq('id', o.id);
+      if (error) console.error('update order error:', JSON.stringify(error));
+    }
+    boRenderStats();
+    boRenderOrdersList();
   }
 
   async function boDeleteOrder(id) {
@@ -5491,10 +5508,20 @@
     const isAdmin = currentStaffId === '0000';
     grid.innerHTML = prods.map(p => {
       const safeName = p.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const safeNameJs = p.name.replace(/'/g, "\\'");
       const imgUrl = getProductImg(p.name);
       const imgHtml = imgUrl
         ? '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:cover;" alt="' + p.name + '" loading="lazy">'
         : p.name;
+      const cardQty = Object.values(order).filter(i => i.name === p.name).reduce((a,i) => a + i.qty, 0);
+      const priceRow = cardQty > 0
+        ? '<div class="card-price-row"><div class="product-price">$' + p.price.toFixed(2) + '</div>'
+          + '<div class="card-qty-stepper" onclick="event.stopPropagation();">'
+          + '<button class="card-qty-btn" onclick="event.stopPropagation();cardChangeQty(\'' + safeNameJs + '\',-1);">−</button>'
+          + '<span class="card-qty-num">' + cardQty + '</span>'
+          + '<button class="card-qty-btn" onclick="event.stopPropagation();cardChangeQty(\'' + safeNameJs + '\',1);">+</button>'
+          + '</div></div>'
+        : '<div class="card-price-row"><div class="product-price">$' + p.price.toFixed(2) + '</div></div>';
       return '<div class="product-card' + (isAdmin ? ' admin-mode' : '') + '" onclick="addItem(\'' + safeName + '\',' + p.price + ',\'' + safeName + '\')">'
         + '<div class="card-admin-btns">'
         + '<button class="card-admin-btn edit" onclick="event.stopPropagation();openEdit(\'' + safeName + '\')">Edit</button>'
@@ -5504,19 +5531,37 @@
         + (isAdmin ? '' : '<button class="card-info-btn" onclick="event.stopPropagation();openPinfo(\'' + safeName + '\')">i</button>')
         + '</div>'
         + '<div class="product-info">'
-        + '<div class="product-name-row"><div class="product-name">' + p.name + '</div>'
-        + '</div>'
-        + '<div class="product-price">$' + p.price.toFixed(2) + '</div>'
+        + '<div class="product-name-row"><div class="product-name">' + p.name + '</div></div>'
+        + priceRow
         + '</div>'
         + '</div>';
     }).join('');
+
+    // Add press animation only when NOT clicking stepper buttons
+    document.querySelectorAll('.product-card').forEach(card => {
+      card.addEventListener('mousedown', function(e) {
+        if (e.target.closest('.card-qty-stepper')) return;
+        card.classList.add('pressing');
+      });
+      card.addEventListener('touchstart', function(e) {
+        if (e.target.closest('.card-qty-stepper')) return;
+        card.classList.add('pressing');
+      }, { passive: true });
+      card.addEventListener('mouseleave', () => card.classList.remove('pressing'));
+      card.addEventListener('mouseup', () => card.classList.remove('pressing'));
+      card.addEventListener('touchend', () => card.classList.remove('pressing'));
+    });
   }
+
+  const CATS_WITHOUT_SUBCATS = ['Pastries', 'Merch', 'Bundles'];
 
   function selectCat(btn) {
     document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     currentCat = btn.dataset.cat; currentSub = 'All';
     document.querySelectorAll('.sub-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
+    const hideExtras = CATS_WITHOUT_SUBCATS.includes(currentCat);
+    document.querySelectorAll('.sub-tab-extra').forEach(b => b.style.display = hideExtras ? 'none' : '');
     renderProducts();
   }
 
@@ -5666,10 +5711,10 @@
     };
     closeCustomizeModal();
     renderOrder();
+    renderProducts();
   }
 
   function editOrderItem(key) {
-    const item = order[key];
     if (!item) return;
     if (Array.isArray(item.comboSelections)) { editComboOrderItem(key); return; }
     // Reconstruct preset selections from the stored summary so the modal reopens with current choices
@@ -5894,10 +5939,10 @@
     };
     closeComboModal();
     renderOrder();
+    renderProducts();
   }
 
   function editComboOrderItem(key) {
-    const item = order[key];
     if (!item) return;
     const combo = getComboDefinition(item.name);
     if (!combo) return;
@@ -5928,6 +5973,7 @@
     }
     if (order[name]) order[name].qty++; else order[name]={name,price,emoji,qty:1};
     renderOrder();
+    renderProducts();
   }
 
   function changeQty(key, delta) {
@@ -5935,6 +5981,28 @@
     order[key].qty += delta;
     if (order[key].qty <= 0) delete order[key];
     renderOrder();
+    renderProducts();
+  }
+
+  function cardChangeQty(name, delta) {
+    // Find all order entries for this product name
+    const entries = Object.values(order).filter(i => i.name === name);
+    if (!entries.length) return;
+    if (entries.length === 1) {
+      // Single entry — adjust directly
+      const key = entries[0].key || entries[0].name;
+      order[key].qty += delta;
+      if (order[key].qty <= 0) delete order[key];
+    } else {
+      // Multiple variants — adjust the last added one (highest key value for line_ keys, or first found)
+      const entry = entries.slice().sort((a,b) => (b.key||'').localeCompare(a.key||'')).find(e => delta < 0 ? e.qty > 0 : true);
+      if (!entry) return;
+      const key = entry.key || entry.name;
+      order[key].qty += delta;
+      if (order[key].qty <= 0) delete order[key];
+    }
+    renderOrder();
+    renderProducts();
   }
 
   function clearOrder() { order = {}; activeDiscount = null; attachedCustomer = null; renderOrder(); updateDiscountBadge(); updateCustomerRowDisplay(); }
@@ -6480,7 +6548,7 @@
     if (activeDiscount && sub > 0) {
       if (activeDiscount.type === 'percent') discountAmt = sub * activeDiscount.value / 100;
       else if (activeDiscount.type === 'fixed') discountAmt = Math.min(activeDiscount.value, sub);
-      discountRow = `<tr style="color:#16a34a;"><td>Discount (${activeDiscount.label})</td><td>-$${discountAmt.toFixed(2)}</td></tr>`;
+      discountRow = `<tr style="color:#247F48;"><td>Discount (${activeDiscount.label})</td><td>-$${discountAmt.toFixed(2)}</td></tr>`;
     }
     const discounted = Math.max(0, sub - discountAmt);
     const tax = discounted * 0.09;
@@ -7142,10 +7210,10 @@
       </tr>${optsLine}`;
     }).join('');
 
-    const discountRow = tx.discount > 0 ? `<tr style="color:#16a34a;"><td>Discount</td><td>-$${tx.discount.toFixed(2)}</td></tr>` : '';
+    const discountRow = tx.discount > 0 ? `<tr style="color:#247F48;"><td>Discount</td><td>-$${tx.discount.toFixed(2)}</td></tr>` : '';
     const customerRow = tx.customer ? `<tr><td>Customer</td><td>${tx.customer}</td></tr>` : '';
     const statusRow = tx.voided ? `<div style="text-align:center;margin:8px 0 14px;"><span style="display:inline-block;background:var(--bg-tertiary);color:var(--text-tertiary);font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">VOIDED</span></div>`
-      : tx.refunded ? `<div style="text-align:center;margin:8px 0 14px;"><span style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#ea580c;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUNDED</span></div>` : '';
+      : tx.refunded ? `<div style="text-align:center;margin:8px 0 14px;"><span style="display:inline-block;background:#fdf4eb;border:1px solid #f5d0a0;color:#AE5109;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUNDED</span></div>` : '';
 
     const tagline = businessInfoCache?.tagline ? `<div class="receipt-shop-sub">${businessInfoCache.tagline}</div>` : '';
     const address = businessInfoCache?.address ? `<div class="receipt-shop-sub">${businessInfoCache.address}</div>` : '';
@@ -7546,7 +7614,7 @@
   function fieldKbToggleShift() {
     fieldKbShift = !fieldKbShift;
     document.getElementById('fieldKbShift').classList.toggle('active', fieldKbShift);
-    document.getElementById('fieldKbShift').style.background = fieldKbShift ? 'var(--blue)' : '#374151';
+    document.getElementById('fieldKbShift').style.background = fieldKbShift ? 'var(--blue)' : '#384152';
   }
 
   function openFieldKb(inputId, mode, label) {
@@ -7558,7 +7626,7 @@
     document.getElementById('fieldKbLabel').textContent = label;
     document.getElementById('fieldKbVal').value = fieldKbBuffer;
     const shiftBtn = document.getElementById('fieldKbShift');
-    shiftBtn.style.background = '#374151';
+    shiftBtn.style.background = '#384152';
     document.getElementById('fieldKbSheet').classList.add('show');
   }
 
@@ -8133,7 +8201,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const isClean = !p.allergens || p.allergens.toLowerCase().includes('no common');
     allergenEl.style.background = isClean ? '' : 'rgba(239,68,68,0.08)';
     allergenEl.style.borderColor = isClean ? '' : 'rgba(239,68,68,0.3)';
-    allergenEl.style.color = isClean ? '' : '#dc2626';
+    allergenEl.style.color = isClean ? '' : '#C81E1E';
     allergenEl.querySelector('i').className = isClean ? 'ti ti-leaf' : 'ti ti-alert-triangle';
     allergenEl.querySelector('span').textContent = p.allergens || 'No common allergens';
     document.getElementById('pinfoIngredients').textContent = p.ingredients || '—';
@@ -8553,7 +8621,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no explanatio
     const total = txs.reduce((a,t) => a + t.total, 0);
 
     const methods = [
-      { key: 'Cash',   label: 'Cash',   color: '#16a34a' },
+      { key: 'Cash',   label: 'Cash',   color: '#247F48' },
       { key: 'Card',   label: 'Card',   color: '#2563eb' },
       { key: 'Mobile', label: 'Mobile', color: '#7c3aed' },
     ];
@@ -9382,9 +9450,9 @@ function renderBoMonth() {
     }
     cal += '</div>';
     cal += `<div class="rpt-cal-legend">
-      <div class="rpt-cal-dot" style="background:#d1fae5;border:1px solid #6ee7b7;"></div> Low
-      <div class="rpt-cal-dot" style="background:#6ee7b7;"></div>
-      <div class="rpt-cal-dot" style="background:#16a34a;"></div>
+      <div class="rpt-cal-dot" style="background:#c2e8d0;border:1px solid #7dcca0;"></div> Low
+      <div class="rpt-cal-dot" style="background:#7dcca0;"></div>
+      <div class="rpt-cal-dot" style="background:#247F48;"></div>
       <div class="rpt-cal-dot" style="background:#065f46;"></div> High
     </div>`;
     document.getElementById('boCalendar').innerHTML = cal;
@@ -9602,9 +9670,9 @@ function exportBoMonthToExcel() {
     }
     cal += '</div>';
     cal += `<div class="rpt-cal-legend">
-      <div class="rpt-cal-dot" style="background:#d1fae5;border:1px solid #6ee7b7;"></div> Low
-      <div class="rpt-cal-dot" style="background:#6ee7b7;"></div>
-      <div class="rpt-cal-dot" style="background:#16a34a;"></div>
+      <div class="rpt-cal-dot" style="background:#c2e8d0;border:1px solid #7dcca0;"></div> Low
+      <div class="rpt-cal-dot" style="background:#7dcca0;"></div>
+      <div class="rpt-cal-dot" style="background:#247F48;"></div>
       <div class="rpt-cal-dot" style="background:#065f46;"></div> High
     </div>`;
     document.getElementById('rptCalendar').innerHTML = cal;
@@ -9696,7 +9764,7 @@ function exportBoMonthToExcel() {
           <div class="rpt-wastage-log-meta">${e.reason} · ${e.staffName || 'Unknown'} · ${timeStr}</div>
         </div>
         <div class="rpt-wastage-log-qty">−${e.qty} units</div>
-        <button onclick="deleteWastageEntry('${e.id}')" style="margin-left:10px;background:none;border:none;cursor:pointer;color:var(--text-tertiary);font-size:16px;display:flex;align-items:center;padding:4px;border-radius:6px;transition:color 0.15s,background 0.15s;" onmouseover="this.style.color='var(--red)';this.style.background='#fef2f2';" onmouseout="this.style.color='var(--text-tertiary)';this.style.background='none';"><i class="ti ti-trash"></i></button>`;
+        <button onclick="deleteWastageEntry('${e.id}')" style="margin-left:10px;background:none;border:none;cursor:pointer;color:var(--text-tertiary);font-size:16px;display:flex;align-items:center;padding:4px;border-radius:6px;transition:color 0.15s,background 0.15s;" onmouseover="this.style.color='var(--red)';this.style.background='#faf0f0';" onmouseout="this.style.color='var(--text-tertiary)';this.style.background='none';"><i class="ti ti-trash"></i></button>`;
       logContainer.appendChild(el);
     });
   }
@@ -10095,7 +10163,7 @@ function exportBoMonthToExcel() {
       const badge = isVoided
         ? '<span class="rpt-order-voided-badge">VOIDED</span>'
         : isRefunded
-          ? '<span class="rpt-order-voided-badge" style="background:#fff7ed;border-color:#fed7aa;color:#ea580c;">REFUNDED</span>'
+          ? '<span class="rpt-order-voided-badge" style="background:#fdf4eb;border-color:#f5d0a0;color:#AE5109;">REFUNDED</span>'
           : '';
       const totalClass = 'rpt-order-total';
       const totalPrefix = '';
@@ -10120,16 +10188,16 @@ function exportBoMonthToExcel() {
           ${isVoided
             ? '<span class="rpt-order-voided-label">Order voided</span>'
             : isRefunded
-              ? '<span class="rpt-order-voided-label" style="color:#ea580c;">Order refunded</span>'
+              ? '<span class="rpt-order-voided-label" style="color:#AE5109;">Order refunded</span>'
               : `<div style="display:flex;gap:8px;align-items:center;margin-left:auto;">
                   <div class="rpt-void-confirm" id="voidConfirm_${shortRef}" style="display:none;align-items:center;gap:8px;">
                     <span style="font-size:12px;color:var(--text-secondary);">Void this order?</span>
-                    <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:#dc2626;color:white;cursor:pointer;" onclick="voidOrder('${shortRef}')">Yes, Void</button>
+                    <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:#C81E1E;color:white;cursor:pointer;" onclick="voidOrder('${shortRef}')">Yes, Void</button>
                     <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;" onclick="cancelVoid('${shortRef}')">Cancel</button>
                   </div>
                   <div class="rpt-refund-confirm" id="refundConfirm_${shortRef}" style="display:none;align-items:center;gap:8px;">
                     <span style="font-size:12px;color:var(--text-secondary);">Issue refund for $${t.total.toFixed(2)}?</span>
-                    <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:#ea580c;color:white;cursor:pointer;" onclick="refundOrder('${shortRef}')">Yes, Refund</button>
+                    <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:#AE5109;color:white;cursor:pointer;" onclick="refundOrder('${shortRef}')">Yes, Refund</button>
                     <button style="font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;" onclick="cancelRefund('${shortRef}')">Cancel</button>
                   </div>
                   ${(!isToday && within7Days) ? '<button class="rpt-order-refund-btn" id="refundBtn_' + shortRef + '" onclick="showRefundConfirm(\'' + shortRef + '\')">Refund</button>' : ''}
@@ -10218,11 +10286,11 @@ function exportBoMonthToExcel() {
     const timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
 
     document.getElementById('receiptModalTitle').textContent = 'Refund Receipt';
-    document.getElementById('receiptIcon').style.background = '#ea580c';
+    document.getElementById('receiptIcon').style.background = '#AE5109';
     document.getElementById('receiptRef').textContent = tx.ref;
 
     const itemRows = tx.items.map(item => `
-      <tr style="color:#ea580c;">
+      <tr style="color:#AE5109;">
         <td><span class="item-qty-label">${item.qty}×</span> ${item.name}</td>
         <td>-$${(item.price * item.qty).toFixed(2)}</td>
       </tr>`).join('');
@@ -10245,7 +10313,7 @@ function exportBoMonthToExcel() {
       <div class="receipt-shop-sub${refundAddress ? ' tight' : ''}">${currentOutletName}</div>
       ${refundAddress}
       <div style="text-align:center;margin:8px 0 14px;">
-        <span style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#ea580c;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUND</span>
+        <span style="display:inline-block;background:#fdf4eb;border:1px solid #f5d0a0;color:#AE5109;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.06em;">REFUND</span>
       </div>
       <table class="receipt-meta">
         <tr><td>Date</td><td>${dateStr}</td></tr>
@@ -10258,13 +10326,13 @@ function exportBoMonthToExcel() {
       <table class="receipt-items">${itemRows}</table>
       <hr class="receipt-divider"/>
       <table class="receipt-totals">
-        <tr><td>Subtotal</td><td style="color:#ea580c;">-$${Math.abs(tx.gross).toFixed(2)}</td></tr>
+        <tr><td>Subtotal</td><td style="color:#AE5109;">-$${Math.abs(tx.gross).toFixed(2)}</td></tr>
         ${discountRow}
-        <tr><td>Tax (9%)</td><td style="color:#ea580c;">-$${Math.abs(tx.tax).toFixed(2)}</td></tr>
-        <tr class="receipt-total-final"><td>REFUND TOTAL</td><td style="color:#ea580c;">-$${tx.total.toFixed(2)}</td></tr>
+        <tr><td>Tax (9%)</td><td style="color:#AE5109;">-$${Math.abs(tx.tax).toFixed(2)}</td></tr>
+        <tr class="receipt-total-final"><td>REFUND TOTAL</td><td style="color:#AE5109;">-$${tx.total.toFixed(2)}</td></tr>
         ${refundPhoneGstRow}
       </table>
-      <div class="receipt-paid" style="color:#ea580c;">Refunded via ${tx.method}</div>
+      <div class="receipt-paid" style="color:#AE5109;">Refunded via ${tx.method}</div>
       <hr class="receipt-divider"/>
       <div class="receipt-thank">We're sorry for the inconvenience.</div>`;
 
@@ -10331,7 +10399,7 @@ function exportBoMonthToExcel() {
   .edit-outlet-list { display: flex; flex-direction: column; gap: 8px; }
   .edit-outlet-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
   .edit-outlet-item:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
-  .edit-outlet-item.checked { border-color: var(--green); background: #f0fdf4; }
+  .edit-outlet-item.checked { border-color: var(--green); background: #edf7f1; }
   [data-theme="dark"] .edit-outlet-item.checked { background: rgba(22,163,74,0.1); }
   .edit-outlet-check { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
   .edit-outlet-item.checked .edit-outlet-check { background: var(--green); border-color: var(--green); }
@@ -10510,16 +10578,16 @@ function exportBoMonthToExcel() {
             <div><div class="disc-voucher-name" style="color:#2563eb;">Mall Voucher</div><div class="disc-voucher-val" style="color:#2563eb;">$5 off</div></div>
           </div>
           <div class="disc-voucher-card" style="background:#fefce8;" onclick="selectVoucherCard('Lucky Draw ($10 off)','fixed',10,this)">
-            <span class="disc-voucher-icon" style="color:#d97706;">⭐</span>
-            <div><div class="disc-voucher-name" style="color:#d97706;">Lucky Draw</div><div class="disc-voucher-val" style="color:#d97706;">$10 off</div></div>
+            <span class="disc-voucher-icon" style="color:#AE5109;">⭐</span>
+            <div><div class="disc-voucher-name" style="color:#AE5109;">Lucky Draw</div><div class="disc-voucher-val" style="color:#AE5109;">$10 off</div></div>
           </div>
           <div class="disc-voucher-card" style="background:#fdf2f8;" onclick="selectVoucherCard('Senior Citizen ($5 off)','fixed',5,this)">
             <span class="disc-voucher-icon" style="color:#db2777;">❤️</span>
             <div><div class="disc-voucher-name" style="color:#db2777;">Senior Citizen</div><div class="disc-voucher-val" style="color:#db2777;">$5 off</div></div>
           </div>
-          <div class="disc-voucher-card" style="background:#f0fdf4;" onclick="selectVoucherCard('Student Voucher ($5 off)','fixed',5,this)">
-            <span class="disc-voucher-icon" style="color:#16a34a;">🎓</span>
-            <div><div class="disc-voucher-name" style="color:#16a34a;">Student Voucher</div><div class="disc-voucher-val" style="color:#16a34a;">$5 off</div></div>
+          <div class="disc-voucher-card" style="background:#edf7f1;" onclick="selectVoucherCard('Student Voucher ($5 off)','fixed',5,this)">
+            <span class="disc-voucher-icon" style="color:#247F48;">🎓</span>
+            <div><div class="disc-voucher-name" style="color:#247F48;">Student Voucher</div><div class="disc-voucher-val" style="color:#247F48;">$5 off</div></div>
           </div>
           <div class="disc-voucher-card" style="background:#faf5ff;" onclick="selectVoucherCard('Promo Voucher ($15 off)','fixed',15,this)">
             <span class="disc-voucher-icon" style="color:#7c3aed;">🎟️</span>
@@ -11233,7 +11301,7 @@ function exportBoMonthToExcel() {
 </div>
 
 <!-- Smart Ordering System Modal -->
-<div class="so-overlay" id="soOverlay">
+<div class="so-overlay" id="soOverlay" onclick="soOverlayBgClick(event)">
   <div class="so-modal">
     <div class="so-header">
       <div class="so-header-title"><i class="ti ti-shopping-cart"></i> Smart Ordering System</div>
@@ -11277,6 +11345,9 @@ function exportBoMonthToExcel() {
       <button class="so-btn-wa-issue" id="soWaIssueBtn" onclick="soSendIssueWa()" style="display:none;"><i class="ti ti-brand-whatsapp"></i> Message Supplier About Issues</button>
       <button class="so-btn-complete" id="soCompleteBtn" onclick="soCompleteOrder()" style="margin-left:auto;"><i class="ti ti-circle-check"></i> Complete Order</button>
     </div>
+
+    <!-- Blur block over top half when route sheet is active -->
+    <div class="so-route-block" id="soRouteBlock" onclick="soCloseRouteToHistory()"></div>
 
     <!-- STEP 3: routing bottom sheet (for new order send flow only) -->
     <div class="so-route-sheet" id="soRouteSheet">
@@ -11959,7 +12030,7 @@ function exportBoMonthToExcel() {
     <div class="checklist-body" id="checklistBody"></div>
     <div class="checklist-footer">
       <button class="checklist-skip-btn" onclick="closeChecklist()">Skip for now</button>
-      <button class="checklist-action-btn" id="checklistActionBtn" onclick="checklistDoAction()">Open Admin Panel</button>
+      <button class="checklist-action-btn" id="checklistActionBtn" onclick="checklistDoAction()">Open Back Office</button>
     </div>
   </div>
 </div>
