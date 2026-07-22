@@ -879,8 +879,12 @@
 
     /* ORDERS TAB */
     .rpt-orders-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; }
-    .rpt-orders-search { flex: 1; padding: 8px 12px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font); outline: none; max-width: 200px; }
+    .rpt-orders-search-wrap { position: relative; flex: 1; max-width: 200px; }
+    .rpt-orders-search { width: 100%; padding: 8px 30px 8px 12px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font); outline: none; max-width: 200px; box-sizing: border-box; }
     .rpt-orders-search:focus { border-color: var(--blue); }
+    .rpt-orders-search-clear { display: none; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border: none; border-radius: 50%; background: var(--bg-tertiary); color: var(--text-tertiary); cursor: pointer; align-items: center; justify-content: center; font-size: 12px; padding: 0; }
+    .rpt-orders-search-clear:hover { background: var(--border); color: var(--text-primary); }
+    .rpt-orders-search-clear.show { display: flex; }
     .rpt-orders-filters { display: flex; gap: 6px; }
     .rpt-orders-filter { padding: 6px 12px; border-radius: 20px; border: 0.5px solid var(--border); background: transparent; font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; font-family: var(--font); transition: all 0.15s; white-space: nowrap; }
     .rpt-orders-filter.active { background: #111; color: white; border-color: #111; }
@@ -7692,6 +7696,20 @@
     closeFieldKb();
   }
 
+  // Quick-clear button inside the Transactions "Search Order #..." field —
+  // also resets fieldKbBuffer so a subsequent tap into the custom keyboard
+  // doesn't reopen with the old text still buffered.
+  function clearOrdersSearch() {
+    const input = document.getElementById('ordersSearch');
+    if (input) input.value = '';
+    if (fieldKbTargetId === 'ordersSearch') {
+      fieldKbBuffer = '';
+      const kbVal = document.getElementById('fieldKbVal');
+      if (kbVal) kbVal.value = '';
+    }
+    renderOrdersTab();
+  }
+
   // ── Clock In / Staff ──
   let currentStaffId = '';
   let currentStaffRole = 'Administrator';
@@ -10137,6 +10155,8 @@ function exportBoMonthToExcel() {
   function renderOrdersTab() {
     const now = new Date();
     const search = (document.getElementById('ordersSearch').value || '').toLowerCase();
+    const clearBtn = document.getElementById('ordersSearchClear');
+    if (clearBtn) clearBtn.classList.toggle('show', !!search);
     const cutoffs = { '1h': 60, '2h': 120, '3h': 180 };
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const sevenDaysAgo = now.getTime() - (7 * 24 * 60 * 60 * 1000);
@@ -11157,7 +11177,10 @@ function exportBoMonthToExcel() {
           <button class="rpt-orders-filter" id="ordFilter_2h" onclick="setOrderFilter('2h')">Last 2 hrs</button>
           <button class="rpt-orders-filter" id="ordFilter_3h" onclick="setOrderFilter('3h')">Last 3 hrs</button>
         </div>
-        <input class="rpt-orders-search" id="ordersSearch" type="text" placeholder="Search Order #..." readonly onclick="openFieldKb('ordersSearch','text','SEARCH ORDER #:')" />
+        <div class="rpt-orders-search-wrap">
+          <input class="rpt-orders-search" id="ordersSearch" type="text" placeholder="Search Order #..." readonly onclick="openFieldKb('ordersSearch','text','SEARCH ORDER #:')" />
+          <button type="button" class="rpt-orders-search-clear" id="ordersSearchClear" onclick="clearOrdersSearch()" title="Clear search"><i class="ti ti-x"></i></button>
+        </div>
       </div>
       <div id="rptOrdersList" style="display:flex;flex-direction:column;gap:10px;"></div>
     </div>
