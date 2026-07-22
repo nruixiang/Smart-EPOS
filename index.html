@@ -1394,9 +1394,10 @@
     .supp-unit-pill:hover { border-color:var(--green); color:var(--green); }
     .supp-unit-pill.active { background:var(--green); border-color:var(--green); color:#fff; font-weight:600; }
     .supp-ing-suggestions { position:absolute; top:100%; left:0; right:0; background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-md); box-shadow:0 4px 16px rgba(0,0,0,0.10); z-index:200; max-height:180px; overflow-y:auto; margin-top:3px; }
-    .supp-ing-suggestion { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; font-size:13px; color:var(--text-primary); cursor:pointer; }
+    .supp-ing-suggestion { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; font-size:13px; color:var(--text-primary); cursor:pointer; gap:10px; }
     .supp-ing-suggestion:hover { background:var(--bg-secondary); }
-    .supp-ing-suggestion .sig-new { font-size:11px; color:var(--green); font-weight:600; }
+    .supp-ing-suggestion .sig-new { font-size:11px; font-weight:700; color:var(--green); background:rgba(22,163,74,0.1); border:1px solid rgba(22,163,74,0.25); border-radius:6px; padding:2px 8px; white-space:nowrap; transition:background 0.15s; }
+    .supp-ing-suggestion:hover .sig-new { background:rgba(22,163,74,0.18); }
     .supp-ing-empty { padding:16px; text-align:center; color:var(--text-tertiary); font-size:12.5px; }
     @media (max-width:560px) { .supp-row2 { grid-template-columns:1fr; } }
     /* ── SMART ORDERING SYSTEM ── */
@@ -3116,7 +3117,7 @@
     if (!exactMatch && val.trim()) {
       rows.push(`<div class="supp-ing-suggestion supp-ing-add-new" data-name="${escapeHtml(val.trim())}" data-id="">
         <span>${escapeHtml(val.trim())}</span>
-        <span class="sig-new">+ Add new</span>
+        <span class="sig-new">+ Add New</span>
       </div>`);
     }
     if (rows.length === 0) { hideSuppIngSuggestions(); return; }
