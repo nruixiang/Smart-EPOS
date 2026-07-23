@@ -4228,20 +4228,26 @@
     const routing = Array.isArray(o.routing) ? o.routing : [];
 
     if (routing.length) {
-      const suppWithIssues = routing.find(r => (r.items || []).some(it => it.receipt === 'issues'));
-      if (!suppWithIssues) return;
-      const phone = String(suppWithIssues.phone || suppWithIssues.supplier_phone || '').replace(/[^\d]/g, '');
-      const contact = suppWithIssues.supplier_name || 'Supplier';
-      const issueLines = (suppWithIssues.items || [])
-        .filter(it => it.receipt === 'issues')
-        .map(it => `• ${it.name} (${String(it.pack != null ? it.pack : it.qty)}${it.unit ? ' ' + it.unit : ''}): ${it.issue_note || 'Issue reported'}`)
-        .join('\n');
-      const msg = `Hi ${contact}, we received order ${o.order_number || ('#' + o.id)} but have the following issues:\n\n${issueLines}\n\nCould you please advise? Thank you.`;
-      if (phone) {
-        window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
-      } else {
-        showToast('No phone number on file for this supplier');
-      }
+      const suppliersWithIssues = routing.filter(r => (r.items || []).some(it => it.receipt === 'issues'));
+      if (!suppliersWithIssues.length) return;
+      let opened = 0;
+      suppliersWithIssues.forEach(r => {
+        const supObj = r.supplier_id != null ? suppliers.find(s => String(s.id) === String(r.supplier_id)) : null;
+        const phone = String((supObj && supObj.phone) || '').replace(/[^\d]/g, '');
+        const contact = (supObj && supObj.contact_person) || r.supplier_name || 'Supplier';
+        const issueLines = (r.items || [])
+          .filter(it => it.receipt === 'issues')
+          .map(it => `• ${it.name} (${String(it.pack != null ? it.pack : it.qty)}${it.unit ? ' ' + it.unit : ''}): ${it.issue_note || 'Issue reported'}`)
+          .join('\n');
+        const msg = `Hi ${contact}, we received order ${o.order_number || ('#' + o.id)} but have the following issues:\n\n${issueLines}\n\nCould you please advise? Thank you.`;
+        if (phone) {
+          window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+          opened++;
+        } else {
+          showToast('No phone number on file for ' + (r.supplier_name || 'a supplier'));
+        }
+      });
+      if (opened > 1) showToast(opened + ' WhatsApp tabs opened');
     } else {
       const issueItems = (Array.isArray(o.items) ? o.items : []).filter(it => it.receipt === 'issues');
       if (!issueItems.length) return;
