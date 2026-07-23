@@ -4228,7 +4228,6 @@
     const routing = Array.isArray(o.routing) ? o.routing : [];
 
     if (routing.length) {
-      // Find first supplier with issues
       const suppWithIssues = routing.find(r => (r.items || []).some(it => it.receipt === 'issues'));
       if (!suppWithIssues) return;
       const phone = String(suppWithIssues.phone || suppWithIssues.supplier_phone || '').replace(/[^\d]/g, '');
@@ -4238,14 +4237,17 @@
         .map(it => `• ${it.name} (${String(it.pack != null ? it.pack : it.qty)}${it.unit ? ' ' + it.unit : ''}): ${it.issue_note || 'Issue reported'}`)
         .join('\n');
       const msg = `Hi ${contact}, we received order ${o.order_number || ('#' + o.id)} but have the following issues:\n\n${issueLines}\n\nCould you please advise? Thank you.`;
-      openWaChat({ name: contact, phone, message: msg });
+      if (phone) {
+        window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+      } else {
+        showToast('No phone number on file for this supplier');
+      }
     } else {
-      // Flat items — no supplier routing, use first available supplier phone
       const issueItems = (Array.isArray(o.items) ? o.items : []).filter(it => it.receipt === 'issues');
       if (!issueItems.length) return;
       const issueLines = issueItems.map(it => `• ${it.name} (${String(it.pack != null ? it.pack : it.qty)}${it.unit ? ' ' + it.unit : ''}): ${it.issue_note || 'Issue reported'}`).join('\n');
       const msg = `Hi, we received order ${o.order_number || ('#' + o.id)} but have the following issues:\n\n${issueLines}\n\nCould you please advise? Thank you.`;
-      openWaChat({ name: 'Supplier', phone: '', message: msg });
+      showToast('No supplier phone number on file');
     }
   }
 
@@ -4458,7 +4460,11 @@
       `• ${it.name} (${String(it.pack != null ? it.pack : it.qty)}${it.unit ? ' ' + it.unit : ''}): ${it.issue_note || 'Issue reported'}`
     ).join('\n');
     const msg = `Hi ${contact}, we received order ${o.order_number || ('#' + o.id)} but have the following issues:\n\n${lines}\n\nCould you please advise? Thank you.`;
-    openWaChat({ name: contact, phone, message: msg });
+    if (phone) {
+      window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+    } else {
+      showToast('No phone number on file for this supplier');
+    }
   }
 
   // Marks a single item as received OK or flagged with an issue (with an optional short note).
@@ -4493,7 +4499,7 @@
     const info = boOrderStatusInfo(o);
     if (info.cls === 'issues') {
       o.status = 'issues';
-    } else if (o.status !== 'completed') {
+    } else {
       o.status = 'placed';
     }
 
@@ -4542,7 +4548,7 @@
     const info = boOrderStatusInfo(o);
     if (info.cls === 'issues') {
       o.status = 'issues';
-    } else if (o.status !== 'completed') {
+    } else {
       o.status = 'placed';
     }
 
