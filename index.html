@@ -4394,15 +4394,17 @@
   function boRenderOrderDetail(o) {
     const routing = Array.isArray(o.routing) ? o.routing : [];
     const isCompleted = o.status === 'completed';
+    const allItems = boOrderItemsFlat(o);
+    const allMarked = allItems.length > 0 && allItems.every(it => it.receipt === 'ok');
+
+    const completeBtn = isCompleted
+      ? `<button class="bo-ord-send sent"><i class="ti ti-circle-check"></i> Order Completed</button>`
+      : `<button class="bo-ord-send${allMarked ? '' : ' disabled'}" onclick="boCompleteOrderFromBo('${o.id}')" ${allMarked ? '' : 'disabled'}><i class="ti ti-circle-check"></i> Complete Order</button>`;
 
     if (!routing.length) {
       const items = Array.isArray(o.items) ? o.items : [];
       const lines = items.map((it, i) => renderItemReceiptLine(o.id, null, i, it)).join('');
-      const allOk = items.length > 0 && items.every(it => it.receipt === 'ok');
       const hasIssues = items.some(it => it.receipt === 'issues');
-      const completeBtn = isCompleted
-        ? `<button class="bo-ord-send sent"><i class="ti ti-circle-check"></i> Order Completed</button>`
-        : `<button class="bo-ord-send${allOk ? '' : ' disabled'}" onclick="boCompleteOrderFromBo('${o.id}')" ${allOk ? '' : 'disabled'}><i class="ti ti-circle-check"></i> Complete Order</button>`;
       const issueBtn = hasIssues
         ? `<button class="bo-ord-send" style="background:var(--orange,#AE5109);" onclick="boSendIssueFromBo('${o.id}', null)"><i class="ti ti-brand-whatsapp"></i> Message Supplier About Issues</button>`
         : '';
@@ -4414,21 +4416,16 @@
       const supObj = r.supplier_id != null ? suppliers.find(s => String(s.id) === String(r.supplier_id)) : null;
       const hasPhone = supObj && supObj.phone && String(supObj.phone).replace(/[^\d]/g, '');
       const hasIssues = (r.items || []).some(it => it.receipt === 'issues');
-      const allOk = (r.items || []).length > 0 && (r.items || []).every(it => it.receipt === 'ok');
-
       const issueBtn = hasIssues && hasPhone
         ? `<button class="bo-ord-send" style="background:var(--orange,#AE5109);" onclick="boSendIssueFromBo('${o.id}', ${idx})"><i class="ti ti-brand-whatsapp"></i> Message Supplier About Issues</button>`
         : '';
-      const completeBtn = isCompleted
-        ? `<button class="bo-ord-send sent"><i class="ti ti-circle-check"></i> Order Completed</button>`
-        : `<button class="bo-ord-send${allOk ? '' : ' disabled'}" onclick="boCompleteOrderFromBo('${o.id}')" ${allOk ? '' : 'disabled'}><i class="ti ti-circle-check"></i> Complete Order</button>`;
-
       return `<div class="bo-ord-supp">
         <div class="bo-ord-supp-head"><span class="bo-ord-supp-name">${escapeHtml(r.supplier_name || 'Unassigned')}</span></div>
-        ${lines}${issueBtn}${completeBtn}
+        ${lines}${issueBtn}
       </div>`;
     }).join('');
-    return `<div class="bo-ord-detail">${groups}</div>`;
+
+    return `<div class="bo-ord-detail">${groups}<div class="bo-ord-supp" style="border-top:0.5px solid var(--border);">${completeBtn}</div></div>`;
   }
 
   async function boCompleteOrderFromBo(orderId) {
