@@ -6331,11 +6331,54 @@
       const { error } = await db.from('customer_orders').update({ status }).eq('id', id);
       if (error) { showToast('Failed: ' + (error.message || 'error')); return; }
     } catch (e) { showToast('Failed to update order'); return; }
-    if (status === 'accepted' && o) recordOnlineOrderAsSale(o);
+
+    if (status === 'accepted' && o) {
+      const isCash = ooPayMethod(o.payment_method) === 'Cash';
+
+      if (isCash) {
+        // If there's an active order in the cart, hold it first
+        if (Object.keys(order).length > 0) {
+          holdOrder();
+          showToast('Current order held — loading online order…');
+        }
+
+        // Load the online order items into the cart
+        order = {};
+        const allProds = getAllProducts();
+        (o.items || []).forEach(it => {
+          const prod = allProds.find(p => p.name === it.name);
+          order[it.name] = {
+            name: it.name,
+            price: Number(it.unit_price) || (prod ? prod.price : 0),
+            emoji: prod ? (prod.emoji || it.name) : it.name,
+            qty: it.qty || 1
+          };
+        });
+
+        // Attach customer name if present
+        if (o.customer_name) {
+          const matchedMember = members.find(m => m.name === o.customer_name);
+          if (matchedMember) {
+            attachedCustomer = matchedMember;
+            updateCustomerRowDisplay();
+          }
+        }
+
+        renderOrder();
+        renderProducts();
+        closeOnlineOrders();
+        showToast('Cash order loaded into cart ✓');
+      } else {
+        recordOnlineOrderAsSale(o);
+        showToast('Order accepted — added to sales ✓');
+      }
+    } else {
+      showToast('Order rejected');
+    }
+
     onlineOrders = onlineOrders.filter(x => String(x.id) !== String(id));
     updateOoBadge(onlineOrders.length);
     renderOnlineOrders();
-    showToast(status === 'accepted' ? 'Order accepted — added to sales ✓' : 'Order rejected');
   }
 
   // Map customer payment choice to the POS method buckets (Cash / Card / Mobile).
